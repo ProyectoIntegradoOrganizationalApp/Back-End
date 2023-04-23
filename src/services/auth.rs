@@ -1,13 +1,20 @@
 use std::env;
 use crate::models::models::*;
 use crate::utilities::jwt::*;
+use crate::utilities::redis::*;
+
 extern crate bcrypt;
 use bcrypt::{hash, DEFAULT_COST};
+
 use diesel::prelude::*;
 use rust_api_rest::establish_connection;
 use rust_api_rest::schema::users::dsl::*;
+
 use lettre::transport::smtp::authentication::Credentials; 
 use lettre::{Message, SmtpTransport, Transport};
+
+extern crate redis;
+use redis::Commands;
 
 pub fn register(user_info: &UserInput) -> User {
     use crate::schema::users;
@@ -30,6 +37,7 @@ pub fn register(user_info: &UserInput) -> User {
     created_user
 }
 
+#[allow(unused)]
 pub fn login(user_info: &UserLogin) -> Result<String, String> {
     use crate::schema::users::dsl::*;
     println!("{:#?}", user_info );
@@ -38,8 +46,19 @@ pub fn login(user_info: &UserLogin) -> Result<String, String> {
     let user_found = users.filter(email.eq(String::from(&user_info.email)))
     .first::<User>(connection);
 
-    match user_found{
-        Ok(user) => create_token(&user.id),
+    match user_found {
+        Ok(user) => {
+            match create_token(&user.id) {
+                Ok(token) => {
+                    get_whitelist_token("asd");
+                    match whitelist_token(token.as_str(), &user.id) {
+                        Ok(r) => Ok(token),
+                        Err(err) => Err(err.to_string())
+                    }
+                },
+                Err(err) => Err(err.to_string())
+            }
+        },
         Err(err) => Err(err.to_string())
     }
 }
@@ -85,6 +104,7 @@ pub fn send_mail(user_mail: &UserMail) -> ResponseMessage {
     message_json
 }
 
+#[allow(unused)]
 pub fn change_password(user_info: &ChangePass) -> Result<String, String> {
     let connection = &mut establish_connection();
     let mut updated: Result<usize, diesel::result::Error> = Ok(0);

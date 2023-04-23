@@ -31,15 +31,11 @@ pub fn login(user_info: Json<UserLogin>) -> Result<Json<UserLoginResponse>, Json
 }
 
 #[get("/test_token", format="json")]
-pub fn test_token(token: Result<Token, GenericError>) -> Result<Json<UserLoginResponse>, Json<GenericError>> {
+pub fn test_token(token: Result<TokenValidantion, GenericError>) -> Result<Json<TokenValidantion>, Json<GenericError>> {
 
     match token {
-        Ok(token) => {
-            let response = UserLoginResponse {
-                email: "asdasdas".to_string(),
-                token: token.token
-            };
-            return Ok(Json(response))
+        Ok(validation) => {
+            return Ok(Json(validation))
         },
         Err(json_error) => {
             return Err(Json(json_error))

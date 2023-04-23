@@ -29,7 +29,7 @@ diesel::table! {
 
     role (id) {
         id -> Varchar,
-        role -> Nullable<ValidRoles>,
+        roles -> Nullable<ValidRoles>,
     }
 }
 

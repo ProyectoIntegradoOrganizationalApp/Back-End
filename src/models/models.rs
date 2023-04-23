@@ -48,9 +48,10 @@ pub struct GenericError {
 
 // MIDDLEWARES STRUCTS --------- START
 
-#[derive(Debug)]
-pub struct Token {
-   pub  token: String
+#[derive(Debug, Serialize)]
+pub struct TokenValidantion {
+   pub success: bool,
+   pub message: String
 }
 
 // MIDDLEWARES STRUCTS --------- END
