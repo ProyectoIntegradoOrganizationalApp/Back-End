@@ -8,7 +8,7 @@ mod utilities;
 mod middlewares;
 
 use rocket::{serde::{json::{json, Value}}};
-use routes::auth::{register, login, send_mail, change_password, test_token};
+use routes::auth::{register, login, send_mail, change_password, logout, test_token};
 use rocket_sync_db_pools::database;
 use dotenvy::dotenv;
 
@@ -37,6 +37,6 @@ fn rocket() -> _ {
     let rocket = rocket::build();
     rocket
         .attach(Db::fairing())
-        .mount("/", routes![register, login, send_mail, change_password, test_token])
+        .mount("/", routes![register, login, send_mail, change_password, logout, test_token])
         .register("/", catchers![not_found, server_error])
 }

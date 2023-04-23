@@ -7,6 +7,7 @@ extern crate bcrypt;
 use bcrypt::{hash, DEFAULT_COST};
 
 use diesel::prelude::*;
+use redis::RedisError;
 use rust_api_rest::establish_connection;
 use rust_api_rest::schema::users::dsl::*;
 
@@ -118,6 +119,13 @@ pub fn change_password(user_info: &ChangePass) -> Result<String, String> {
 
     match updated {
         Ok(_) => Ok(String::from("Password changed successfully")),
+        Err(e) => Err(String::from("Something went wrong"))
+    }
+}
+
+pub fn logout(token: &String) -> Result<String, String> {
+    match unwhitelist_token(token) {
+        Ok(_) => Ok(String::from("Successfully logout")),
         Err(e) => Err(String::from("Something went wrong"))
     }
 }

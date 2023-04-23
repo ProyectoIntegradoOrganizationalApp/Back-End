@@ -24,7 +24,7 @@ impl<'r> FromRequest<'r> for TokenValidantion {
                     ));
                 }
                 // return authenticated user
-                Outcome::Success(TokenValidantion {success: true, message: auth.1} )
+                Outcome::Success(TokenValidantion {success: true, message: auth.1, token: auth.2} )
             }
             None => Outcome::Failure((Status::BadRequest, 
                         GenericError {

@@ -48,11 +48,11 @@ pub fn create_token(uid: &str) -> Result<String, String> {
 }
 
 #[allow(unused)]
-pub fn validate_token(mut token: &str) -> (bool, String) {
+pub fn validate_token(mut token: &str) -> (bool, String, String) {
 
     // Check if token is Bearer
     if !token.starts_with("Bearer") {
-        return (false, "Token is no valid (Bearer)".to_string());
+        return (false, "Token is no valid (Bearer)".to_string(), "".to_string());
     }
 
     // Remove the "Bearer" word from the string
@@ -76,7 +76,7 @@ pub fn validate_token(mut token: &str) -> (bool, String) {
             // Check expiration
             if payload.claims.exp < now as usize{
                 unwhitelist_token(token);
-                return (false, "The token provided is expired".to_string())
+                return (false, "The token provided is expired".to_string(), "".to_string())
             }
 
             let connection = &mut establish_connection();
@@ -86,7 +86,7 @@ pub fn validate_token(mut token: &str) -> (bool, String) {
             // Check if the user doing the request is the database
             match user_found{
                 Ok(user) => (),
-                Err(err) => return (false, err.to_string())
+                Err(err) => return (false, err.to_string(), "".to_string())
             }
 
             // Check if the token is whitelisted
@@ -94,11 +94,11 @@ pub fn validate_token(mut token: &str) -> (bool, String) {
                 Ok(user_id) => {
                     // Check if the user that created the token is equal to the one doing the request
                     if(user_id != String::from(&payload.claims.sub)) {
-                        return (false, "You are not the owner of that token!".to_string())
+                        return (false, "You are not the owner of that token!".to_string(), "".to_string())
                     }
-                    return (true, "Login was succesful".to_string())
+                    return (true, "Login was succesful".to_string(), token.to_string())
                 },
-                Err(err) => return (false, "The token provided is not whitelisted".to_string())
+                Err(err) => return (false, "The token provided is not whitelisted".to_string(), "".to_string())
             }
             
         },
@@ -106,11 +106,11 @@ pub fn validate_token(mut token: &str) -> (bool, String) {
             match err.kind() {
                 ExpiredSignature => {
                     unwhitelist_token(token);
-                    (false, "The token provided is expired".to_string())
+                    (false, "The token provided is expired".to_string(), "".to_string())
                 },
-                InvalidSignature => (false, "The token provided is invalid".to_string()),
-                InvalidAlgorithm => (false, "The token provided is invalid".to_string()),
-                _ => (false, err.to_string())
+                InvalidSignature => (false, "The token provided is invalid".to_string(), "".to_string()),
+                InvalidAlgorithm => (false, "The token provided is invalid".to_string(), "".to_string()),
+                _ => (false, err.to_string(), "".to_string())
             }
         }
     }
