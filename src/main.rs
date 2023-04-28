@@ -1,3 +1,11 @@
+use rocket::{serde::{json::{json, Value}}};
+use routes::auth::{register, login, send_mail, change_password, logout, test_token};
+use rocket_sync_db_pools::database;
+use rocket::fairing::{Fairing, Info, Kind};
+use rocket::http::Header;
+use rocket::{Request, Response};
+use dotenvy::dotenv;
+
 #[macro_use] extern crate rocket;
 
 mod routes;
@@ -7,13 +15,35 @@ mod schema;
 mod utilities;
 mod middlewares;
 
-use rocket::{serde::{json::{json, Value}}};
-use routes::auth::{register, login, send_mail, change_password, logout, test_token};
-use rocket_sync_db_pools::database;
-use dotenvy::dotenv;
-
 #[database("my_db")]
 pub struct Db(diesel::PgConnection);
+pub struct Cors;
+
+#[rocket::async_trait]
+impl Fairing for Cors {
+    fn info(&self) -> Info {
+        Info {
+            name: "Cross-Origin-Resource-Sharing Fairing",
+            kind: Kind::Response,
+        }
+    }
+
+    async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
+        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
+        response.set_header(Header::new(
+            "Access-Control-Allow-Methods",
+            "POST, PATCH, PUT, DELETE, HEAD, OPTIONS, GET",
+        ));
+        response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
+        response.set_header(Header::new("Access-Control-Allow-Credentials", "true"));
+    }
+}
+
+/// Catches all OPTION requests in order to get the CORS related Fairing triggered.
+#[options("/<_..>")]
+fn all_options() {
+    /* Intentionally left empty */
+}
 
 #[catch(404)]
 fn not_found() -> Value {
@@ -36,7 +66,8 @@ fn rocket() -> _ {
     dotenv().ok();
     let rocket = rocket::build();
     rocket
+        .attach(Cors)
         .attach(Db::fairing())
-        .mount("/", routes![register, login, send_mail, change_password, logout, test_token])
+        .mount("/", routes![register, login, send_mail, change_password, logout, all_options, test_token])
         .register("/", catchers![not_found, server_error])
 }

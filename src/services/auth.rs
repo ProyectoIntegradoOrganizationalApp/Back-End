@@ -7,7 +7,6 @@ extern crate bcrypt;
 use bcrypt::{hash, DEFAULT_COST};
 
 use diesel::prelude::*;
-use redis::RedisError;
 use rust_api_rest::establish_connection;
 use rust_api_rest::schema::users::dsl::*;
 
@@ -15,7 +14,6 @@ use lettre::transport::smtp::authentication::Credentials;
 use lettre::{Message, SmtpTransport, Transport};
 
 extern crate redis;
-use redis::Commands;
 
 pub fn register(user_info: &UserInput) -> User {
     use crate::schema::users;
@@ -126,6 +124,6 @@ pub fn change_password(user_info: &ChangePass) -> Result<String, String> {
 pub fn logout(token: &String) -> Result<String, String> {
     match unwhitelist_token(token) {
         Ok(_) => Ok(String::from("Successfully logout")),
-        Err(e) => Err(String::from("Something went wrong"))
+        Err(_e) => Err(String::from("Something went wrong"))
     }
 }
