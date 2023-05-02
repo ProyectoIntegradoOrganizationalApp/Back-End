@@ -37,7 +37,7 @@ pub fn register(user_info: &UserInput) -> User {
 }
 
 #[allow(unused)]
-pub fn login(user_info: &UserLogin) -> Result<String, String> {
+pub fn login(user_info: &UserLogin) -> Result<UserLoginResponse, String> {
     use crate::schema::users::dsl::*;
     println!("{:#?}", user_info );
     
@@ -49,9 +49,8 @@ pub fn login(user_info: &UserLogin) -> Result<String, String> {
         Ok(user) => {
             match create_token(&user.id) {
                 Ok(token) => {
-                    get_whitelist_token("asd");
                     match whitelist_token(token.as_str(), &user.id) {
-                        Ok(r) => Ok(token),
+                        Ok(r) => Ok(UserLoginResponse { id: user.id, full_name: user.name, _token: token, email: user.email }),
                         Err(err) => Err(err.to_string())
                     }
                 },

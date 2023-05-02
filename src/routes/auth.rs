@@ -11,11 +11,7 @@ pub fn register(user_info: Json<UserInput>) -> Json<User> {
 pub fn login(user_info: Json<UserLogin>) -> Result<Json<UserLoginResponse>, Json<GenericError>> {
 
     let result = match services::auth::login(&user_info) {
-        Ok(token) => {
-            let response = UserLoginResponse {
-                email: String::from(&user_info.email),
-                token: token
-            };
+        Ok(response) => {
             Ok(Json(response))
         }
         Err(err) => {

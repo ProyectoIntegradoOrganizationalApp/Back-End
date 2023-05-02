@@ -33,8 +33,10 @@ pub struct UserLogin {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserLoginResponse {
-    pub email: String,
-    pub token: String
+    pub id: String,
+    pub full_name: String,
+    pub _token: String,
+    pub email: String
 }
 
 // LOGIN --------- END
