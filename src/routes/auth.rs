@@ -3,8 +3,17 @@ use crate::models::models::*;
 use crate::services;
 
 #[post("/register", data="<user_info>", format="json")]
-pub fn register(user_info: Json<UserInput>) -> Json<User> {
-    Json(services::auth::register(&user_info))
+pub fn register(user_info: Json<UserInput>) -> Result<Json<User>, Json<GenericError>> {
+    match services::auth::register(&user_info) {
+        Ok(response) => Ok(Json(response)),
+        Err(err) => {
+            let response = GenericError {
+                error: true,
+                message: String::from(err)
+            };
+            Err(Json(response))
+        }
+    }
 }
 
 #[post("/login", data="<user_info>", format="json")]

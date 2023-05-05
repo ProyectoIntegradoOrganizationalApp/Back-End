@@ -15,7 +15,7 @@ use lettre::{Message, SmtpTransport, Transport};
 
 extern crate redis;
 
-pub fn register(user_info: &UserInput) -> User {
+pub fn register(user_info: &UserInput) -> Result<User, String> {
     use crate::schema::users;
     println!("{:#?}", user_info);
     let connection = &mut establish_connection();
@@ -28,12 +28,14 @@ pub fn register(user_info: &UserInput) -> User {
         password: String::from(&hashed_password)
     };
 
-    let created_user: User = diesel::insert_into(users::table)
+    let created_user = diesel::insert_into(users::table)
         .values(&new_user)
-        .get_result::<User>(connection)
-        .expect("Error while creating new user");
+        .get_result::<User>(connection);
 
-    created_user
+    match created_user {
+        Ok(user) => Ok(user),
+        Err(e) => Err(e.to_string())
+    }
 }
 
 #[allow(unused)]
