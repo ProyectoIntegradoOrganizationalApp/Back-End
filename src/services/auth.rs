@@ -89,7 +89,7 @@ pub fn send_mail(user_mail: &UserMail) -> ResponseMessage {
         message = "This email doesn't exist.";
     } else {
         let mail_to_send = Message::builder() 
-            .from("Sender <teamerbusiness0@gmail.com>".parse().unwrap()) 
+            .from("Sender <teamerspprt@gmail.com>".parse().unwrap()) 
             .to("Hei <sergioparejo671@gmail.com>".parse().unwrap()) 
             .subject("Sending email with Rust") 
             .body(String::from("This is my first email")) 
