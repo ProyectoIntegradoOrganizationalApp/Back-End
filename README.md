@@ -1,7 +1,7 @@
 ## BACK-END  / API REST RUST-ROCKET-DIESEL-POSTGRESS 
 
 #### DISEÑO DE LA BASE DE DATOS  
-![Proyecto Integrado DB 11_04_2023](https://github.com/ProyectoIntegradoOrganizationalApp/Back-End/blob/main/Proyecto%20Integrado%20DB%2011_04_2023.jpg)
+![Proyecto Integrado DB 11_04_2023](https://github.com/ProyectoIntegradoOrganizationalApp/Back-End/blob/main/Version%202%20Proyecto%20Integrado%20DB%2024_04_2023.jpg)
 Una breve explicación sobre el diseño de la base de datos y las relaciones entre tablas.  
 
 #### USER    
@@ -16,6 +16,7 @@ Es el núcleo de la BBDD. De esta tabla dependen muchas otras que se verán más
 |                | `phone`  |
 |                | `created_at`  | 
 |                | `updated_at`  |
+|                | `level`  |
 
 La tabla **User** se relaciona con **Project**. En esta última, la **FK** *idUser*
 se refiere al usuario que ha creado el proyecto. Mientras que por otro lado en la tabla **Project_user**, la **FK** *idUser* se refiere a cada uno de los usuarios pertenecientes al proyecto, incluido el creador. De esta manera se mantiene identificado al fundador para cualquier posible función posterior que pueda tener.
@@ -26,6 +27,7 @@ se refiere al usuario que ha creado el proyecto. Mientras que por otro lado en l
 | **PK**         | `id`     |
 | **FK**     | `idUser`  |
 |      | `name`  |
+|      | `configuration (json)`  |
 
 #### PROJECT_USER
 | Type           | Field    |
@@ -58,10 +60,10 @@ En todo sitio web los usuarios también pueden dar su opinión y comentar. Es po
 | **PK**         | `id`     |
 | **FK**     | `idUser`  |
 |     | `title`  |
-|    | `message`  |
+|    | `content`  |
 |   | `rating`  |
 
-Para terminar con las funcionalidades del usuario, hay que mencionar la tabla **User_invitation**, que se encarga de la invitación de un usuario a otro a un proyecto determinado. Es por ello que posee el id tanto del anfitrión como del invitado, así como del proyecto.
+Siguiendo con las funcionalidades del usuario, hay que mencionar la tabla **User_invitation**, que se encarga de la invitación de un usuario a otro a un proyecto determinado. Es por ello que posee el id tanto del anfitrión como del invitado, así como del proyecto.
 
 #### USER_INVITATION
 | Type           | Field    |
@@ -71,6 +73,51 @@ Para terminar con las funcionalidades del usuario, hay que mencionar la tabla **
 | **PF3**     | `idUser`  |
 |     | `title`  |
 |    | `message`  |
+
+Los logros también son parte de la aplicación, que irá consiguiendo el usuario a medida que vaya cumpliendo los objetivos necesarios para alcanzar cada uno
+de ellos. De ahí nacen las tablas **Achievement** y **Achievement_user**. Puesto que un mismo logro puede pertenecer a muchos usuarios y un usuario puede
+tener muchos logros, necesitamos una tabla intermedia que recoja tanto las **PK** *idAchievement* e *idUser* además de registrar el progreso de ese usuario 
+en ese logro.
+
+#### ACHIEVEMENT
+| Type           | Field    |
+| :--------      | :------- |
+| **PK**         | `id`     |
+|      | `title`  |
+|      | `description`  |
+|      | `icon`  |
+|      | `configuration (json)`  |
+
+#### ACHIEVEMENT_USER
+| Type           | Field    |
+| :--------      | :------- |
+| **PF1**         | `idAchievement` |
+| **PF2**     | `idUser`  |
+|      | `progress`  |
+|      | `completed`  |
+
+El usuario también cuenta con un apartado de notificaciones. Para almacenarlos existe la tabla **Notification**.
+
+#### NOTIFICATION
+| Type           | Field    |
+| :--------      | :------- |
+| **PK**         | `id`     |
+| **FK**         | `idUser`     |
+|      | `title`  |
+|      | `content`  |
+|      | `state`  |
+
+Finalizada la parte del usuario, pasamos a la del proyecto. Cada proyecto debe de tener unos objetivos a cumplir por los miembros del mismo. La tabla **Goal**
+es la encargada de almacenar estos objetivos.
+
+#### GOAL
+| Type           | Field    |
+| :--------      | :------- |
+| **PK**         | `id`     |
+| **FK**         | `idProject`     |
+|      | `name`  |
+|      | `description`  |
+|      | `completed`  |
 
 Todo proyecto debería de tener una copia de seguridad. De ahí nace la tabla **Recent_change**, la cual almacena una copia del los cambios más recientes para que en caso de fallo no se pierdan los datos. La **PK** en este caso se trata de un campo de tipo fecha. Al tomar como unidad de tiempo hasta las milésimas, no es posible que se realicen dos cambios simultáneamente en el mismo proyecto y en el mismo momento. Es por ello que esta tabla no tiene id. El campo backup sería de tipo **BLOB** o **JSON** (aún por determinar).
 
@@ -82,7 +129,7 @@ Todo proyecto debería de tener una copia de seguridad. De ahí nace la tabla **
 |     | `backup`  |
 
 Cada proyecto puede tener múltiples aplicaciones, que pueden ser de los siguientes tipos: **Docs**, **Kanban** y **Timeline**.
-En estas tablas se encuentran tanto campos comunes como específicos. Es el claro ejemplo de especificación. (Los campos tanto de la app base como de las especificaciones aún están por definir, hay que comentarlos en la reunión).
+En estas tablas se encuentran tanto campos comunes como específicos. Es el claro ejemplo de especificación.
 
 #### APP, DOCS, KANBAN, TIMELINE
 | Type           | Field    |
@@ -90,3 +137,30 @@ En estas tablas se encuentran tanto campos comunes como específicos. Es el clar
 | **PK**         | `id`     |
 | **PF**     | `idProject`  |
 |     | `...`  |
+
+Las aplicaciones de tipo **Kanban** pueden tener múltiples tableros (**Board**). Estos a su vez pueden tener varias columnas (**Column**) en las que dividir las
+tareas a realizar (**Task**). Esto traspasado a tablas quedaría así:
+
+#### BOARD
+| Type           | Field    |
+| :--------      | :------- |
+| **PK**         | `id`     |
+| **FK**         | `idApp`     |
+|      | `title`  |
+
+#### COLUMN
+| Type           | Field    |
+| :--------      | :------- |
+| **PK**         | `id`     |
+| **FK**         | `idBoard`     |
+|      | `title`  |
+
+#### TASK
+| Type           | Field    |
+| :--------      | :------- |
+| **PK**         | `id`     |
+| **FK**         | `idColumn`     |
+|      | `title`  |
+|      | `description`  |
+|      | `github`  |
+|      | `configuration (json)`  |
