@@ -1,9 +1,12 @@
+extern crate redis;
+extern crate bcrypt;
+
 use std::env;
 use crate::models::models::*;
 use crate::utilities::jwt::*;
 use crate::utilities::redis::*;
 
-extern crate bcrypt;
+use bcrypt::verify;
 use bcrypt::{hash, DEFAULT_COST};
 
 use diesel::prelude::*;
@@ -12,8 +15,6 @@ use rust_api_rest::schema::users::dsl::*;
 
 use lettre::transport::smtp::authentication::Credentials; 
 use lettre::{Message, SmtpTransport, Transport};
-
-extern crate redis;
 
 pub fn register(user_info: &UserInput) -> Result<User, String> {
     use crate::schema::users;
@@ -49,14 +50,27 @@ pub fn login(user_info: &UserLogin) -> Result<UserLoginResponse, String> {
 
     match user_found {
         Ok(user) => {
-            match create_token(&user.id) {
-                Ok(token) => {
-                    match whitelist_token(token.as_str(), &user.id) {
-                        Ok(r) => Ok(UserLoginResponse { id: user.id, full_name: user.name, _token: token, email: user.email }),
-                        Err(err) => Err(err.to_string())
+            println!("{:#?}", user);
+            let verified_password = verify(&user_info.password, &user.password);
+            match verified_password {
+                Ok(correct_password) => {
+                    if (correct_password) {
+                        match create_token(&user.id) {
+                            Ok(token) => {
+                                match whitelist_token(token.as_str(), &user.id) {
+                                    Ok(r) => Ok(UserLoginResponse { id: user.id, full_name: user.name, _token: token, email: user.email }),
+                                    Err(err) => Err(err.to_string())
+                                }
+                            },
+                            Err(err) => Err(err.to_string())
+                        }
+                    } else {
+                        Err("Invalid credentials".to_string())
                     }
                 },
-                Err(err) => Err(err.to_string())
+                Err(err) => {
+                    Err(err.to_string())
+                }
             }
         },
         Err(err) => Err(err.to_string())
