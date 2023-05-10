@@ -23,8 +23,8 @@ diesel::table! {
     achievement_user (idachievement, iduser) {
         idachievement -> Varchar,
         iduser -> Varchar,
-        progress -> Numeric,
-        completed -> Int2,
+        progress -> Int2,
+        completed -> Bool,
     }
 }
 
@@ -175,6 +175,7 @@ diesel::table! {
 }
 
 diesel::joinable!(achievement_user -> achievement (idachievement));
+diesel::joinable!(achievement_user -> users (iduser));
 diesel::joinable!(columna -> board (idboard));
 diesel::joinable!(project_user -> role (idrole));
 diesel::joinable!(task -> columna (idcolumn));

@@ -7,47 +7,21 @@ use crate::utilities::redis::*;
 
 use diesel::prelude::*;
 use rust_api_rest::establish_connection;
-use rust_api_rest::schema::users::dsl::*;
+use crate::schema::{users, achievement, achievement_user};
+// use rust_api_rest::schema::achievement::dsl::*;
+// use rust_api_rest::schema::achievement_user::dsl::*;
 
-// pub fn profile(id_string: &String) -> Result<User, String> {
-//     let connection = &mut establish_connection();
-//     let user_found = users.filter(id.eq(&id_string))
-//     .first::<User>(connection);
+pub fn profile(id_string: &String) -> Result<(User, UserAchievement), String> {
+    let connection = &mut establish_connection();
+    let data = users::table
+    .inner_join(achievement_user::table)
+    .filter(users::columns::id.eq(&id_string))
+    .first::<(User, UserAchievement)>(connection);
 
-//     match user_found {
-//         Ok(user) => {
-            
-//         },
-//         Err(err) => Err(err.to_string())
-//     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// }
-
-// Siguiente funcion
-
+    match data {
+        Ok(result) => {
+            Ok(result)
+        },
+        Err(err) => Err(err.to_string())
+    }
+}

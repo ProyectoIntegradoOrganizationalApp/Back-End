@@ -4,14 +4,15 @@ use rocket::request::*;
 use rocket::http::Status;
 
 #[rocket::async_trait]
-impl<'r> FromRequest<'r> for TokenValidantion {
+impl<'r> FromRequest<'r> for TokenValidation {
     type Error = GenericError;
 
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+        let id = request.routed_segment(1);
         match request.headers().get_one("Authorization") {
             Some(token) => {
                 // Handle all the token validation
-                let auth = validate_token(token);
+                let auth = validate_token(token, id);
 
                 print!("{:#?}", auth);
 
@@ -23,8 +24,8 @@ impl<'r> FromRequest<'r> for TokenValidantion {
                         }
                     ));
                 }
-                // return authenticated user
-                Outcome::Success(TokenValidantion {success: true, message: auth.1, token: auth.2} )
+                // return validated token
+                Outcome::Success(TokenValidation {success: true, message: auth.1, token: auth.2, owner: auth.3} )
             }
             None => Outcome::Failure((Status::BadRequest, 
                         GenericError {

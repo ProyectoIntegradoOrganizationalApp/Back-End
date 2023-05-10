@@ -1,9 +1,8 @@
+use diesel::sql_types::{SmallInt, Integer};
 use diesel::{Insertable, Queryable};
+use diesel::pg::data_types::PgNumeric;
 use rocket::serde::{Serialize, Deserialize};
-use crate::schema::users;
-use crate::schema::achievement;
-use crate::schema::achievement_user;
-use bigdecimal::BigDecimal;
+use crate::schema::*;
 
 // REGISTER --------- START
 
@@ -54,10 +53,11 @@ pub struct GenericError {
 // MIDDLEWARES STRUCTS --------- START
 
 #[derive(Debug, Serialize)]
-pub struct TokenValidantion {
+pub struct TokenValidation {
    pub success: bool,
    pub message: String,
-   pub token: String
+   pub token: String,
+   pub owner: bool
 }
 
 // MIDDLEWARES STRUCTS --------- END
@@ -104,8 +104,8 @@ pub struct Achievement {
 pub struct UserAchievement {
     idachievement: String,
     iduser: String,
-    progress: BigDecimal,
-    completed: i16,
+    progress: i16,
+    completed: bool,
 }
 
 // ACHIEVEMENTS --------- END
@@ -124,3 +124,4 @@ pub struct UserAchievementsResponse {
 }
 
 // ACHIEVEMENTS RESPONSES --------- END
+

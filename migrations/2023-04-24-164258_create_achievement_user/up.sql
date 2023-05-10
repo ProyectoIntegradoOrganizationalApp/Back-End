@@ -2,8 +2,8 @@
 CREATE TABLE achievement_user (
     idAchievement VARCHAR NOT NULL,
     idUser VARCHAR NOT NULL,
-    progress NUMERIC(5, 2) NOT NULL,
-    completed SMALLINT NOT NULL,
+    progress SMALLINT NOT NULL,
+    completed BOOLEAN NOT NULL,
     PRIMARY KEY (idAchievement, idUser),
     CONSTRAINT fk_user
         FOREIGN KEY(idUser)

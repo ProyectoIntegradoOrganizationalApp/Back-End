@@ -36,7 +36,7 @@ pub fn login(user_info: Json<UserLogin>) -> Result<Json<UserLoginResponse>, Json
 }
 
 #[get("/test_token", format="json")]
-pub fn test_token(token: Result<TokenValidantion, GenericError>) -> Result<Json<TokenValidantion>, Json<GenericError>> {
+pub fn test_token(token: Result<TokenValidation, GenericError>) -> Result<Json<TokenValidation>, Json<GenericError>> {
 
     match token {
         Ok(validation) => {
@@ -75,7 +75,7 @@ pub fn change_password(user_info: Json<ChangePass>) -> Result<Json<ResponseMessa
 }
 
 #[post("/logout", format="json")]
-pub fn logout(token: Result<TokenValidantion, GenericError>) -> Result<Json<String>, Json<GenericError>> {
+pub fn logout(token: Result<TokenValidation, GenericError>) -> Result<Json<String>, Json<GenericError>> {
     match token {
         Ok(validation) => {
             match services::auth::logout(&validation.token) {
