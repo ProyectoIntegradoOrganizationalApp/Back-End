@@ -1,6 +1,9 @@
 use diesel::{Insertable, Queryable};
 use rocket::serde::{Serialize, Deserialize};
 use crate::schema::users;
+use crate::schema::achievement;
+use crate::schema::achievement_user;
+use bigdecimal::BigDecimal;
 
 // REGISTER --------- START
 
@@ -84,3 +87,40 @@ pub struct ChangePass {
     pub confirm_pass: String
 }
 // RECOVERY PASSWORD --------- END
+
+
+// ACHIEVEMENTS --------- START
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable)]
+#[diesel(table_name = achievement)]
+pub struct Achievement {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub icon: String
+}
+
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable)]
+#[diesel(table_name = achievement_user)]
+pub struct UserAchievement {
+    idachievement: String,
+    iduser: String,
+    progress: BigDecimal,
+    completed: i16,
+}
+
+// ACHIEVEMENTS --------- END
+
+// ACHIEVEMENTS RESPONSES --------- START
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AllAchievementsResponse {
+    pub total: usize,
+    pub achievements: Vec<Achievement>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserAchievementsResponse {
+    pub total: usize,
+    pub achievements: Vec<UserAchievement>
+}
+
+// ACHIEVEMENTS RESPONSES --------- END

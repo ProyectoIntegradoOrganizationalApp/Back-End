@@ -16,7 +16,6 @@ diesel::table! {
         title -> Varchar,
         description -> Varchar,
         icon -> Varchar,
-        configuration -> Json,
     }
 }
 
