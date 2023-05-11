@@ -1,12 +1,10 @@
-use diesel::sql_types::{SmallInt, Integer};
-use diesel::{Insertable, Queryable};
-use diesel::pg::data_types::PgNumeric;
+use diesel::{Insertable, Queryable, Selectable};
 use rocket::serde::{Serialize, Deserialize};
 use crate::schema::*;
 
 // REGISTER --------- START
 
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable)]
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable)]
 #[diesel(table_name = users)]
 pub struct User {
     pub id: String,
@@ -90,7 +88,7 @@ pub struct ChangePass {
 
 
 // ACHIEVEMENTS --------- START
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable)]
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable)]
 #[diesel(table_name = achievement)]
 pub struct Achievement {
     pub id: String,
@@ -99,7 +97,7 @@ pub struct Achievement {
     pub icon: String
 }
 
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable)]
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable)]
 #[diesel(table_name = achievement_user)]
 pub struct UserAchievement {
     idachievement: String,
@@ -125,3 +123,12 @@ pub struct UserAchievementsResponse {
 
 // ACHIEVEMENTS RESPONSES --------- END
 
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable)]
+#[diesel(table_name = notification)]
+pub struct Notification {
+    pub id: String,
+    pub iduser: String,
+    pub title: String,
+    pub content: String,
+    pub state: bool,
+}

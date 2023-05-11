@@ -3,42 +3,6 @@ use crate::models::models::*;
 use crate::services;
 use crate::utilities::achievements::*;
 
-// #[get("/profile/<id>")]
-// pub fn profile(id: String) -> Result<Json<User>, Json<GenericError>> {
-//     Json(id)
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Siguiente endpoint
 #[get("/achievements")]
 pub fn achievements(token: Result<TokenValidation, GenericError>) -> Result<Json<AllAchievementsResponse>, Json<GenericError>> {
     match token {
@@ -81,14 +45,19 @@ pub fn user_achievements(token: Result<TokenValidation, GenericError>, id: Strin
     }
 }
 #[get("/profile/<id>")]
-pub fn profile(id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<(User, UserAchievement)>, Json<String>> {
+pub fn profile(id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<Vec<(User, UserAchievement, Achievement, Notification)>>, Json<GenericError>> {
     match token {
         Ok(_result) => {
             match services::user::profile(&id) {
                 Ok(result) => Ok(Json(result)),
-                Err(_err) => Err(Json("Sergio ".to_string()))
+                Err(err) => {
+                    Err(Json(GenericError {
+                        error: true,
+                        message: err
+                    }))
+                }
             }
         },
-        Err(_err) => Err(Json("".to_string()))
+        Err(err) => Err(Json(err))
     }
 }

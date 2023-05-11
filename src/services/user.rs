@@ -1,22 +1,19 @@
 extern crate redis;
-
-use std::env;
-use crate::models::models::*;
-use crate::utilities::jwt::*;
-use crate::utilities::redis::*;
-
-use diesel::prelude::*;
 use rust_api_rest::establish_connection;
-use crate::schema::{users, achievement, achievement_user};
-// use rust_api_rest::schema::achievement::dsl::*;
-// use rust_api_rest::schema::achievement_user::dsl::*;
+use diesel::prelude::*;
+use crate::models::models::*;
+use crate::schema::{users, achievement, achievement_user, notification};
 
-pub fn profile(id_string: &String) -> Result<(User, UserAchievement), String> {
+pub fn profile(id_string: &String) -> Result<Vec<(User, UserAchievement, Achievement, Notification)>, String> {
     let connection = &mut establish_connection();
     let data = users::table
-    .inner_join(achievement_user::table)
-    .filter(users::columns::id.eq(&id_string))
-    .first::<(User, UserAchievement)>(connection);
+    .inner_join(achievement_user::table.on(achievement_user::iduser.eq(users::id)))
+    .inner_join(achievement::table.on(achievement::id.eq(achievement_user::idachievement)))
+    .inner_join(notification::table.on(notification::iduser.eq(users::id)))
+    // .group_by(users::id)
+    .select((User::as_select(), UserAchievement::as_select(), Achievement::as_select(), Notification::as_select()))
+    .filter(users::id.eq(&id_string))
+    .load::<(User, UserAchievement, Achievement, Notification)>(connection);
 
     match data {
         Ok(result) => {

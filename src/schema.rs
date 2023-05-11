@@ -4,10 +4,6 @@ pub mod sql_types {
     #[derive(diesel::sql_types::SqlType)]
     #[diesel(postgres_type(name = "valid_roles"))]
     pub struct ValidRoles;
-
-    #[derive(diesel::sql_types::SqlType)]
-    #[diesel(postgres_type(name = "valid_states"))]
-    pub struct ValidStates;
 }
 
 diesel::table! {
@@ -76,15 +72,12 @@ diesel::table! {
 }
 
 diesel::table! {
-    use diesel::sql_types::*;
-    use super::sql_types::ValidStates;
-
     notification (id) {
         id -> Varchar,
         iduser -> Varchar,
         title -> Varchar,
         content -> Varchar,
-        state -> Nullable<ValidStates>,
+        state -> Bool,
     }
 }
 
@@ -175,7 +168,6 @@ diesel::table! {
 }
 
 diesel::joinable!(achievement_user -> achievement (idachievement));
-diesel::joinable!(achievement_user -> users (iduser));
 diesel::joinable!(columna -> board (idboard));
 diesel::joinable!(project_user -> role (idrole));
 diesel::joinable!(task -> columna (idcolumn));
