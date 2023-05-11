@@ -1,11 +1,12 @@
-use diesel::{Insertable, Queryable, Selectable};
+use diesel::{Insertable, Queryable, Selectable, Associations, Identifiable};
 use rocket::serde::{Serialize, Deserialize};
 use crate::schema::*;
 
 // REGISTER --------- START
 
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable)]
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Identifiable, PartialEq)]
 #[diesel(table_name = users)]
+#[diesel(primary_key(id))]
 pub struct User {
     pub id: String,
     pub name: String,
@@ -88,8 +89,9 @@ pub struct ChangePass {
 
 
 // ACHIEVEMENTS --------- START
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable)]
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Identifiable, PartialEq)]
 #[diesel(table_name = achievement)]
+#[diesel(primary_key(id))]
 pub struct Achievement {
     pub id: String,
     pub title: String,
@@ -97,13 +99,16 @@ pub struct Achievement {
     pub icon: String
 }
 
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable)]
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
+#[diesel(belongs_to(User, foreign_key = iduser))]
+#[diesel(belongs_to(Achievement, foreign_key = idachievement))]
+#[diesel(primary_key(idachievement, iduser))]
 #[diesel(table_name = achievement_user)]
 pub struct UserAchievement {
-    idachievement: String,
-    iduser: String,
-    progress: i16,
-    completed: bool,
+    pub idachievement: String,
+    pub iduser: String,
+    pub progress: i16,
+    pub completed: bool,
 }
 
 // ACHIEVEMENTS --------- END
@@ -119,6 +124,12 @@ pub struct AllAchievementsResponse {
 pub struct UserAchievementsResponse {
     pub total: usize,
     pub achievements: Vec<UserAchievement>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserAchievementsJson {
+    pub user: User,
+    pub achievements: Vec<Achievement>
 }
 
 // ACHIEVEMENTS RESPONSES --------- END
