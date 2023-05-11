@@ -47,9 +47,12 @@ pub fn user_achievements(token: Result<TokenValidation, GenericError>, id: Strin
 #[get("/profile/<id>")]
 pub fn profile(id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<UserProfile>, Json<GenericError>> {
     match token {
-        Ok(_result) => {
+        Ok(token_data) => {
             match services::user::profile(&id) {
-                Ok(result) => Ok(Json(result)),
+                Ok(mut result) => {
+                    result.owner = token_data.owner;
+                    Ok(Json(result))
+                },
                 Err(err) => {
                     Err(Json(GenericError {
                         error: true,

@@ -38,7 +38,8 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
                                         user,
                                         achievements,
                                         projects,
-                                        notifications
+                                        notifications,
+                                        owner: false
                                     };
                                     Ok(user_profile)
                                 },

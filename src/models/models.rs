@@ -166,5 +166,6 @@ pub struct UserProfile {
     pub user: User,
     pub achievements: Vec<(Achievement, UserAchievement)>,
     pub projects: Vec<Project>,
-    pub notifications: Vec<Notification>
+    pub notifications: Vec<Notification>,
+    pub owner : bool
 }
