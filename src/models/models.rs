@@ -111,6 +111,27 @@ pub struct UserAchievement {
     pub completed: bool,
 }
 
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
+#[diesel(belongs_to(User, foreign_key = iduser))]
+#[diesel(primary_key(id))]
+#[diesel(table_name = projects)]
+pub struct Project {
+    pub id: String,
+    pub iduser: String,
+    pub name: String
+}
+
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
+#[diesel(belongs_to(User, foreign_key = iduser))]
+#[diesel(belongs_to(Project, foreign_key = id))]
+#[diesel(primary_key(id, iduser))]
+#[diesel(table_name = project_user)]
+pub struct UserProject {
+    pub id: String,
+    pub iduser: String,
+    pub idrole: String
+}
+
 // ACHIEVEMENTS --------- END
 
 // ACHIEVEMENTS RESPONSES --------- START
@@ -126,15 +147,11 @@ pub struct UserAchievementsResponse {
     pub achievements: Vec<UserAchievement>
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct UserAchievementsJson {
-    pub user: User,
-    pub achievements: Vec<Achievement>
-}
-
 // ACHIEVEMENTS RESPONSES --------- END
 
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable)]
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
+#[diesel(belongs_to(User, foreign_key = iduser))]
+#[diesel(primary_key(id))]
 #[diesel(table_name = notification)]
 pub struct Notification {
     pub id: String,
@@ -142,4 +159,12 @@ pub struct Notification {
     pub title: String,
     pub content: String,
     pub state: bool,
+}
+// PROFILE ENDPOINT STRUCT
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserProfile {
+    pub user: User,
+    pub achievements: Vec<(Achievement, UserAchievement)>,
+    pub projects: Vec<Project>,
+    pub notifications: Vec<Notification>
 }
