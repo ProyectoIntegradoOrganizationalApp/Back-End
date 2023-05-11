@@ -3,7 +3,7 @@ use rust_api_rest::establish_connection;
 use diesel::prelude::*;
 use diesel::BelongingToDsl;
 use crate::models::models::*;
-use crate::schema::{users, achievement, achievement_user, notification, projects, project_user};
+use crate::schema::{users, achievement, projects, project_user};
 
 pub fn profile(id_string: &String) -> Result<UserProfile, String>{
     let connection = &mut establish_connection();
