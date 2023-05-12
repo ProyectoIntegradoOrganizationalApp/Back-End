@@ -1,5 +1,30 @@
 ## BACK-END  / API REST RUST-ROCKET-DIESEL-POSTGRESS 
 
+#### GUÍA DE INICIO RÁPIDO
+##### Requerimientos:
+- [Docker](https://www.docker.com/)
+- [Compilador de rust](https://www.rust-lang.org/tools/install)
+- diesel_cli para postgreSQL
+
+##### Guía:
+1. Una vez clonado el repositorio y teniendo los requerimientos, ponemos a funcionar los dockers
+```
+  docker compose up
+```
+
+2. Ejecutamos las migraciones para crear las tablas
+```
+  diesel migration setup // Según nuestra experiencia en Windows es necesario en linux no
+```
+```
+  diesel migration run
+```
+
+3. Compilamos y ejecutamos el programa
+```
+  cargo run
+```
+
 #### DISEÑO DE LA BASE DE DATOS  
 ![Proyecto Integrado DB 11_04_2023](https://github.com/ProyectoIntegradoOrganizationalApp/Back-End/blob/main/Version%202%20Proyecto%20Integrado%20DB%2024_04_2023.jpg)
 Una breve explicación sobre el diseño de la base de datos y las relaciones entre tablas.  
