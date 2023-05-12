@@ -1,12 +1,12 @@
 # BACK-END  / API REST RUST-ROCKET-DIESEL-POSTGRESS 
 
 ## GUÍA DE INICIO RÁPIDO
-### Requerimientos:
+#### Requerimientos:
 - [Docker](https://www.docker.com/)
 - [Compilador de rust](https://www.rust-lang.org/tools/install)
 - diesel_cli para postgreSQL
 
-### Guía:
+#### Guía:
 1. Una vez clonado el repositorio y teniendo los requerimientos, ponemos a funcionar los dockers
 ```
   docker compose up
@@ -190,4 +190,167 @@ tareas a realizar (**Task**). Esto traspasado a tablas quedaría así:
 |      | `github`  |
 |      | `configuration (json)`  |
 
-#### RUTAS DE LA API  
+
+## ESTRUCTURAS json
+```
+GenericError {
+    error: bool,
+    message: String
+}
+```
+```
+UserInput {
+    first_name: String,
+    last_name: String,
+    email: String,
+    password: String
+}
+```
+```
+UserLogin {
+    email: String,
+    password: String
+}
+```
+```
+UserLoginResponse {
+    id: String,
+    full_name: String,
+    _token: String,
+    email: String
+}
+```
+```
+ResponseMessage {
+    message: String
+}
+```
+```
+ChangePass {
+    mail: String,
+    pass: String,
+    confirm_pass: String
+}
+```
+```
+ Achievement {
+    id: String,
+    title: String,
+    description: String,
+    icon: String
+}
+```
+```
+AllAchievementsResponse {
+    total: usize,
+    achievements: Vec<Achievement> // Array de Achievement
+}
+```
+```
+UserAchievement {
+    idachievement: String,
+    iduser: String,
+    progress: i16,
+    completed: bool,
+}
+```
+```
+pub struct UserAchievementsResponse {
+    pub total: usize,
+    pub achievements: Vec<UserAchievement> // Array de UserAchievement
+}
+```
+## RUTAS DE LA API
+
+#### Registrar a un usuario
+
+```http
+  POST /register
+```
+| Requires token | Returns     | 
+| :-------       | :-------    | 
+| No             | `User` o `GenericError`|
+
+| Parameter   | Type          |
+| :--------   | :-------      |
+| `user_info` | `UserInput`   |
+
+ 
+
+#### Iniciar la sesión de un usuario
+
+```http
+  POST /login
+```
+| Requires token | Returns     |
+| :-------       | :-------    |
+| No             | `UserLoginResponse` o `GenericError`| 
+
+| Parameter   | Type          |
+| :--------   | :-------      |
+| `user_info` | `UserLogin`   |
+
+#### Enviar un correo a un usuario
+
+```http
+  POST /send_mail
+```
+| Requires token | Returns     | 
+| :-------       | :-------    | 
+| No             | `ResponseMessage` o `GenericError`
+
+| Parameter   | Type          |
+| :--------   | :-------      |
+| `user_mail` | `String`   |
+
+#### Cambia la conraseña del usuario
+
+```http
+  POST /change_password
+```
+| Requires token | Returns     |
+| :-------       | :-------    |
+| No             | `ResponseMessage` o `GenericError`|
+
+| Parameter   | Type          | 
+| :--------   | :-------      | 
+| `user_info` | `ChangePass`   | 
+
+#### Desloguear al usuario
+
+```http
+  POST /logout
+```
+| Requires token |
+| :-------       |
+| Yes            |
+
+#### Devuelve todos los achievements de la base de datos
+
+```http
+  POST /achievements
+```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `AllAchievementsResponse` o `GenericError` |
+
+
+#### Devuelve todos los achievements de un usuario
+```http
+  POST /profile/<id>/achievements
+```
+| Requires token | Returns     | 
+| :-------       | :-------    | 
+| Yes            | `UserAchievementsResponse` o `GenericError` |
+
+#### Devuelve todos los achievements de un usuario
+```http
+  POST /profile/<id>
+```
+| Requires token | Returns     | 
+| :-------       | :-------    | 
+| Yes            | `UserProfile` o `GenericError` |
+
+| Parameter   | Type          | 
+| :--------   | :-------      | 
+| `id` | `String`   | 
