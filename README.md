@@ -328,7 +328,7 @@ pub struct UserAchievementsResponse {
 #### Devuelve todos los achievements de la base de datos
 
 ```http
-  POST /achievements
+  GET /achievements
 ```
 | Requires token | Returns       |
 | :-------       | :---------    |
@@ -337,7 +337,7 @@ pub struct UserAchievementsResponse {
 
 #### Devuelve todos los achievements de un usuario
 ```http
-  POST /profile/<id>/achievements
+  GET /profile/<id>/achievements
 ```
 | Requires token | Returns     | 
 | :-------       | :-------    | 
@@ -345,7 +345,7 @@ pub struct UserAchievementsResponse {
 
 #### Devuelve todos los achievements de un usuario
 ```http
-  POST /profile/<id>
+  GET /profile/<id>
 ```
 | Requires token | Returns     | 
 | :-------       | :-------    | 
