@@ -9,17 +9,33 @@ use crate::schema::*;
 #[diesel(primary_key(id))]
 pub struct User {
     pub id: String,
-    pub name: String,
     pub email: String,
-    pub password: String
+    pub password: String,
+    pub name: String,
+    pub lastname: String,
+    pub phone: String,
+    pub created_at: String,
+    pub updated_at: String,
+    pub level: i16,
 }
+
+// #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
+// #[diesel(belongs_to(User, foreign_key = iduser))]
+// // #[diesel(belongs_to(User, foreign_key = idfriend))]
+// #[diesel(primary_key(idfriend, iduser))]
+// #[diesel(table_name = user_friend)]
+// pub struct UserFriend {
+//     pub iduser: String,
+//     pub idfriend: String
+// }
 
 #[derive(Deserialize, Debug)]
 pub struct UserInput {
     pub first_name: String,
     pub last_name: String,
+    pub phone: String,
     pub email: String,
-    pub password: String
+    pub password: String,
 }
 
 // REGISTER --------- END
@@ -160,12 +176,40 @@ pub struct Notification {
     pub content: String,
     pub state: bool,
 }
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
+#[diesel(belongs_to(User, foreign_key = iduser))]
+#[diesel(belongs_to(Project, foreign_key = idproject))]
+#[diesel(primary_key(iduser, idproject, date))]
+#[diesel(table_name = project_user_activity)]
+pub struct ProjectUserActivity {
+    pub iduser: String,
+    pub idproject: String,
+    pub date: String,
+    pub commits: i16
+}
 // PROFILE ENDPOINT STRUCT
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserProfile {
-    pub user: User,
-    pub achievements: Vec<(Achievement, UserAchievement)>,
+    pub user: UserInfoResponse,
+    pub achievements: Vec<UserAchievementsProfile>,
     pub projects: Vec<Project>,
     pub notifications: Vec<Notification>,
+    pub activity: Vec<ProjectUserActivity>,
     pub owner : bool
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserAchievementsProfile {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub icon: String,
+    pub progress: i16,
+    pub completed: bool
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserInfoResponse {
+    pub id: String,
+    pub name: String,
+    pub email: String,
+    pub level: i16
 }

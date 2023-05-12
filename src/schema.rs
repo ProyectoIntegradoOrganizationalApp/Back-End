@@ -90,6 +90,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    project_user_activity (iduser, idproject, date) {
+        iduser -> Varchar,
+        idproject -> Varchar,
+        date -> Varchar,
+        commits -> Int2,
+    }
+}
+
+diesel::table! {
     projects (id) {
         id -> Varchar,
         iduser -> Varchar,
@@ -161,9 +170,14 @@ diesel::table! {
 diesel::table! {
     users (id) {
         id -> Varchar,
-        name -> Varchar,
         email -> Varchar,
         password -> Varchar,
+        name -> Varchar,
+        lastname -> Varchar,
+        phone -> Varchar,
+        created_at -> Varchar,
+        updated_at -> Varchar,
+        level -> Int2,
     }
 }
 
@@ -185,6 +199,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     kanban,
     notification,
     project_user,
+    project_user_activity,
     projects,
     recent_change,
     review,

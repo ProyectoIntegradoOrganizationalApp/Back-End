@@ -5,6 +5,7 @@ use std::env;
 use crate::models::models::*;
 use crate::utilities::jwt::*;
 use crate::utilities::redis::*;
+use crate::schema::users;
 
 use bcrypt::verify;
 use bcrypt::{hash, DEFAULT_COST};
@@ -15,18 +16,23 @@ use rust_api_rest::schema::users::dsl::*;
 
 use lettre::transport::smtp::authentication::Credentials; 
 use lettre::{Message, SmtpTransport, Transport};
+use chrono::Utc;
 
 pub fn register(user_info: &UserInput) -> Result<User, String> {
-    use crate::schema::users;
-    println!("{:#?}", user_info);
+    let now: String = (Utc::now()).to_string();
     let connection = &mut establish_connection();
     let user_id = uuid::Uuid::new_v4().to_string();
     let hashed_password = hash(&user_info.password, DEFAULT_COST).unwrap();
     let new_user = User {
         id: user_id,
-        name: String::from(&user_info.first_name),
         email: String::from(&user_info.email),
-        password: String::from(&hashed_password)
+        password: String::from(&hashed_password),
+        name: String::from(&user_info.first_name),
+        lastname: String::from(&user_info.last_name),
+        phone: String::from(&user_info.phone),
+        created_at: now.clone(),
+        updated_at: now.clone(),
+        level: 1
     };
 
     let created_user = diesel::insert_into(users::table)

@@ -14,6 +14,13 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
 
     match user_found {
         Ok(user) => {
+            // Pick up only the user's information we need
+            let user_info_response = UserInfoResponse {
+                id: user.id.clone(),
+                name: user.name.clone(),
+                email: user.email.clone(),
+                level: user.level
+            };
             let achievements_found = UserAchievement::belonging_to(&user)
             .inner_join(achievement::table)
             .select((Achievement::as_select(), UserAchievement::as_select()))
@@ -21,6 +28,20 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
             
             match achievements_found {
                 Ok(achievements) => {
+                    // Pick up only the achievements' information we need
+                    let mut achievements_info:Vec<UserAchievementsProfile> = Vec::new();
+                    for i in &achievements {
+                        println!("{:#?}", i);
+                        let user_achievements_info = UserAchievementsProfile {
+                            id: i.0.id.clone(),
+                            title: i.0.title.clone(),
+                            description: i.0.description.clone(),
+                            icon: i.0.icon.clone(),
+                            progress: i.1.progress,
+                            completed: i.1.completed
+                        };
+                        achievements_info.push(user_achievements_info);
+                    }
                     let projects_found = UserProject::belonging_to(&user)
                     .inner_join(projects::table.on(project_user::id.eq(projects::id)))
                     .select(Project::as_select())
@@ -34,14 +55,24 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
 
                             match notifications_found {
                                 Ok(notifications) => {
-                                    let user_profile = UserProfile {
-                                        user,
-                                        achievements,
-                                        projects,
-                                        notifications,
-                                        owner: false
-                                    };
-                                    Ok(user_profile)
+                                    let activity_found = ProjectUserActivity::belonging_to(&user)
+                                    .select(ProjectUserActivity::as_select())
+                                    .load::<ProjectUserActivity>(connection);
+                                    
+                                    match activity_found {
+                                        Ok(activity) => {
+                                            let user_profile = UserProfile {
+                                                user: user_info_response,
+                                                achievements: achievements_info,
+                                                projects,
+                                                notifications,
+                                                activity,
+                                                owner: false
+                                            };
+                                            Ok(user_profile)
+                                        },
+                                        Err(err) => Err(err.to_string())
+                                    }
                                 },
                                 Err(err) => Err(err.to_string())
                             }
