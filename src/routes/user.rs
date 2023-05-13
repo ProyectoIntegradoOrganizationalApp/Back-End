@@ -44,6 +44,7 @@ pub fn user_achievements(token: Result<TokenValidation, GenericError>, id: Strin
         }
     }
 }
+
 #[get("/profile/<id>")]
 pub fn profile(id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<UserProfile>, Json<GenericError>> {
     match token {

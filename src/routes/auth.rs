@@ -2,20 +2,6 @@ use rocket::serde::json::{Json};
 use crate::models::models::*;
 use crate::services;
 
-#[post("/register", data="<user_info>", format="json")]
-pub fn register(user_info: Json<UserInput>) -> Result<Json<User>, Json<GenericError>> {
-    match services::auth::register(&user_info) {
-        Ok(response) => Ok(Json(response)),
-        Err(err) => {
-            let response = GenericError {
-                error: true,
-                message: String::from(err)
-            };
-            Err(Json(response))
-        }
-    }
-}
-
 #[post("/login", data="<user_info>", format="json")]
 pub fn login(user_info: Json<UserLogin>) -> Result<Json<UserLoginResponse>, Json<GenericError>> {
 
@@ -89,5 +75,34 @@ pub fn logout(token: Result<TokenValidation, GenericError>) -> Result<Json<Strin
         Err(json_error) => {
             return Err(Json(json_error))
         }
+    }
+}
+
+// CRUD USER
+#[post("/register", data="<user_info>", format="json")]
+pub fn register(user_info: Json<UserInput>) -> Result<Json<User>, Json<GenericError>> {
+    match services::auth::register(&user_info) {
+        Ok(response) => Ok(Json(response)),
+        Err(err) => {
+            let response = GenericError {
+                error: true,
+                message: String::from(err)
+            };
+            Err(Json(response))
+        }
+    }
+}
+
+#[put("/user/<id>")]
+pub fn update_user(id: String, token: Result<TokenValidation, GenericError>) -> Result<String, String> {
+    match token {
+        Ok(token_data) => {
+            if token_data.owner {
+                Ok("Owner, he is the boss".to_string())
+            } else {
+                Ok("Not the owner".to_string())
+            }
+        },
+        Err(_err) => Err("error".to_string())
     }
 }

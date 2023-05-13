@@ -1,5 +1,5 @@
 use rocket::{serde::{json::{json, Value}}};
-use routes::auth::{register, login, send_mail, change_password, logout, test_token};
+use routes::auth::{register, login, send_mail, change_password, logout, test_token, update_user};
 use routes::user::{achievements, user_achievements, profile};
 use rocket_sync_db_pools::database;
 use rocket::fairing::{Fairing, Info, Kind};
@@ -69,6 +69,18 @@ fn rocket() -> _ {
     rocket
         .attach(Cors)
         .attach(Db::fairing())
-        .mount("/", routes![register, login, send_mail, change_password, logout, all_options, test_token, achievements, user_achievements, profile])
+        .mount("/", routes![
+            register, 
+            login, 
+            send_mail, 
+            change_password, 
+            logout, 
+            all_options, 
+            test_token, 
+            achievements, 
+            user_achievements, 
+            profile,
+            update_user
+        ])
         .register("/", catchers![not_found, server_error])
 }

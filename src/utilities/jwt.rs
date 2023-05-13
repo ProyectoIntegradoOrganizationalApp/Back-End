@@ -84,7 +84,6 @@ pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, Strin
 
             let connection = &mut establish_connection();
 
-            // println!("Is valid id? : {}", valid_request_id);
             let user_found = users
                 .filter(id.eq(String::from(&payload.claims.sub)))
                 .first::<User>(connection);
@@ -107,23 +106,27 @@ pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, Strin
                             false
                         );
                     }
-                    // If requesting id is not "None" it means that user is trying to access to a view of a particular user
+                    // If requesting id is not "None" it means that user is trying to access to a single user route
                     // Example: /profile/<id>
                     // Check if requesting id is valid
                     if (request_id != None) {
                         let request_id_str = request_id.as_deref().unwrap_or("default string");
+                        // The variable "owner" will determine your permissions and the information you can see.
+                        // If you are the owner you can change or delete information of all that owns you.
                         let user_found = users
                             .filter(id.eq(String::from(request_id_str)))
                             .first::<User>(connection);
                         match user_found {
                             Ok(user) => {
                                 let mut owner = false;
+                                let mut message = "The requesting id is not valid";
                                 if (user_id == request_id_str) {
                                     owner = true;
+                                    message = "The requesting id is valid";
                                 }
                                 return (
                                     true,
-                                    "The requesting id is valid".to_string(),
+                                    message.to_string(),
                                     token.to_string(),
                                     owner
                                 );
