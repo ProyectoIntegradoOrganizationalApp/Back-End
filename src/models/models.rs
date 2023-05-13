@@ -114,9 +114,15 @@ pub struct UserLogin {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserLoginResponse {
     pub id: String,
-    pub full_name: String,
+    pub email: String,
+    pub name: String,
+    pub lastname: String,
+    pub phone: String,
+    pub created_at: String,
+    pub updated_at: String,
+    pub level: i16,
     pub _token: String,
-    pub email: String
+    pub notifications: Vec<UserNotificationProfile>
 }
 // REGISTER & LOGIN ········ END
 
@@ -188,7 +194,6 @@ pub struct UserProfile {
     pub user: UserInfoResponse,
     pub achievements: Vec<UserAchievementsProfile>,
     pub projects: Vec<UserProjectProfile>,
-    pub notifications: Vec<UserNotificationProfile>,
     pub activity: Vec<UserActivityProfile>,
     pub owner : bool
 }
