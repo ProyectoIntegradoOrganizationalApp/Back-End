@@ -31,7 +31,6 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
                     // Pick up only the achievements' information we need
                     let mut achievements_info:Vec<UserAchievementsProfile> = Vec::new();
                     for i in &achievements {
-                        println!("{:#?}", i);
                         let user_achievements_info = UserAchievementsProfile {
                             id: i.0.id.clone(),
                             title: i.0.title.clone(),
@@ -49,24 +48,51 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
                     
                     match projects_found {
                         Ok(projects) => {
+                            let mut projects_info:Vec<UserProjectProfile> = Vec::new();
+                            for i in &projects {
+                                let user_projects_info = UserProjectProfile {
+                                    id: i.id.clone(),
+                                    name: i.name.clone()
+                                };
+                                projects_info.push(user_projects_info);
+                            }
                             let notifications_found = Notification::belonging_to(&user)
                             .select(Notification::as_select())
                             .load::<Notification>(connection);
 
                             match notifications_found {
                                 Ok(notifications) => {
+                                    let mut notifications_info:Vec<UserNotificationProfile> = Vec::new();
+                                    for i in &notifications {
+                                        let user_notifications_info = UserNotificationProfile {
+                                            id: i.id.clone(),
+                                            title: i.title.clone(),
+                                            content: i.content.clone(),
+                                            state: i.state
+                                        };
+                                        notifications_info.push(user_notifications_info);
+                                    }
                                     let activity_found = ProjectUserActivity::belonging_to(&user)
                                     .select(ProjectUserActivity::as_select())
                                     .load::<ProjectUserActivity>(connection);
                                     
                                     match activity_found {
                                         Ok(activity) => {
+                                            let mut activity_info:Vec<UserActivityProfile> = Vec::new();
+                                            for i in &activity {
+                                                let user_activity_info = UserActivityProfile {
+                                                    idproject: i.idproject.clone(),
+                                                    date: i.date.clone(),
+                                                    commits: i.commits
+                                                };
+                                                activity_info.push(user_activity_info);
+                                            }
                                             let user_profile = UserProfile {
                                                 user: user_info_response,
                                                 achievements: achievements_info,
-                                                projects,
-                                                notifications,
-                                                activity,
+                                                projects: projects_info,
+                                                notifications: notifications_info,
+                                                activity: activity_info,
                                                 owner: false
                                             };
                                             Ok(user_profile)

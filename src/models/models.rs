@@ -187,9 +187,9 @@ pub struct UserAchievementsResponse {
 pub struct UserProfile {
     pub user: UserInfoResponse,
     pub achievements: Vec<UserAchievementsProfile>,
-    pub projects: Vec<Project>,
-    pub notifications: Vec<Notification>,
-    pub activity: Vec<ProjectUserActivity>,
+    pub projects: Vec<UserProjectProfile>,
+    pub notifications: Vec<UserNotificationProfile>,
+    pub activity: Vec<UserActivityProfile>,
     pub owner : bool
 }
 #[derive(Serialize, Deserialize, Debug)]
@@ -207,5 +207,23 @@ pub struct UserInfoResponse {
     pub name: String,
     pub email: String,
     pub level: i16
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserProjectProfile {
+    pub id: String,
+    pub name: String
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserNotificationProfile {
+    pub id: String,
+    pub title: String,
+    pub content: String,
+    pub state: bool,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserActivityProfile {
+    pub idproject: String,
+    pub date: String,
+    pub commits: i16
 }
 // PROFILE ENDPOINT ········· END
