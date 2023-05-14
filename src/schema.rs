@@ -103,6 +103,7 @@ diesel::table! {
         id -> Varchar,
         iduser -> Varchar,
         name -> Varchar,
+        description -> Varchar,
         configuration -> Json,
     }
 }

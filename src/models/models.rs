@@ -1,9 +1,9 @@
-use diesel::{Insertable, Queryable, Selectable, Associations, Identifiable};
+use diesel::{Insertable, Queryable, Selectable, Associations, Identifiable, AsChangeset};
 use rocket::serde::{Serialize, Deserialize};
 use crate::schema::*;
 
 // TABLE'S STRUCTS ········ START
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Identifiable, PartialEq)]
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Identifiable, PartialEq, AsChangeset)]
 #[diesel(primary_key(id))]
 #[diesel(table_name = users)]
 pub struct User {

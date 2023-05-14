@@ -180,3 +180,21 @@ pub fn logout(token: &String) -> Result<String, String> {
         Err(_e) => Err(String::from("Something went wrong")),
     }
 }
+
+pub fn update_user(user_info: &User) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    let updated = diesel::update(users::table).set(user_info).execute(connection);
+    match updated {
+        Ok(_) => Ok(GenericError { error: false, message: "User updated successfully".to_string() }),
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}
+
+pub fn delete_user(user_id: &String) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    let deleted = diesel::delete(users.filter(id.eq(user_id))).execute(connection);
+    match deleted {
+        Ok(_) => Ok(GenericError { error: false, message: "User deleted successfully".to_string() }),
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}

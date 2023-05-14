@@ -99,16 +99,36 @@ pub fn register(user_info: Json<UserInput>) -> Result<Json<GenericError>, Json<G
     }
 }
 
-#[put("/user/<id>")]
-pub fn update_user(id: String, token: Result<TokenValidation, GenericError>) -> Result<String, String> {
+#[put("/user/<id>", data="<user_info>", format="json")]
+pub fn update_user(id: String, user_info: Json<User>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
             if token_data.owner {
-                Ok("Owner, he is the boss".to_string())
+                match services::auth::update_user(&user_info) {
+                    Ok(result) => Ok(Json(result)),
+                    Err(err) => Err(Json(err))
+                }
             } else {
-                Ok("Not the owner".to_string())
+                Err(Json(GenericError { error: true, message: "You are not the owner".to_string()}))
             }
         },
-        Err(_err) => Err("error".to_string())
+        Err(err) => Err(Json(err))
+    }
+}
+
+#[delete("/user/<id>")]
+pub fn delete_user(id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            if token_data.owner {
+                match services::auth::delete_user(&id) {
+                    Ok(result) => Ok(Json(result)),
+                    Err(err) => Err(Json(err))
+                }
+            } else {
+                Err(Json(GenericError { error: true, message: "You are not the owner".to_string()}))
+            }
+        },
+        Err(err) => Err(Json(err))
     }
 }
