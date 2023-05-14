@@ -100,7 +100,7 @@ pub fn register(user_info: Json<UserInput>) -> Result<Json<GenericError>, Json<G
 }
 
 #[put("/user/<id>", data="<user_info>", format="json")]
-pub fn update_user(id: String, user_info: Json<User>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+pub fn update_user(id: String, user_info: Json<UserUpdate>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
             if token_data.owner {

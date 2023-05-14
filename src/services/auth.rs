@@ -57,7 +57,6 @@ pub fn login(user_info: &UserLogin) -> Result<UserLoginResponse, String> {
 
     match user_found {
         Ok(user) => {
-            println!("{:#?}", user);
             let verified_password = verify(&user_info.password, &user.password);
             match verified_password {
                 Ok(correct_password) => {
@@ -181,11 +180,46 @@ pub fn logout(token: &String) -> Result<String, String> {
     }
 }
 
-pub fn update_user(user_info: &User) -> Result<GenericError, GenericError> {
+pub fn update_user(user_info: &UserUpdate) -> Result<GenericError, GenericError> {
     let connection = &mut establish_connection();
-    let updated = diesel::update(users::table).set(user_info).execute(connection);
-    match updated {
-        Ok(_) => Ok(GenericError { error: false, message: "User updated successfully".to_string() }),
+    let user_to_update_found = users.filter(id.eq(&user_info.id)).first::<User>(connection);
+    match user_to_update_found {
+        Ok(mut user_to_update) => {
+            if user_to_update.email != user_info.email {
+                user_to_update.email = user_info.email.clone();
+            }
+
+            match verify(&user_info.password, &user_to_update.password) {
+                Ok(same_password) => {
+                    if !same_password {
+                        let hashed_password = hash(&user_info.password, DEFAULT_COST).unwrap();
+                        user_to_update.password = hashed_password;
+                    }
+                },
+                Err(_err) => ()
+            };
+            
+            if user_to_update.name != user_info.name {
+                user_to_update.name = user_info.name.clone();
+            }
+            
+            if user_to_update.lastname != user_info.lastname {
+                user_to_update.lastname = user_info.lastname.clone();
+            }
+            
+            if user_to_update.phone != user_info.phone {
+                user_to_update.phone = user_info.phone.clone();
+            }
+            
+            let now: String = (Utc::now()).to_string();
+            user_to_update.updated_at = now;
+
+            let updated_user = user_to_update.save_changes::<User>(connection);
+            match updated_user {
+                Ok(_user) => Ok(GenericError {error: false, message: "Updated user successfully".to_string()}), 
+                Err(err) => Err(GenericError {error: true, message: err.to_string()})
+            }
+        },
         Err(err) => Err(GenericError { error: true, message: err.to_string() })
     }
 }

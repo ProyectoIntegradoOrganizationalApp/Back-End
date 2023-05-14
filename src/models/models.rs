@@ -94,7 +94,7 @@ pub struct UserProject {
 
 // TABLE'S STRUCTS ········ END
 
-// REGISTER & LOGIN ········ START
+// USER CRUD & LOGIN ········ START
 
 #[derive(Deserialize, Debug)]
 pub struct UserInput {
@@ -124,7 +124,16 @@ pub struct UserLoginResponse {
     pub _token: String,
     pub notifications: Vec<UserNotificationProfile>
 }
-// REGISTER & LOGIN ········ END
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserUpdate {
+    pub id: String,
+    pub email: String,
+    pub password: String,
+    pub name: String,
+    pub lastname: String,
+    pub phone: String
+}
+// USER CRUD & LOGIN ········ END
 
 // RECOVERY PASSWORD ········· START
 #[derive(Debug, Deserialize, Serialize)]

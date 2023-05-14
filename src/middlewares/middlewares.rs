@@ -8,9 +8,7 @@ impl<'r> FromRequest<'r> for TokenValidation {
     type Error = GenericError;
 
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-        let method = request.method();
         let id = request.routed_segment(1);
-        println!("{}", method);
         match request.headers().get_one("Authorization") {
             Some(token) => {
                 // Handle all the token validation
