@@ -2,6 +2,9 @@ use rocket::{serde::{json::{json, Value}}};
 use routes::auth::{register, login, send_mail, change_password, logout, test_token, update_user, delete_user};
 use routes::user::{achievements, user_achievements, profile};
 use routes::project::{create_project, update_project, delete_project};
+use routes::kanban::board::{create_board, update_board, delete_board};
+use routes::kanban::column::{create_column, update_column, delete_column};
+use routes::kanban::task::{create_task, update_task, delete_task};
 use rocket_sync_db_pools::database;
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Header;
@@ -85,7 +88,16 @@ fn rocket() -> _ {
             delete_user,
             create_project,
             update_project,
-            delete_project
+            delete_project,
+            create_board,
+            update_board,
+            delete_board,
+            create_column,
+            update_column,
+            delete_column,
+            create_task,
+            update_task,
+            delete_task
         ])
         .register("/", catchers![not_found, server_error])
 }

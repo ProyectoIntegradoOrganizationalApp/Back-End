@@ -8,11 +8,10 @@ use rust_api_rest::establish_connection;
 
 use chrono::Utc;
 
-pub fn create_project(project_info: &ProjectInputCreate, token_iduser: String) -> Result<Project, GenericError> {
+pub fn create_app(app_info: &ProjectInputCreate, token_iduser: String) -> Result<Project, GenericError> {
     let connection = &mut establish_connection();
-    let project_id = uuid::Uuid::new_v4().to_string();
-    let now: String = (Utc::now()).to_string();
-    let new_project = Project {
+    let app_id = uuid::Uuid::new_v4().to_string();
+    let new_project = App {
         idproject: project_id.clone(),
         iduser: token_iduser.clone(),
         name: project_info.name.clone(),
@@ -20,11 +19,11 @@ pub fn create_project(project_info: &ProjectInputCreate, token_iduser: String) -
         created_at: now.clone(),
         updated_at: now.clone()
     };
-    let created_project = diesel::insert_into(projects::table)
+    let created_app = diesel::insert_into(projects::table)
         .values(&new_project)
         .get_result::<Project>(connection);
 
-    match created_project {
+    match created_app {
         Ok(project) => {
             let new_project_user = UserProject {
                 idproject: project_id.clone(),
@@ -43,9 +42,9 @@ pub fn create_project(project_info: &ProjectInputCreate, token_iduser: String) -
     }
 }
 
-pub fn update_project(project_info: &ProjectInputCreate, user_id: &String, project_id: &String) -> Result<GenericError, GenericError> {
+pub fn update_app(project_info: &ProjectInputCreate, user_id: &String, project_id: &String) -> Result<GenericError, GenericError> {
     let connection = &mut establish_connection();
-    let user_found: Result<User, Error> = users::table.filter(users::id.eq(&user_id)).first::<User>(connection);
+    let user_found = users::table.filter(users::id.eq(&user_id)).first::<User>(connection);
     match user_found {
         Ok(user) => {
             let project_found: Result<Project, Error> = UserProject::belonging_to(&user)
@@ -74,12 +73,12 @@ pub fn update_project(project_info: &ProjectInputCreate, user_id: &String, proje
     }
 }
 
-pub fn delete_project(user_id: &String, project_id: &String) -> Result<GenericError, GenericError> {
+pub fn delete_app(user_id: &String, project_id: &String) -> Result<GenericError, GenericError> {
     let connection = &mut establish_connection();
     let user_found = users::table.filter(users::id.eq(&user_id)).first::<User>(connection);
     match user_found {
         Ok(user) => {
-            let project_found: Result<Project, Error> = UserProject::belonging_to(&user)
+            let app_found: Result<Project, Error> = UserProject::belonging_to(&user)
                             .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
                             .filter(projects::idproject.eq(project_id))
                             .filter(project_user::idrole.eq("1".to_string()))

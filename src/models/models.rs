@@ -51,6 +51,48 @@ pub struct Project {
     pub created_at: String,
     pub updated_at: String
 }
+
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
+#[diesel(belongs_to(Project, foreign_key = idproject))]
+#[diesel(primary_key(id, idproject))]
+#[diesel(table_name = app)]
+pub struct App {
+    pub id: String,
+    pub idproject: String
+}
+
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
+#[diesel(belongs_to(App, foreign_key = idapp))]
+#[diesel(primary_key(id))]
+#[diesel(table_name = board)]
+pub struct Board {
+    pub id: String,
+    pub idapp: String,
+    pub title: String
+}
+
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
+#[diesel(belongs_to(App, foreign_key = idboard))]
+#[diesel(primary_key(id))]
+#[diesel(table_name = columna)]
+pub struct Columna {
+    pub id: String,
+    pub idboard: String,
+    pub title: String
+}
+
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
+#[diesel(belongs_to(App, foreign_key = idcolumn))]
+#[diesel(primary_key(id))]
+#[diesel(table_name = task)]
+pub struct Task {
+    pub id: String,
+    pub idcolumn: String,
+    pub title: String,
+    pub description: Option<String>,
+    pub github: Option<String>
+}
+
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
 #[diesel(belongs_to(User, foreign_key = iduser))]
 #[diesel(primary_key(id))]
@@ -244,8 +286,36 @@ pub struct UserActivityProfile {
     pub commits: i16
 }
 // PROFILE ENDPOINT ········· END
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ProjectInputCreate {
     pub name: String,
     pub description: String
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AppInputCreate {
+    pub name: String,
+    pub description: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BoardInputCreate {
+    pub idapp: String,
+    pub title: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ColumnInputCreate {
+    pub idboard: String,
+    pub title: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TaskInputCreate {
+    pub idcolumn: String,
+    pub title: String,
+    pub description: Option<String>,
+    pub github: Option<String>
+}
+
