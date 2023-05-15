@@ -60,3 +60,30 @@ pub fn update_project(project_info: &ProjectInputCreate, user_id: &String, proje
         Err(err) => Err(GenericError {error: true, message: err.to_string()})
     }
 }
+
+pub fn delete_project(user_id: &String, project_id: &String) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    let user_found = users::table.filter(users::id.eq(&user_id)).first::<User>(connection);
+    match user_found {
+        Ok(user) => {
+            let project_found: Result<Project, Error> = UserProject::belonging_to(&user)
+                            .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
+                            .filter(projects::idproject.eq(project_id))
+                            .filter(project_user::idrole.eq("1".to_string()))
+                            .select(Project::as_select())
+                            .get_result::<Project>(connection);
+            
+            match project_found {
+                Ok(project) => {
+                    let deleted = diesel::delete(projects::table.filter(projects::idproject.eq(project.idproject))).execute(connection);
+                    match deleted {
+                        Ok(_) => Ok(GenericError { error: false, message: "Project deleted successfully".to_string() }),
+                        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                    }
+                },
+                Err(_err) => Err(GenericError {error: true, message: "You are not a member or you don't have privileges to make it".to_string()})
+            }
+        }, 
+        Err(err) => Err(GenericError {error: true, message: err.to_string()})
+    }
+}

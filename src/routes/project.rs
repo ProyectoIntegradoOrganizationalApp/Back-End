@@ -31,3 +31,20 @@ pub fn update_project(id: String, project_info: Json<ProjectInputCreate>, token:
         Err(err) => Err(Json(err))
     }
 }
+
+#[delete("/project/<id>")]
+pub fn delete_project(id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            if token_data.owner {
+                match services::project::delete_project(&token_data.token_iduser, &id) {
+                    Ok(result) => Ok(Json(result)),
+                    Err(err) => Err(Json(err))
+                }
+            } else {
+                Err(Json(GenericError { error: true, message: "You are not the owner".to_string()}))
+            }
+        },
+        Err(err) => Err(Json(err))
+    }
+}

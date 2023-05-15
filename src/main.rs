@@ -1,7 +1,7 @@
 use rocket::{serde::{json::{json, Value}}};
 use routes::auth::{register, login, send_mail, change_password, logout, test_token, update_user, delete_user};
 use routes::user::{achievements, user_achievements, profile};
-use routes::project::{create_project, update_project};
+use routes::project::{create_project, update_project, delete_project};
 use rocket_sync_db_pools::database;
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Header;
@@ -84,7 +84,8 @@ fn rocket() -> _ {
             update_user,
             delete_user,
             create_project,
-            update_project
+            update_project,
+            delete_project
         ])
         .register("/", catchers![not_found, server_error])
 }
