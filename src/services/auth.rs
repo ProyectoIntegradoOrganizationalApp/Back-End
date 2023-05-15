@@ -180,9 +180,9 @@ pub fn logout(token: &String) -> Result<String, String> {
     }
 }
 
-pub fn update_user(user_info: &UserUpdate) -> Result<GenericError, GenericError> {
+pub fn update_user(user_info: &UserUpdate, token_iduser: &String) -> Result<GenericError, GenericError> {
     let connection = &mut establish_connection();
-    let user_to_update_found = users.filter(id.eq(&user_info.id)).first::<User>(connection);
+    let user_to_update_found = users.filter(id.eq(token_iduser)).first::<User>(connection);
     match user_to_update_found {
         Ok(mut user_to_update) => {
             if user_to_update.email != user_info.email {

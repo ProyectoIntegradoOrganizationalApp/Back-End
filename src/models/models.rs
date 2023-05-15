@@ -129,7 +129,6 @@ pub struct UserLoginResponse {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserUpdate {
-    pub id: String,
     pub email: String,
     pub password: String,
     pub name: String,
