@@ -7,5 +7,5 @@ CREATE TABLE goal (
     completed SMALLINT NOT NULL,
     CONSTRAINT fk_project
         FOREIGN KEY(idProject)
-            REFERENCES projects(id)
+            REFERENCES projects(idProject)
 );

@@ -5,5 +5,5 @@ CREATE TABLE app (
     PRIMARY KEY(id),
     CONSTRAINT fk_project
         FOREIGN KEY(idProject)
-            REFERENCES projects(id)
+            REFERENCES projects(idProject)
 );

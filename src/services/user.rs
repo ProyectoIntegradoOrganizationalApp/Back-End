@@ -42,7 +42,7 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
                         achievements_info.push(user_achievements_info);
                     }
                     let projects_found = UserProject::belonging_to(&user)
-                    .inner_join(projects::table.on(project_user::id.eq(projects::id)))
+                    .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
                     .select(Project::as_select())
                     .load::<Project>(connection);
                     
@@ -51,7 +51,7 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
                             let mut projects_info:Vec<UserProjectProfile> = Vec::new();
                             for i in &projects {
                                 let user_projects_info = UserProjectProfile {
-                                    id: i.id.clone(),
+                                    id: i.idproject.clone(),
                                     name: i.name.clone()
                                 };
                                 projects_info.push(user_projects_info);

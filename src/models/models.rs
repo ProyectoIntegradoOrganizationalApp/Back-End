@@ -41,12 +41,15 @@ pub struct UserAchievement {
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
 #[diesel(belongs_to(User, foreign_key = iduser))]
-#[diesel(primary_key(id))]
+#[diesel(primary_key(idproject))]
 #[diesel(table_name = projects)]
 pub struct Project {
-    pub id: String,
+    pub idproject: String,
     pub iduser: String,
-    pub name: String
+    pub name: String,
+    pub description: String,
+    pub created_at: String,
+    pub updated_at: String
 }
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
 #[diesel(belongs_to(User, foreign_key = iduser))]
@@ -73,11 +76,11 @@ pub struct ProjectUserActivity {
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
 #[diesel(belongs_to(User, foreign_key = iduser))]
-#[diesel(belongs_to(Project, foreign_key = id))]
-#[diesel(primary_key(id, iduser))]
+#[diesel(belongs_to(Project, foreign_key = idproject))]
+#[diesel(primary_key(idproject, iduser))]
 #[diesel(table_name = project_user)]
 pub struct UserProject {
-    pub id: String,
+    pub idproject: String,
     pub iduser: String,
     pub idrole: String
 }
@@ -169,7 +172,8 @@ pub struct TokenValidation {
    pub success: bool,
    pub message: String,
    pub token: String,
-   pub owner: bool
+   pub owner: bool,
+   pub token_iduser: String
 }
 
 
@@ -241,3 +245,8 @@ pub struct UserActivityProfile {
     pub commits: i16
 }
 // PROFILE ENDPOINT ········· END
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ProjectInputCreate {
+    pub name: String,
+    pub description: String
+}

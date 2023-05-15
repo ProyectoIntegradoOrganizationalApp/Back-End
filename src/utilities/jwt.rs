@@ -54,14 +54,15 @@ pub fn create_token(uid: &str) -> Result<String, String> {
 }
 
 #[allow(unused)]
-pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, String, String, bool) {
+pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, String, String, bool, String) {
     token = get_token(&token);
     if (token == "") {
         return (
             false,
             "Token is no valid (Bearer)".to_string(),
             "".to_string(),
-            false
+            false,
+            "".to_string()
         );
     }
 
@@ -78,7 +79,8 @@ pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, Strin
                     false,
                     "The token provided is expired".to_string(),
                     "".to_string(),
-                    false
+                    false,
+                    "".to_string()
                 );
             }
 
@@ -91,9 +93,10 @@ pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, Strin
             // Check if the user doing the request is the database
             match user_found {
                 Ok(user) => (),
-                Err(err) => return (false, err.to_string(), "".to_string(), false),
+                Err(err) => return (false, err.to_string(), "".to_string(), false, "".to_string()),
             }
 
+            let token_iduser = payload.claims.sub.clone();
             // Check if the token is whitelisted
             match get_whitelist_token(token) {
                 Ok(user_id) => {
@@ -103,7 +106,8 @@ pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, Strin
                             false,
                             "You are not the owner of that token!".to_string(),
                             "".to_string(),
-                            false
+                            false,
+                            "".to_string()
                         );
                     }
                     // If requesting id is not "None" it means that user is trying to access to a single user route
@@ -128,7 +132,8 @@ pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, Strin
                                     true,
                                     message.to_string(),
                                     token.to_string(),
-                                    owner
+                                    owner,
+                                    token_iduser
                                 );
                             }
                             Err(err) => {
@@ -136,20 +141,22 @@ pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, Strin
                                     false,
                                     "The requesting id is not valid".to_string(),
                                     "".to_string(),
-                                    false
+                                    false,
+                                    "".to_string()
                                 )
                             }
                         }
                     }
                     // If the code gets here it means the middleware has triggered in /login endpoint
-                    return (true, "Login was succesful".to_string(), token.to_string(), true);
+                    return (true, "Login was succesful".to_string(), token.to_string(), true, token_iduser);
                 }
                 Err(err) => {
                     return (
                         false,
                         "The token provided is not whitelisted".to_string(),
                         "".to_string(),
-                        false
+                        false,
+                        "".to_string()
                     )
                 }
             }
@@ -161,22 +168,25 @@ pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, Strin
                     false,
                     "The token provided is expired".to_string(),
                     "".to_string(),
-                    false
+                    false,
+                    "".to_string()
                 )
             }
             InvalidSignature => (
                 false,
                 "The token provided is invalid".to_string(),
                 "".to_string(),
-                false
+                false,
+                "".to_string()
             ),
             InvalidAlgorithm => (
                 false,
                 "The token provided is invalid".to_string(),
                 "".to_string(),
-                false
+                false,
+                "".to_string()
             ),
-            _ => (false, err.to_string(), "".to_string(), false),
+            _ => (false, err.to_string(), "".to_string(), false, "".to_string()),
         },
     }
 }

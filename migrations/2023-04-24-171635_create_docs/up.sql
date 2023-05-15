@@ -9,6 +9,6 @@ CREATE TABLE docs (
             ON DELETE CASCADE,
     CONSTRAINT fk_project
         FOREIGN KEY(idProject)
-            REFERENCES projects(id)
+            REFERENCES projects(idProject)
             ON DELETE CASCADE
 );

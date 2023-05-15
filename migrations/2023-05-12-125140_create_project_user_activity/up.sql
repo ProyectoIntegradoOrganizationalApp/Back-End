@@ -11,6 +11,6 @@ CREATE TABLE project_user_activity (
             ON DELETE CASCADE,
     CONSTRAINT fk_project
         FOREIGN KEY(idProject)
-            REFERENCES projects(id)
+            REFERENCES projects(idProject)
             ON DELETE CASCADE
 );

@@ -23,7 +23,7 @@ impl<'r> FromRequest<'r> for TokenValidation {
                     ));
                 }
                 // return validated token
-                Outcome::Success(TokenValidation {success: true, message: auth.1, token: auth.2, owner: auth.3} )
+                Outcome::Success(TokenValidation {success: true, message: auth.1, token: auth.2, owner: auth.3, token_iduser: auth.4} )
             }
             None => Outcome::Failure((Status::BadRequest, 
                         GenericError {

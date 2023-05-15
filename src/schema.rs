@@ -82,8 +82,8 @@ diesel::table! {
 }
 
 diesel::table! {
-    project_user (id, iduser) {
-        id -> Varchar,
+    project_user (idproject, iduser) {
+        idproject -> Varchar,
         iduser -> Varchar,
         idrole -> Varchar,
     }
@@ -99,12 +99,13 @@ diesel::table! {
 }
 
 diesel::table! {
-    projects (id) {
-        id -> Varchar,
+    projects (idproject) {
+        idproject -> Varchar,
         iduser -> Varchar,
         name -> Varchar,
         description -> Varchar,
-        configuration -> Json,
+        created_at -> Varchar,
+        updated_at -> Varchar,
     }
 }
 

@@ -6,7 +6,7 @@ CREATE TABLE user_invitation (
     PRIMARY KEY (idProject, idGuest, idUser),
     CONSTRAINT fk_project
         FOREIGN KEY(idProject)
-            REFERENCES projects(id)
+            REFERENCES projects(idProject)
             ON DELETE CASCADE,
     CONSTRAINT fk_user
         FOREIGN KEY(idUser)

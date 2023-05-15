@@ -6,5 +6,5 @@ CREATE TABLE recent_change (
     PRIMARY KEY(date, idProject),
     CONSTRAINT fk_project
         FOREIGN KEY(idProject)
-            REFERENCES projects(id)
+            REFERENCES projects(idProject)
 );
