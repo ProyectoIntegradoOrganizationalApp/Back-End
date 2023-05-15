@@ -39,7 +39,7 @@ pub struct UserAchievement {
     pub completed: bool,
 }
 
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
 #[diesel(belongs_to(User, foreign_key = iduser))]
 #[diesel(primary_key(idproject))]
 #[diesel(table_name = projects)]

@@ -54,15 +54,16 @@ pub fn create_token(uid: &str) -> Result<String, String> {
 }
 
 #[allow(unused)]
-pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, String, String, bool, String) {
+pub fn validate_token(mut token: &str, request_id: Option<&str>, table: Option<&str>) -> (bool, String, String, bool, String) {
     token = get_token(&token);
+    let mut token_iduser = "".to_string();
     if (token == "") {
         return (
             false,
             "Token is no valid (Bearer)".to_string(),
             "".to_string(),
             false,
-            "".to_string()
+            token_iduser
         );
     }
 
@@ -80,7 +81,7 @@ pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, Strin
                     "The token provided is expired".to_string(),
                     "".to_string(),
                     false,
-                    "".to_string()
+                    token_iduser
                 );
             }
 
@@ -93,10 +94,11 @@ pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, Strin
             // Check if the user doing the request is the database
             match user_found {
                 Ok(user) => (),
-                Err(err) => return (false, err.to_string(), "".to_string(), false, "".to_string()),
+                Err(err) => return (false, err.to_string(), "".to_string(), false, token_iduser),
             }
-
-            let token_iduser = payload.claims.sub.clone();
+            let table_str = table.as_deref().unwrap_or("default string");
+            
+            
             // Check if the token is whitelisted
             match get_whitelist_token(token) {
                 Ok(user_id) => {
@@ -107,43 +109,46 @@ pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, Strin
                             "You are not the owner of that token!".to_string(),
                             "".to_string(),
                             false,
-                            "".to_string()
+                            token_iduser
                         );
                     }
+                    token_iduser = payload.claims.sub.clone();
                     // If requesting id is not "None" it means that user is trying to access to a single user route
                     // Example: /profile/<id>
                     // Check if requesting id is valid
-                    if (request_id != None) {
+                    if request_id != None {
                         let request_id_str = request_id.as_deref().unwrap_or("default string");
                         // The variable "owner" will determine your permissions and the information you can see.
                         // If you are the owner you can change or delete information of all that owns you.
-                        let user_found = users
-                            .filter(id.eq(String::from(request_id_str)))
-                            .first::<User>(connection);
-                        match user_found {
-                            Ok(user) => {
-                                let mut owner = false;
-                                let mut message = "The requesting id is not valid";
-                                if (user_id == request_id_str) {
-                                    owner = true;
-                                    message = "The requesting id is valid";
+                        if table_str == "user" {
+                            let user_found = users
+                                .filter(id.eq(String::from(request_id_str)))
+                                .first::<User>(connection);
+                            match user_found {
+                                Ok(user) => {
+                                    let mut owner = false;
+                                    let mut message = "The requesting id is not valid";
+                                    if (user_id == request_id_str) {
+                                        owner = true;
+                                        message = "The requesting id is valid";
+                                    }
+                                    return (
+                                        true,
+                                        message.to_string(),
+                                        token.to_string(),
+                                        owner,
+                                        token_iduser
+                                    );
                                 }
-                                return (
-                                    true,
-                                    message.to_string(),
-                                    token.to_string(),
-                                    owner,
-                                    token_iduser
-                                );
-                            }
-                            Err(err) => {
-                                return (
-                                    false,
-                                    "The requesting id is not valid".to_string(),
-                                    "".to_string(),
-                                    false,
-                                    "".to_string()
-                                )
+                                Err(err) => {
+                                    return (
+                                        false,
+                                        "The requesting id is not valid".to_string(),
+                                        "".to_string(),
+                                        false,
+                                        token_iduser
+                                    )
+                                }
                             }
                         }
                     }
@@ -156,7 +161,7 @@ pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, Strin
                         "The token provided is not whitelisted".to_string(),
                         "".to_string(),
                         false,
-                        "".to_string()
+                        token_iduser
                     )
                 }
             }
@@ -169,7 +174,7 @@ pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, Strin
                     "The token provided is expired".to_string(),
                     "".to_string(),
                     false,
-                    "".to_string()
+                    token_iduser
                 )
             }
             InvalidSignature => (
@@ -177,16 +182,16 @@ pub fn validate_token(mut token: &str, request_id: Option<&str>) -> (bool, Strin
                 "The token provided is invalid".to_string(),
                 "".to_string(),
                 false,
-                "".to_string()
+                token_iduser
             ),
             InvalidAlgorithm => (
                 false,
                 "The token provided is invalid".to_string(),
                 "".to_string(),
                 false,
-                "".to_string()
+                token_iduser
             ),
-            _ => (false, err.to_string(), "".to_string(), false, "".to_string()),
+            _ => (false, err.to_string(), "".to_string(), false, token_iduser),
         },
     }
 }
