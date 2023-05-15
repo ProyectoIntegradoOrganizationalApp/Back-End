@@ -13,8 +13,8 @@ pub fn create_project(project_info: &ProjectInputCreate, token_iduser: String) -
     let project_id = uuid::Uuid::new_v4().to_string();
     let now: String = (Utc::now()).to_string();
     let new_project = Project {
-        idproject: project_id,
-        iduser: token_iduser,
+        idproject: project_id.clone(),
+        iduser: token_iduser.clone(),
         name: project_info.name.clone(),
         description: project_info.description.clone(),
         created_at: now.clone(),
@@ -25,7 +25,20 @@ pub fn create_project(project_info: &ProjectInputCreate, token_iduser: String) -
         .get_result::<Project>(connection);
 
     match created_project {
-        Ok(project) => Ok(project),
+        Ok(project) => {
+            let new_project_user = UserProject {
+                idproject: project_id.clone(),
+                iduser: token_iduser.clone(),
+                idrole: "1".to_string()
+            };
+            let created_project_user = diesel::insert_into(project_user::table)
+                .values(&new_project_user)
+                .get_result::<UserProject>(connection);
+            match created_project_user {
+                Ok(_user_project) => Ok(project),
+                Err(err) => Err(GenericError { error: false, message: err.to_string() })
+            }
+        },
         Err(err) => Err(GenericError { error: false, message: err.to_string() })
     }
 }
