@@ -62,6 +62,40 @@ pub struct App {
     pub idproject: String
 }
 
+pub enum AppTypes {
+    Kanban(kanban::table),
+    Docs(docs::table),
+    Timeline(timeline::table),
+}
+
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq/*, AsChangeset*/)]
+#[diesel(belongs_to(Project, foreign_key = idproject))]
+#[diesel(belongs_to(App, foreign_key = idapp))]
+#[diesel(primary_key(idapp, idproject))]
+#[diesel(table_name = kanban)]
+pub struct Kanban {
+    pub idapp: String,
+    pub idproject: String
+}
+
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq/*, AsChangeset*/)]
+#[diesel(belongs_to(Project, foreign_key = idproject))]
+#[diesel(primary_key(idapp, idproject))]
+#[diesel(table_name = docs)]
+pub struct Docs {
+    pub idapp: String,
+    pub idproject: String
+}
+
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq/*, AsChangeset*/)]
+#[diesel(belongs_to(Project, foreign_key = idproject))]
+#[diesel(primary_key(idapp, idproject))]
+#[diesel(table_name = timeline)]
+pub struct Timeline {
+    pub idapp: String,
+    pub idproject: String
+}
+
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
 #[diesel(belongs_to(App, foreign_key = idapp))]
 #[diesel(primary_key(id))]
@@ -305,8 +339,22 @@ pub struct ProjectInputCreate {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AppInputCreate {
-    pub name: String,
-    pub description: String
+    pub apptype: String,
+    pub kanban: Option<KanbanInputCreate>,
+    pub docs: Option<DocsInputCreate>,
+    pub timeline: Option<TimelineInputCreate>
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct KanbanInputCreate {
+    // Atributos modificables de kanban
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DocsInputCreate {
+    // Atributos modificables de docs
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TimelineInputCreate {
+    // Atributos modificables de timeline
 }
 
 #[derive(Serialize, Deserialize, Debug)]

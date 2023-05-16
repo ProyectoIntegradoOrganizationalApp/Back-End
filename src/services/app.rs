@@ -1,101 +1,119 @@
 extern crate redis;
 
 use crate::models::models::*;
+use crate::utilities::project;
+use crate::utilities::app as app_utils;
 use crate::schema::*;
 use diesel::prelude::*;
-use diesel::result::Error;
 use rust_api_rest::establish_connection;
 
-use chrono::Utc;
+pub fn create_app(app_info: &AppInputCreate, idproject: &String, token_iduser: &String) -> Result<App, GenericError> {
+    match project::is_admin(&idproject, &token_iduser) {
+        Ok(_) => {
+            let connection = &mut establish_connection();
 
-pub fn create_app(app_info: &ProjectInputCreate, token_iduser: String) -> Result<Project, GenericError> {
-    let connection = &mut establish_connection();
-    let app_id = uuid::Uuid::new_v4().to_string();
-    let new_project = App {
-        idproject: project_id.clone(),
-        iduser: token_iduser.clone(),
-        name: project_info.name.clone(),
-        description: project_info.description.clone(),
-        created_at: now.clone(),
-        updated_at: now.clone()
-    };
-    let created_app = diesel::insert_into(projects::table)
-        .values(&new_project)
-        .get_result::<Project>(connection);
-
-    match created_app {
-        Ok(project) => {
-            let new_project_user = UserProject {
-                idproject: project_id.clone(),
-                iduser: token_iduser.clone(),
-                idrole: "1".to_string()
+            let app_id = uuid::Uuid::new_v4().to_string();
+            let new_app = App {
+                id: app_id.clone(),
+                idproject: idproject.clone()
             };
-            let created_project_user = diesel::insert_into(project_user::table)
-                .values(&new_project_user)
-                .get_result::<UserProject>(connection);
-            match created_project_user {
-                Ok(_user_project) => Ok(project),
-                Err(err) => Err(GenericError { error: false, message: err.to_string() })
+            let created_app = diesel::insert_into(app::table)
+                .values(&new_app)
+                .get_result::<App>(connection);
+
+            match created_app {
+                Ok(app) => {
+                    match app_info.apptype.as_str() {
+                        "kanban" => {
+                            if app_info.kanban.is_some() {
+                                match app_utils::create_app_by_type(&app, app_info, AppTypes::Kanban(kanban::table), connection) {
+                                    Ok(_) => return Ok(app),
+                                    Err(err) => return Err(err)
+                                }
+                            } else {
+                                return Err(GenericError { error: true, message: "You need to provide the required info to create a kanban app".to_owned() })
+                            }
+                        },
+                        "docs" => {
+                            if app_info.docs.is_some() {
+                                match app_utils::create_app_by_type(&app, app_info, AppTypes::Docs(docs::table), connection) {
+                                    Ok(_) => return Ok(app),
+                                    Err(err) => return Err(err)
+                                }
+                            } else {
+                                return Err(GenericError { error: true, message: "You need to provide the required info to create a docs app".to_owned() })
+                            }
+                        },
+                        "timeline" => {
+                            if app_info.timeline.is_some() {
+                                match app_utils::create_app_by_type(&app, app_info, AppTypes::Timeline(timeline::table), connection) {
+                                    Ok(_) => return Ok(app),
+                                    Err(err) => return Err(err)
+                                }
+                            } else {
+                                return Err(GenericError { error: true, message: "You need to provide the required info to create a timeline app".to_owned() })
+                            }
+                        },
+                        _ => Err(GenericError { error: true, message: "The app type must be specified".to_owned() })
+                    }
+                },
+                Err(err) => Err(GenericError { error: true, message: err.to_string() })
             }
         },
-        Err(err) => Err(GenericError { error: false, message: err.to_string() })
+        Err(err) => Err(err)
     }
 }
 
-pub fn update_app(project_info: &ProjectInputCreate, user_id: &String, project_id: &String) -> Result<GenericError, GenericError> {
-    let connection = &mut establish_connection();
-    let user_found = users::table.filter(users::id.eq(&user_id)).first::<User>(connection);
-    match user_found {
-        Ok(user) => {
-            let project_found: Result<Project, Error> = UserProject::belonging_to(&user)
-                            .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
-                            .filter(projects::idproject.eq(project_id))
-                            .filter(project_user::idrole.eq("1".to_string()))
-                            .select(Project::as_select())
-                            .get_result::<Project>(connection);
-            
-            match project_found {
-                Ok(mut project) => {
-                    project.name = project_info.name.clone();
-                    project.description = project_info.description.clone();
-                    project.updated_at = (Utc::now()).to_string();
-
-                    let updated_project = project.save_changes::<Project>(connection);
-                    match updated_project {
-                        Ok(_user) => Ok(GenericError {error: false, message: "Updated project successfully".to_string()}), 
-                        Err(err) => Err(GenericError {error: true, message: err.to_string()})
+pub fn update_app(app_info: &AppInputCreate, user_id: &String, project_id: &String, app_id: &String) -> Result<GenericError, GenericError> {
+    match project::is_admin(&project_id, &user_id) {
+        Ok(_) => {
+            match app_info.apptype.as_str() {
+                "kanban" => {
+                    match app_utils::update_app_by_type(project_id, app_id, app_info, AppTypes::Kanban(kanban::table)) {
+                        Ok(response) => return Ok(response),
+                        Err(err) => return Err(err)
                     }
                 },
-                Err(_err) => Err(GenericError {error: true, message: "You are not a member or you don't have privileges to make it".to_string()})
+                "docs" => {
+                    match app_utils::update_app_by_type(project_id, app_id, app_info, AppTypes::Docs(docs::table)) {
+                        Ok(response) => return Ok(response),
+                        Err(err) => return Err(err)
+                    }
+                },
+                "timeline" => {
+                    match app_utils::update_app_by_type(project_id, app_id, app_info, AppTypes::Timeline(timeline::table)) {
+                        Ok(response) => return Ok(response),
+                        Err(err) => return Err(err)
+                    }
+                },
+                _ => Err(GenericError { error: true, message: "The app type must be specified".to_owned() })
             }
-        }, 
-        Err(err) => Err(GenericError {error: true, message: err.to_string()})
+        },
+        Err(err) => return Err(err)
     }
 }
 
-pub fn delete_app(user_id: &String, project_id: &String) -> Result<GenericError, GenericError> {
-    let connection = &mut establish_connection();
-    let user_found = users::table.filter(users::id.eq(&user_id)).first::<User>(connection);
-    match user_found {
-        Ok(user) => {
-            let app_found: Result<Project, Error> = UserProject::belonging_to(&user)
-                            .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
-                            .filter(projects::idproject.eq(project_id))
-                            .filter(project_user::idrole.eq("1".to_string()))
-                            .select(Project::as_select())
-                            .get_result::<Project>(connection);
-            
-            match project_found {
-                Ok(project) => {
-                    let deleted = diesel::delete(projects::table.filter(projects::idproject.eq(project.idproject))).execute(connection);
+pub fn delete_app(app_id: &String, project_id: &String, user_id: &String) -> Result<GenericError, GenericError> {
+    match project::is_admin(&project_id, &user_id) {
+        Ok(_) => {
+            let connection = &mut establish_connection();
+            let app_found = app::table.filter(app::id.eq(&app_id))
+                        .filter(app::idproject.eq(project_id))
+                        .first::<App>(connection);
+            match app_found {
+                Ok(_) => {
+                    let deleted = diesel::delete(app::table)
+                                .filter(app::id.eq(app_id))
+                                .filter(app::idproject.eq(project_id))
+                                .execute(connection);
                     match deleted {
-                        Ok(_) => Ok(GenericError { error: false, message: "Project deleted successfully".to_string() }),
+                        Ok(_) => Err(GenericError { error: true, message: "The app was successfully deleted".to_owned() }),
                         Err(err) => Err(GenericError { error: true, message: err.to_string() })
                     }
-                },
-                Err(_err) => Err(GenericError {error: true, message: "You are not a member or you don't have privileges to make it".to_string()})
+                }, 
+                Err(_) => Err(GenericError { error: true, message: "The app was not found".to_owned() })
             }
-        }, 
-        Err(err) => Err(GenericError {error: true, message: err.to_string()})
+        },
+        Err(err) => Err(err)
     }
 }

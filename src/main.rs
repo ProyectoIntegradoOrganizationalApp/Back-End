@@ -5,6 +5,7 @@ use routes::project::{create_project, update_project, delete_project};
 use routes::kanban::board::{create_board, update_board, delete_board};
 use routes::kanban::column::{create_column, update_column, delete_column};
 use routes::kanban::task::{create_task, update_task, delete_task};
+use routes::app::{create_app, update_app, delete_app};
 use rocket_sync_db_pools::database;
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Header;
@@ -89,6 +90,9 @@ fn rocket() -> _ {
             create_project,
             update_project,
             delete_project,
+            create_app,
+            update_app,
+            delete_app,
             create_board,
             update_board,
             delete_board,
@@ -97,7 +101,7 @@ fn rocket() -> _ {
             delete_column,
             create_task,
             update_task,
-            delete_task
+            delete_task,
         ])
         .register("/", catchers![not_found, server_error, rocket_validation::validation_catcher])
 }
