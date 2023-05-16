@@ -1,5 +1,6 @@
 use diesel::{Insertable, Queryable, Selectable, Associations, Identifiable, AsChangeset};
 use rocket::serde::{Serialize, Deserialize};
+use rocket_validation::Validate;
 use crate::schema::*;
 
 // TABLE'S STRUCTS ········ START
@@ -141,13 +142,22 @@ pub struct UserProject {
 
 // USER CRUD & LOGIN ········ START
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Validate)]
 pub struct UserInput {
+    #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
     pub first_name: String,
+    #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
     pub last_name: String,
+    #[validate(phone(message = "Must be a valid phone"))]
     pub phone: String,
+    #[validate(email(message = "Must be a valid email"))]
     pub email: String,
+    #[validate(length(min = 8, max = 24, message = "Password length must be between 8 and 24 characters"))]
+    #[validate(must_match(other = "confirmpass", message = "Passwords don't match"))]
     pub password: String,
+    #[validate(length(min = 8, max = 24, message = "Password length must be between 8 and 24 characters"))]
+    #[validate(must_match(other = "password", message = "Passwords don't match"))]
+    pub confirmpass: String
 }
 
 #[derive(Serialize, Deserialize, Debug)]

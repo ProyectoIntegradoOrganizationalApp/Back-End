@@ -99,5 +99,5 @@ fn rocket() -> _ {
             update_task,
             delete_task
         ])
-        .register("/", catchers![not_found, server_error])
+        .register("/", catchers![not_found, server_error, rocket_validation::validation_catcher])
 }

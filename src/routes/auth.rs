@@ -1,4 +1,5 @@
 use rocket::serde::json::{Json};
+use rocket_validation::Validated;
 use crate::models::models::*;
 use crate::services;
 
@@ -80,8 +81,8 @@ pub fn logout(token: Result<TokenValidation, GenericError>) -> Result<Json<Strin
 
 // CRUD USER
 #[post("/register", data="<user_info>", format="json")]
-pub fn register(user_info: Json<UserInput>) -> Result<Json<GenericError>, Json<GenericError>> {
-    match services::auth::register(&user_info) {
+pub fn register(user_info: Validated<Json<UserInput>>) -> Result<Json<GenericError>, Json<GenericError>> {
+    match services::auth::register(&user_info.0) {
         Ok(_user) => {
             let response = GenericError {
                 error: false,
