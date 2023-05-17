@@ -1,12 +1,13 @@
 use rocket::serde::json::{Json};
+use rocket_validation::Validated;
 use crate::models::models::*;
 use crate::services;
 
 #[post("/board", data="<board_info>", format="json")]
-pub fn create_board(board_info: Json<BoardInputCreate>, token: Result<TokenValidation, GenericError>) -> Result<Json<Board>, Json<GenericError>> {
+pub fn create_board(board_info: Validated<Json<BoardInputCreate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<Board>, Json<GenericError>> {
     match token {
         Ok(_) => {
-            match services::kanban::board::create_board(&board_info) {
+            match services::kanban::board::create_board(&board_info.0) {
                 Ok(result) => Ok(Json(result)),
                 Err(err) => Err(Json(err))
             }
@@ -16,10 +17,10 @@ pub fn create_board(board_info: Json<BoardInputCreate>, token: Result<TokenValid
 }
 
 #[put("/board/<id>", data="<board_info>", format="json")]
-pub fn update_board(id: String, board_info: Json<BoardInputCreate>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+pub fn update_board(id: String, board_info: Validated<Json<BoardInputCreate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(_) => {
-            match services::kanban::board::update_board(&board_info, &id) {
+            match services::kanban::board::update_board(&board_info.0, &id) {
                 Ok(result) => Ok(Json(result)),
                 Err(err) => Err(Json(err))
             }
