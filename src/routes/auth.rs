@@ -4,9 +4,9 @@ use crate::models::models::*;
 use crate::services;
 
 #[post("/login", data="<user_info>", format="json")]
-pub fn login(user_info: Json<UserLogin>) -> Result<Json<UserLoginResponse>, Json<GenericError>> {
+pub fn login(user_info: Validated<Json<UserLogin>>) -> Result<Json<UserLoginResponse>, Json<GenericError>> {
 
-    let result = match services::auth::login(&user_info) {
+    let result = match services::auth::login(&user_info.0) {
         Ok(response) => {
             Ok(Json(response))
         }
@@ -36,13 +36,13 @@ pub fn test_token(token: Result<TokenValidation, GenericError>) -> Result<Json<T
 }
 
 #[post("/send_mail", data="<user_mail>", format="json")]
-pub fn send_mail(user_mail: Json<UserMail>) -> Json<ResponseMessage> {
-    Json(services::auth::send_mail(&user_mail))
+pub fn send_mail(user_mail: Validated<Json<UserMail>>) -> Json<ResponseMessage> {
+    Json(services::auth::send_mail(&user_mail.0))
 }
 
 #[post("/change_password", data="<user_info>", format="json")]
-pub fn change_password(user_info: Json<ChangePass>) -> Result<Json<ResponseMessage>, Json<GenericError>>{
-    let result = match services::auth::change_password(&user_info) {
+pub fn change_password(user_info: Validated<Json<ChangePass>>) -> Result<Json<ResponseMessage>, Json<GenericError>>{
+    let result = match services::auth::change_password(&user_info.0) {
         Ok(msg) => {
             let response = ResponseMessage {
                 message: msg
@@ -61,7 +61,7 @@ pub fn change_password(user_info: Json<ChangePass>) -> Result<Json<ResponseMessa
     result
 }
 
-#[post("/logout", format="json")]
+#[get("/logout", format="json")]
 pub fn logout(token: Result<TokenValidation, GenericError>) -> Result<Json<String>, Json<GenericError>> {
     match token {
         Ok(validation) => {
@@ -101,11 +101,11 @@ pub fn register(user_info: Validated<Json<UserInput>>) -> Result<Json<GenericErr
 }
 
 #[put("/user/<id>", data="<user_info>", format="json")]
-pub fn update_user(id: String, user_info: Json<UserUpdate>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+pub fn update_user(id: String, user_info: Validated<Json<UserUpdate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
             if token_data.owner {
-                match services::auth::update_user(&user_info, &token_data.token_iduser) {
+                match services::auth::update_user(&user_info.0, &token_data.token_iduser) {
                     Ok(result) => Ok(Json(result)),
                     Err(err) => Err(Json(err))
                 }

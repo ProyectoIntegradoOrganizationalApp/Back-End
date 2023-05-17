@@ -1,12 +1,13 @@
 use rocket::serde::json::{Json};
+use rocket_validation::Validated;
 use crate::models::models::*;
 use crate::services;
 
 #[post("/project", data="<project_info>", format="json")]
-pub fn create_project(project_info: Json<ProjectInputCreate>, token: Result<TokenValidation, GenericError>) -> Result<Json<Project>, Json<GenericError>> {
+pub fn create_project(project_info: Validated<Json<ProjectInputCreate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<Project>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
-            match services::project::create_project(&project_info, token_data.token_iduser) {
+            match services::project::create_project(&project_info.0, token_data.token_iduser) {
                 Ok(result) => Ok(Json(result)),
                 Err(err) => Err(Json(err))
             }
@@ -16,11 +17,11 @@ pub fn create_project(project_info: Json<ProjectInputCreate>, token: Result<Toke
 }
 
 #[put("/project/<id>", data="<project_info>", format="json")]
-pub fn update_project(id: String, project_info: Json<ProjectInputCreate>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+pub fn update_project(id: String, project_info: Validated<Json<ProjectInputCreate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
             if token_data.owner {
-                match services::project::update_project(&project_info, &token_data.token_iduser, &id) {
+                match services::project::update_project(&project_info.0, &token_data.token_iduser, &id) {
                     Ok(result) => Ok(Json(result)),
                     Err(err) => Err(Json(err))
                 }

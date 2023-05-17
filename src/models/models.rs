@@ -1,6 +1,7 @@
 use diesel::{Insertable, Queryable, Selectable, Associations, Identifiable, AsChangeset};
 use rocket::serde::{Serialize, Deserialize};
 use rocket_validation::Validate;
+use validator::Validate as Validate2;
 use crate::schema::*;
 
 // TABLE'S STRUCTS ········ START
@@ -194,9 +195,11 @@ pub struct UserInput {
     pub confirmpass: String
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Validate)]
 pub struct UserLogin {
+    #[validate(email(message = "Must be a valid email"))]
     pub email: String,
+    #[validate(length(min = 8, max = 24, message = "Password length must be between 8 and 24 characters"))]
     pub password: String
 }
 
@@ -213,19 +216,25 @@ pub struct UserLoginResponse {
     pub _token: String,
     pub notifications: Vec<UserNotificationProfile>
 }
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Validate)]
 pub struct UserUpdate {
+    #[validate(email(message = "Must be a valid email"))]
     pub email: String,
+    #[validate(length(min = 8, max = 24, message = "Password length must be between 8 and 24 characters"))]
     pub password: String,
+    #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
     pub name: String,
+    #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
     pub lastname: String,
+    #[validate(phone(message = "Must be a valid phone"))]
     pub phone: String
 }
 // USER CRUD & LOGIN ········ END
 
 // RECOVERY PASSWORD ········· START
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct UserMail {
+    #[validate(email(message = "Must be a valid email"))]
     pub email: String
 }
 
@@ -234,10 +243,15 @@ pub struct ResponseMessage {
     pub message: String
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct ChangePass {
+    #[validate(email(message = "Must be a valid email"))]
     pub mail: String,
+    #[validate(length(min = 8, max = 24, message = "Password length must be between 8 and 24 characters"))]
+    #[validate(must_match(other = "confirm_pass", message = "Passwords don't match"))]
     pub pass: String,
+    #[validate(length(min = 8, max = 24, message = "Password length must be between 8 and 24 characters"))]
+    #[validate(must_match(other = "pass", message = "Passwords don't match"))]
     pub confirm_pass: String
 }
 // RECOVERY PASSWORD ········· END
@@ -331,49 +345,59 @@ pub struct UserActivityProfile {
 }
 // PROFILE ENDPOINT ········· END
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Validate)]
 pub struct ProjectInputCreate {
+    #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
     pub name: String,
+    #[validate(length(min = 10, max = 150, message = "Lenght must be between 10 and 150 characters"))]
     pub description: String
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Validate2)]
 pub struct AppInputCreate {
     pub apptype: String,
+    #[validate]
     pub kanban: Option<KanbanInputCreate>,
+    #[validate]
     pub docs: Option<DocsInputCreate>,
+    #[validate]
     pub timeline: Option<TimelineInputCreate>
 }
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Validate)]
 pub struct KanbanInputCreate {
     // Atributos modificables de kanban
 }
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Validate)]
 pub struct DocsInputCreate {
     // Atributos modificables de docs
 }
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Validate)]
 pub struct TimelineInputCreate {
     // Atributos modificables de timeline
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Validate)]
 pub struct BoardInputCreate {
     pub idapp: String,
+    #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
     pub title: String
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Validate)]
 pub struct ColumnInputCreate {
     pub idboard: String,
+    #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
     pub title: String
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Validate)]
 pub struct TaskInputCreate {
     pub idcolumn: String,
+    #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
     pub title: String,
+    #[validate(length(min = 10, max = 150, message = "Lenght must be between 10 and 150 characters"))]
     pub description: Option<String>,
+    #[validate(url)]
     pub github: Option<String>
 }
 
