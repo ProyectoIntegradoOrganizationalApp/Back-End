@@ -53,8 +53,8 @@ pub fn delete_project(id: String, token: Result<TokenValidation, GenericError>) 
 #[get("/project/<id>")]
 pub fn get_project(id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<ProjectDetail>, Json<GenericError>> {
     match token {
-        Ok(_token_data) => {
-            match services::project::get_project(&id) {
+        Ok(token_data) => {
+            match services::project::get_project(&id, &token_data) {
                 Ok(result) => Ok(Json(result)),
                 Err(err) => Err(Json(err))
             }

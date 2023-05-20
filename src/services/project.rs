@@ -101,7 +101,7 @@ pub fn delete_project(user_id: &String, project_id: &String) -> Result<GenericEr
     }
 }
 
-pub fn get_project(project_id: &String) -> Result<ProjectDetail, GenericError> {
+pub fn get_project(project_id: &String, token_data: &TokenValidation) -> Result<ProjectDetail, GenericError> {
     let connection = &mut establish_connection();
     let project_found = projects::table.filter(projects::idproject.eq(&project_id)).first::<Project>(connection);
     match project_found {
@@ -113,12 +113,32 @@ pub fn get_project(project_id: &String) -> Result<ProjectDetail, GenericError> {
             let mut project_members:Vec<ProjectMembers> = Vec::new();
             match members_found {
                 Ok(members) => {
+                    let mut user_member = false;
+                    let mut owner = false;
                     for member in &members {
+                        if member.id == token_data.token_iduser {
+                            user_member = true;
+                        }
                         let project_members_info = ProjectMembers {
                             name: member.name.clone(),
                             photo: member.photo.clone()
                         };
                         project_members.push(project_members_info);
+                    }
+
+                    if user_member {
+                        let project_user_token = UserProject::belonging_to(&project)
+                            .filter(project_user::iduser.eq(&token_data.token_iduser))
+                            .select(UserProject::as_select())
+                            .get_result::<UserProject>(connection);
+                        match project_user_token {
+                            Ok(project_user) => {
+                                if project_user.idrole == "1" {
+                                    owner = true;
+                                }
+                            },
+                            Err(_) => ()
+                        };
                     }
 
                     let project_detailed = ProjectDetail {
@@ -128,7 +148,8 @@ pub fn get_project(project_id: &String) -> Result<ProjectDetail, GenericError> {
                         description: project.description.clone(),
                         created_at: project.created_at.clone(),
                         updated_at: project.updated_at.clone(),
-                        members: project_members
+                        members: project_members,
+                        owner
                     };
 
                     Ok(project_detailed)

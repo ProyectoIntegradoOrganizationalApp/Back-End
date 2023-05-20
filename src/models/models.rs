@@ -364,7 +364,8 @@ pub struct ProjectDetail {
     pub description: String,
     pub created_at: String,
     pub updated_at: String,
-    pub members: Vec<ProjectMembers>
+    pub members: Vec<ProjectMembers>,
+    pub owner: bool
 }
 // PROJECT ENDPOINT ········· END
 
