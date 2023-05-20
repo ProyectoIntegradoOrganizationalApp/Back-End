@@ -50,6 +50,19 @@ pub fn delete_project(id: String, token: Result<TokenValidation, GenericError>) 
     }
 }
 
+#[get("/project/<id>")]
+pub fn get_project(id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<ProjectDetail>, Json<GenericError>> {
+    match token {
+        Ok(_token_data) => {
+            match services::project::get_project(&id) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => Err(Json(err))
+    }
+}
+
 #[get("/user/<id>/projects")]
 pub fn get_user_projects(id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<UserProjects>, Json<GenericError>> {
     match token {

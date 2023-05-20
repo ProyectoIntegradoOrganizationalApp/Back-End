@@ -356,6 +356,16 @@ pub struct ProjectInputCreate {
     #[validate(length(min = 10, max = 150, message = "Lenght must be between 10 and 150 characters"))]
     pub description: String
 }
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ProjectDetail {
+    pub idproject: String,
+    pub iduser: String,
+    pub name: String,
+    pub description: String,
+    pub created_at: String,
+    pub updated_at: String,
+    pub members: Vec<ProjectMembers>
+}
 // PROJECT ENDPOINT ········· END
 
 // APPS AND SPECIFICATIONS ENDPOINT ········· START

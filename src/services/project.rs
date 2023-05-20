@@ -101,6 +101,45 @@ pub fn delete_project(user_id: &String, project_id: &String) -> Result<GenericEr
     }
 }
 
+pub fn get_project(project_id: &String) -> Result<ProjectDetail, GenericError> {
+    let connection = &mut establish_connection();
+    let project_found = projects::table.filter(projects::idproject.eq(&project_id)).first::<Project>(connection);
+    match project_found {
+        Ok(project) => {
+            let members_found = UserProject::belonging_to(&project)
+                .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+                .select(User::as_select())
+                .load::<User>(connection);
+            let mut project_members:Vec<ProjectMembers> = Vec::new();
+            match members_found {
+                Ok(members) => {
+                    for member in &members {
+                        let project_members_info = ProjectMembers {
+                            name: member.name.clone(),
+                            photo: member.photo.clone()
+                        };
+                        project_members.push(project_members_info);
+                    }
+
+                    let project_detailed = ProjectDetail {
+                        idproject: project.idproject.clone(),
+                        iduser: project.iduser.clone(),
+                        name: project.name.clone(),
+                        description: project.description.clone(),
+                        created_at: project.created_at.clone(),
+                        updated_at: project.updated_at.clone(),
+                        members: project_members
+                    };
+
+                    Ok(project_detailed)
+                },
+                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+            }
+        },
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}
+
 pub fn get_user_projects(user_id: &String) -> Result<UserProjects, GenericError> {
     let connection = &mut establish_connection();
     let user_found = users::table.filter(users::id.eq(&user_id)).first::<User>(connection);
