@@ -100,3 +100,54 @@ pub fn delete_project(user_id: &String, project_id: &String) -> Result<GenericEr
         Err(err) => Err(GenericError {error: true, message: err.to_string()})
     }
 }
+
+pub fn get_user_projects(user_id: &String) -> Result<UserProjects, GenericError> {
+    let connection = &mut establish_connection();
+    let user_found = users::table.filter(users::id.eq(&user_id)).first::<User>(connection);
+    match user_found {
+        Ok(user) => {
+            let projects_found = UserProject::belonging_to(&user)
+                            .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
+                            .select(Project::as_select())
+                            .load::<Project>(connection);
+            
+            match projects_found {
+                Ok(projects) => {
+                    let mut user_projects_detail:Vec<UserProjectsDetail> = Vec::new();
+                    for project in &projects {
+                        let members_found = UserProject::belonging_to(&project)
+                            .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+                            .select(User::as_select())
+                            .load::<User>(connection);
+                        let mut project_members:Vec<ProjectMembers> = Vec::new();
+                        match members_found {
+                            Ok(members) => {
+                                for member in &members {
+                                    let project_members_info = ProjectMembers {
+                                        name: member.name.clone(),
+                                        photo: member.photo.clone()
+                                    };
+                                    project_members.push(project_members_info);
+                                }
+                            },
+                            Err(_) => ()
+                        };
+                        let user_project_detail_info = UserProjectsDetail {
+                            id: project.idproject.clone(),
+                            name: project.name.clone(),
+                            description: project.description.clone(),
+                            members: project_members
+                        };
+                        user_projects_detail.push(user_project_detail_info);
+                    }
+                    let user_projects = UserProjects {
+                        projects: user_projects_detail
+                    };
+                    Ok(user_projects)
+                },
+                Err(err) => Err(GenericError {error: true, message: err.to_string()})
+            }
+        }, 
+        Err(err) => Err(GenericError {error: true, message: err.to_string()})
+    }
+}

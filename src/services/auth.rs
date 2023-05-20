@@ -33,6 +33,7 @@ pub fn register(user_info: &UserInput) -> Result<User, String> {
         created_at: now.clone(),
         updated_at: now.clone(),
         level: 1,
+        photo: String::from(&user_info.photo)
     };
 
     let created_user = diesel::insert_into(users::table)

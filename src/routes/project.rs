@@ -49,3 +49,20 @@ pub fn delete_project(id: String, token: Result<TokenValidation, GenericError>) 
         Err(err) => Err(Json(err))
     }
 }
+
+#[get("/user/<id>/projects")]
+pub fn get_user_projects(id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<UserProjects>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            if token_data.owner {
+                match services::project::get_user_projects(&id) {
+                    Ok(result) => Ok(Json(result)),
+                    Err(err) => Err(Json(err))
+                }
+            } else {
+                Err(Json(GenericError { error: true, message: "You are not the owner".to_string()}))
+            }
+        },
+        Err(err) => Err(Json(err))
+    }
+}

@@ -9,5 +9,6 @@ CREATE TABLE users (
     phone VARCHAR NOT NULL,
     created_at VARCHAR NOT NULL,
     updated_at VARCHAR NOT NULL,
-    level SMALLINT NOT NULL
+    level SMALLINT NOT NULL,
+    photo VARCHAR NOT NULL
 );

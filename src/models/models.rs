@@ -18,6 +18,7 @@ pub struct User {
     pub created_at: String,
     pub updated_at: String,
     pub level: i16,
+    pub photo: String
 }
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Identifiable, PartialEq)]
 #[diesel(primary_key(id))]
@@ -192,7 +193,9 @@ pub struct UserInput {
     pub password: String,
     #[validate(length(min = 8, max = 24, message = "Password length must be between 8 and 24 characters"))]
     #[validate(must_match(other = "password", message = "Passwords don't match"))]
-    pub confirmpass: String
+    pub confirmpass: String,
+    #[validate(url(message = "Must be a valid photo url"))]
+    pub photo: String
 }
 
 #[derive(Serialize, Deserialize, Debug, Validate)]
@@ -345,6 +348,7 @@ pub struct UserActivityProfile {
 }
 // PROFILE ENDPOINT ········· END
 
+// PROJECT ENDPOINT ········· START
 #[derive(Serialize, Deserialize, Debug, Validate)]
 pub struct ProjectInputCreate {
     #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
@@ -352,7 +356,9 @@ pub struct ProjectInputCreate {
     #[validate(length(min = 10, max = 150, message = "Lenght must be between 10 and 150 characters"))]
     pub description: String
 }
+// PROJECT ENDPOINT ········· END
 
+// APPS AND SPECIFICATIONS ENDPOINT ········· START
 #[derive(Serialize, Deserialize, Debug, Validate2)]
 pub struct AppInputCreate {
     pub apptype: String,
@@ -400,4 +406,23 @@ pub struct TaskInputCreate {
     #[validate(url)]
     pub github: Option<String>
 }
+// APPS AND SPECIFICATIONS ENDPOINT ········· END
 
+// USER PROJECTS ENDPOINT ········· START
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserProjects {
+    pub projects: Vec<UserProjectsDetail>
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserProjectsDetail {
+    pub id: String,
+    pub name: String, 
+    pub description: String,
+    pub members: Vec<ProjectMembers>
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ProjectMembers {
+    pub name: String,
+    pub photo: String
+}
+// USER PROJECTS ENDPOINT ········· END
