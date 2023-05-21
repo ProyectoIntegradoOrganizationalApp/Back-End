@@ -321,19 +321,22 @@ pub struct UserAchievementsProfile {
     pub description: String,
     pub icon: String,
     pub progress: i32,
-    pub completed: bool
+    pub completed: bool,
+    pub current_state: i32
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserInfoResponse {
     pub id: String,
     pub name: String,
     pub email: String,
-    pub level: i16
+    pub level: i16,
+    pub photo: String
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserProjectProfile {
     pub id: String,
-    pub name: String
+    pub name: String,
+    pub description: String
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserNotificationProfile {

@@ -19,7 +19,8 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
                 id: user.id.clone(),
                 name: user.name.clone(),
                 email: user.email.clone(),
-                level: user.level
+                level: user.level,
+                photo: user.photo.clone()
             };
             let achievements_found = UserAchievement::belonging_to(&user)
             .inner_join(achievement::table)
@@ -37,7 +38,8 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
                             description: i.0.description.clone(),
                             icon: i.0.icon.clone(),
                             progress: i.1.progress,
-                            completed: i.1.completed
+                            completed: i.1.completed,
+                            current_state: i.1.current_state
                         };
                         achievements_info.push(user_achievements_info);
                     }
@@ -52,7 +54,8 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
                             for i in &projects {
                                 let user_projects_info = UserProjectProfile {
                                     id: i.idproject.clone(),
-                                    name: i.name.clone()
+                                    name: i.name.clone(),
+                                    description: i.description.clone()
                                 };
                                 projects_info.push(user_projects_info);
                             }
