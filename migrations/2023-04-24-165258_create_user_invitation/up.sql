@@ -3,6 +3,8 @@ CREATE TABLE user_invitation (
     idProject VARCHAR NOT NULL,
     idGuest VARCHAR NOT NULL,
     idUser VARCHAR NOT NULL,
+    title VARCHAR NOT NULL,
+    message VARCHAR NOT NULL,
     PRIMARY KEY (idProject, idGuest, idUser),
     CONSTRAINT fk_project
         FOREIGN KEY(idProject)

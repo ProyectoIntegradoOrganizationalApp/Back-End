@@ -3,7 +3,7 @@ use rust_api_rest::establish_connection;
 use diesel::prelude::*;
 use diesel::BelongingToDsl;
 use crate::models::models::*;
-use crate::schema::{users, achievement, projects, project_user};
+use crate::schema::{users, achievement, projects, project_user, user_invitation};
 
 pub fn profile(id_string: &String) -> Result<UserProfile, String>{
     let connection = &mut establish_connection();
@@ -96,3 +96,51 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
         Err(err) => Err(err.to_string())
     }
 }
+
+pub fn invite_user_to_project(guest_id: &String, project_id: &String, user_id: &String, invitation: &InvitationMessage) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    let project_found = projects::table
+        .select(Project::as_select())
+        .filter(projects::idproject.eq(&project_id))
+        .get_result::<Project>(connection);
+    match project_found {
+        Ok(project) => {
+            let user_in_project_found = UserProject::belonging_to(&project)
+                .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+                .select(User::as_select())
+                .filter(project_user::iduser.eq(&user_id))
+                .filter(project_user::idrole.eq("1"))
+                .get_result::<User>(connection);
+            match user_in_project_found {
+                Ok(_user) => {
+                    let guest_in_project_found = UserProject::belonging_to(&project)
+                        .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+                        .select(User::as_select())
+                        .filter(project_user::iduser.eq(&guest_id))
+                        .get_result::<User>(connection);
+                    match guest_in_project_found {
+                        Ok(_guest) => Ok(GenericError { error: true, message: "The invited user is already in the project".to_string()}),
+                        Err(_err) => {
+                            let new_invitation = UserInvitation {
+                                idproject: project_id.clone(),
+                                idguest: guest_id.clone(),
+                                iduser: user_id.clone(),
+                                title: invitation.title.clone(),
+                                message: invitation.message.clone()
+                            };
+                            let created_invitation = diesel::insert_into(user_invitation::table)
+                                .values(&new_invitation)
+                                .get_result::<UserInvitation>(connection);
+                            match created_invitation {
+                                Ok(_result) => Ok(GenericError { error: false, message: "Invitation sent successfully".to_string() }),
+                                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                            }
+                        }
+                    }
+                },
+                Err(_err) => Err(GenericError { error: true, message: "You are not member of the project or you don't have enough privileges to invite anyone".to_string() })
+            }
+        },
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}   

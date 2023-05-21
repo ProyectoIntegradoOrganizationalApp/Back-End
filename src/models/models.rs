@@ -165,6 +165,18 @@ pub struct UserProject {
     pub iduser: String,
     pub idrole: String
 }
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
+#[diesel(belongs_to(User, foreign_key = iduser))]
+#[diesel(belongs_to(Project, foreign_key = idproject))]
+#[diesel(primary_key(idproject, idguest, iduser))]
+#[diesel(table_name = user_invitation)]
+pub struct UserInvitation {
+    pub idproject: String,
+    pub idguest: String, 
+    pub iduser: String,
+    pub title: String,
+    pub message: String
+}
 
 // #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
 // #[diesel(belongs_to(User, foreign_key = iduser))]
@@ -442,3 +454,13 @@ pub struct ProjectMembers {
     pub photo: String
 }
 // USER PROJECTS ENDPOINT ········· END
+
+// USER INVITATION TO A PROJECT MESSAGE ········· START
+#[derive(Serialize, Deserialize, Debug, Validate)]
+pub struct InvitationMessage {
+    #[validate(length(min = 3, max = 50, message = "Title lenght must be between 3 and 50 characters"))]
+    pub title: String,
+    #[validate(length(min = 10, max = 150, message = "Message lenght must be between 10 and 150 characters"))]
+    pub message: String
+}
+// USER INVITATION TO A PROJECT MESSAGE ········· END

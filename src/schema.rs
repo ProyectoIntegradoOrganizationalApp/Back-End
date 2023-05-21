@@ -168,6 +168,8 @@ diesel::table! {
         idproject -> Varchar,
         idguest -> Varchar,
         iduser -> Varchar,
+        title -> Varchar,
+        message -> Varchar,
     }
 }
 

@@ -1,4 +1,5 @@
 use rocket::serde::json::{Json};
+use rocket_validation::Validated;
 use crate::models::models::*;
 use crate::services;
 use crate::utilities::achievements::*;
@@ -63,5 +64,20 @@ pub fn profile(id: String, token: Result<TokenValidation, GenericError>) -> Resu
             }
         },
         Err(err) => Err(Json(err))
+    }
+}
+
+#[post("/user/<user_id>/project/<project_id>", data="<invitation>", format="json")]
+pub fn invite_user_to_project(user_id: String, project_id: String, invitation: Validated<Json<InvitationMessage>>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::user::invite_user_to_project(&user_id, &project_id, &token_data.token_iduser, &invitation.0) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => {
+            Err(Json(err))
+        }
     }
 }
