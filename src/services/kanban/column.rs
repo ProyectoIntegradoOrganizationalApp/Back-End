@@ -5,8 +5,9 @@ use crate::schema::*;
 use diesel::prelude::*;
 use diesel::result::Error;
 use rust_api_rest::establish_connection;
+use crate::utilities::achievements::*;
 
-pub fn create_column(column_info: &ColumnInputCreate) -> Result<Columna, GenericError> {
+pub fn create_column(column_info: &ColumnInputCreate, user_id: &str) -> Result<Columna, GenericError> {
     let connection = &mut establish_connection();
     let column_id = uuid::Uuid::new_v4().to_string();
     let new_column = Columna {
@@ -19,7 +20,13 @@ pub fn create_column(column_info: &ColumnInputCreate) -> Result<Columna, Generic
         .get_result::<Columna>(connection);
 
     match created_column {
-        Ok(column) => Ok(column),
+        Ok(column) => {
+            let achievement_updated = check_update_user_achievement(user_id, "6");
+            match achievement_updated {
+                Ok(_) => Ok(column),
+                Err(err) => Err(err)
+            }
+        },
         Err(err) => Err(GenericError { error: false, message: err.to_string() })
     }
 }

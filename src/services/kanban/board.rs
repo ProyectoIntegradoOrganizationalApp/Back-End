@@ -6,7 +6,7 @@ use diesel::prelude::*;
 use diesel::result::Error;
 use rust_api_rest::establish_connection;
 
-pub fn create_board(board_info: &BoardInputCreate) -> Result<Board, GenericError> {
+pub fn create_board(board_info: &BoardInputCreate, user_id: &str) -> Result<Board, GenericError> {
     let connection = &mut establish_connection();
     let board_id = uuid::Uuid::new_v4().to_string();
     let new_board = Board {

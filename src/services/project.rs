@@ -5,6 +5,7 @@ use crate::schema::*;
 use diesel::prelude::*;
 use diesel::result::Error;
 use rust_api_rest::establish_connection;
+use crate::utilities::achievements::*;
 
 use chrono::Utc;
 
@@ -35,7 +36,13 @@ pub fn create_project(project_info: &ProjectInputCreate, token_iduser: String) -
                 .values(&new_project_user)
                 .get_result::<UserProject>(connection);
             match created_project_user {
-                Ok(_user_project) => Ok(project),
+                Ok(_user_project) => {
+                    let achievement_updated = check_update_user_achievement(&project.iduser, "2");
+                    match achievement_updated {
+                        Ok(_) => Ok(project),
+                        Err(err) => Err(err)
+                    }
+                },
                 Err(err) => Err(GenericError { error: false, message: err.to_string() })
             }
         },

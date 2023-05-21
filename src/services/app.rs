@@ -3,6 +3,7 @@ extern crate redis;
 use crate::models::models::*;
 use crate::utilities::project;
 use crate::utilities::app as app_utils;
+use crate::utilities::achievements;
 use crate::schema::*;
 use diesel::prelude::*;
 use rust_api_rest::establish_connection;
@@ -23,11 +24,22 @@ pub fn create_app(app_info: &AppInputCreate, idproject: &String, token_iduser: &
 
             match created_app {
                 Ok(app) => {
+                    let achievement_updated = achievements::check_update_user_achievement(token_iduser, "7");
+                    match achievement_updated {
+                        Ok(_) => {},
+                        Err(err) => return Err(err)
+                    }
                     match app_info.apptype.as_str() {
                         "kanban" => {
                             if app_info.kanban.is_some() {
                                 match app_utils::create_app_by_type(&app, app_info, AppTypes::Kanban(kanban::table), connection) {
-                                    Ok(_) => return Ok(app),
+                                    Ok(_) => {
+                                        let achievement_updated = achievements::check_update_user_achievement(token_iduser, "3");
+                                        match achievement_updated {
+                                            Ok(_) => return Ok(app),
+                                            Err(err) => return Err(err)
+                                        }
+                                    },
                                     Err(err) => return Err(err)
                                 }
                             } else {
@@ -47,7 +59,13 @@ pub fn create_app(app_info: &AppInputCreate, idproject: &String, token_iduser: &
                         "timeline" => {
                             if app_info.timeline.is_some() {
                                 match app_utils::create_app_by_type(&app, app_info, AppTypes::Timeline(timeline::table), connection) {
-                                    Ok(_) => return Ok(app),
+                                    Ok(_) => {
+                                        let achievement_updated = achievements::check_update_user_achievement(token_iduser, "4");
+                                        match achievement_updated {
+                                            Ok(_) => return Ok(app),
+                                            Err(err) => return Err(err)
+                                        }
+                                    },
                                     Err(err) => return Err(err)
                                 }
                             } else {

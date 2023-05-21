@@ -5,6 +5,7 @@ use crate::models::models::*;
 use crate::schema::users;
 use crate::utilities::jwt::*;
 use crate::utilities::redis::*;
+use crate::utilities::achievements::*;
 use std::env;
 
 use bcrypt::verify;
@@ -41,7 +42,10 @@ pub fn register(user_info: &UserInput) -> Result<User, String> {
         .get_result::<User>(connection);
 
     match created_user {
-        Ok(user) => Ok(user),
+        Ok(user) => {
+            create_user_achievements(&user.id);
+            Ok(user)
+        },
         Err(e) => Err(e.to_string()),
     }
 }

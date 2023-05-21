@@ -5,8 +5,9 @@ use crate::schema::*;
 use diesel::prelude::*;
 use diesel::result::Error;
 use rust_api_rest::establish_connection;
+use crate::utilities::achievements::*;
 
-pub fn create_task(task_info: &TaskInputCreate) -> Result<Task, GenericError> {
+pub fn create_task(task_info: &TaskInputCreate, user_id: &str) -> Result<Task, GenericError> {
     let connection = &mut establish_connection();
     let task_id = uuid::Uuid::new_v4().to_string();
     let new_task = Task {
@@ -19,9 +20,16 @@ pub fn create_task(task_info: &TaskInputCreate) -> Result<Task, GenericError> {
     let created_task = diesel::insert_into(task::table)
         .values(&new_task)
         .get_result::<Task>(connection);
+    
 
     match created_task {
-        Ok(task) => Ok(task),
+        Ok(task) => {
+            let achievement_updated = check_update_user_achievement(user_id, "8");
+            match achievement_updated {
+                Ok(_) => Ok(task),
+                Err(err) => Err(err)
+            }
+        },
         Err(err) => Err(GenericError { error: false, message: err.to_string() })
     }
 }

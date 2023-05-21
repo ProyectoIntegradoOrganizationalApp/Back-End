@@ -6,8 +6,8 @@ use crate::services;
 #[post("/column", data="<column_info>", format="json")]
 pub fn create_column(column_info: Validated<Json<ColumnInputCreate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<Columna>, Json<GenericError>> {
     match token {
-        Ok(_) => {
-            match services::kanban::column::create_column(&column_info.0) {
+        Ok(token_data) => {
+            match services::kanban::column::create_column(&column_info.0, &token_data.token_iduser) {
                 Ok(result) => Ok(Json(result)),
                 Err(err) => Err(Json(err))
             }

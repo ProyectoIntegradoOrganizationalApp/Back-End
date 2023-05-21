@@ -27,10 +27,11 @@ pub struct Achievement {
     pub id: String,
     pub title: String,
     pub description: String,
-    pub icon: String
+    pub icon: String,
+    pub states: Vec<Option<i32>>
 }
 
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
 #[diesel(belongs_to(User, foreign_key = iduser))]
 #[diesel(belongs_to(Achievement, foreign_key = idachievement))]
 #[diesel(primary_key(idachievement, iduser))]
@@ -38,8 +39,9 @@ pub struct Achievement {
 pub struct UserAchievement {
     pub idachievement: String,
     pub iduser: String,
-    pub progress: i16,
-    pub completed: bool,
+    pub progress: i32,
+    pub current_state: i32,
+    pub completed: bool
 }
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
@@ -184,7 +186,7 @@ pub struct UserInput {
     pub first_name: String,
     #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
     pub last_name: String,
-    #[validate(phone(message = "Must be a valid phone"))]
+    // #[validate(phone(message = "Must be a valid phone"))]
     pub phone: String,
     #[validate(email(message = "Must be a valid email"))]
     pub email: String,
@@ -318,7 +320,7 @@ pub struct UserAchievementsProfile {
     pub title: String,
     pub description: String,
     pub icon: String,
-    pub progress: i16,
+    pub progress: i32,
     pub completed: bool
 }
 #[derive(Serialize, Deserialize, Debug)]

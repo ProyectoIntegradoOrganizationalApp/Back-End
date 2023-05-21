@@ -12,6 +12,7 @@ diesel::table! {
         title -> Varchar,
         description -> Varchar,
         icon -> Varchar,
+        states -> Array<Nullable<Int4>>,
     }
 }
 
@@ -19,7 +20,8 @@ diesel::table! {
     achievement_user (idachievement, iduser) {
         idachievement -> Varchar,
         iduser -> Varchar,
-        progress -> Int2,
+        progress -> Int4,
+        current_state -> Int4,
         completed -> Bool,
     }
 }
