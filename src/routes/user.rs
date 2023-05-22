@@ -96,3 +96,18 @@ pub fn change_role_user_project(user_id: String, project_id: String, role: Json<
         }
     }
 }
+
+#[delete("/user/<user_id>/project/<project_id>")]
+pub fn delete_user_project(user_id: String, project_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::user::delete_user_project(&user_id, &project_id, &token_data.token_iduser) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => {
+            Err(Json(err))
+        }
+    }
+}

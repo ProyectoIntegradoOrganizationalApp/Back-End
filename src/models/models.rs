@@ -178,15 +178,15 @@ pub struct UserInvitation {
     pub message: String
 }
 
-// #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
-// #[diesel(belongs_to(User, foreign_key = iduser))]
-// // #[diesel(belongs_to(User, foreign_key = idfriend))]
-// #[diesel(primary_key(idfriend, iduser))]
-// #[diesel(table_name = user_friend)]
-// pub struct UserFriend {
-//     pub iduser: String,
-//     pub idfriend: String
-// }
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
+#[diesel(belongs_to(User, foreign_key = iduser))]
+// #[diesel(belongs_to(User, foreign_key = idfriend))]
+#[diesel(primary_key(idfriend, iduser))]
+#[diesel(table_name = user_friend)]
+pub struct UserFriend {
+    pub iduser: String,
+    pub idfriend: String
+}
 
 // TABLE'S STRUCTS ········ END
 

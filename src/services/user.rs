@@ -219,3 +219,44 @@ pub fn change_role_user_project(guest_id: &String, project_id: &String, user_id:
         Err(GenericError { error: true, message: "You cannot change your own role".to_string() })
     }
 }
+
+pub fn delete_user_project(guest_id: &String, project_id: &String, user_id: &String) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    let project_found = projects::table
+        .select(Project::as_select())
+        .filter(projects::idproject.eq(&project_id))
+        .get_result::<Project>(connection);
+    match project_found {
+        Ok(project) => {
+            let user_in_project_found = UserProject::belonging_to(&project)
+                .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+                .select(User::as_select())
+                .filter(project_user::iduser.eq(&user_id))
+                .filter(project_user::idrole.eq("1"))
+                .get_result::<User>(connection);
+            match user_in_project_found {
+                Ok(_user) => {
+                    let guest_in_project_found = UserProject::belonging_to(&project)
+                        .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+                        .select(UserProject::as_select())
+                        .filter(project_user::iduser.eq(&guest_id))
+                        .get_result::<UserProject>(connection);
+                    match guest_in_project_found {
+                        Ok(guest) => {
+                            let deleted = diesel::delete(project_user::table.filter(project_user::iduser.eq(&guest.iduser)))
+                            .filter(project_user::idproject.eq(&guest.idproject))
+                            .execute(connection);
+                            match deleted {
+                                Ok(_) => Ok(GenericError { error: false, message: "User removed from project successfully".to_string() }),
+                                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                            }
+                        },
+                        Err(_err) => Err(GenericError { error: true, message: "The user to delete is not in the project".to_string()})
+                    }
+                },
+                Err(_err) => Err(GenericError { error: true, message: "You are not member of the project or you don't have enough privileges to do it".to_string() })
+            }
+        },
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}
