@@ -200,6 +200,27 @@ pub fn accept_user_invitation(project_id: &String, user_id: &String) -> Result<G
     }
 }
 
+pub fn deny_user_invitation(project_id: &String, user_id: &String) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    let invitation_found = user_invitation::table
+        .select(UserInvitation::as_select())
+        .filter(user_invitation::idproject.eq(&project_id))
+        .filter(user_invitation::idguest.eq(&user_id))
+        .get_result::<UserInvitation>(connection);
+    match invitation_found {
+        Ok(_invitation) => {
+            let deleted = diesel::delete(user_invitation::table.filter(user_invitation::idguest.eq(&user_id)))
+            .filter(user_invitation::idproject.eq(&project_id))
+            .execute(connection);
+            match deleted {
+                Ok(_) => Ok(GenericError { error: false, message: "Invitation to project denied successfully".to_string() }),
+                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+            }
+        },
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}
+
 pub fn change_role_user_project(guest_id: &String, project_id: &String, user_id: &String, role: &NewRole) -> Result<GenericError, GenericError> {
     let connection = &mut establish_connection();
     let project_found = projects::table
