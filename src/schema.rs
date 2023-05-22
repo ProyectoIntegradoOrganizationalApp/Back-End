@@ -164,6 +164,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    user_friend_invitation (idguest, iduser) {
+        idguest -> Varchar,
+        iduser -> Varchar,
+        title -> Varchar,
+        message -> Varchar,
+    }
+}
+
+diesel::table! {
     user_invitation (idproject, idguest, iduser) {
         idproject -> Varchar,
         idguest -> Varchar,
@@ -193,7 +202,6 @@ diesel::joinable!(columna -> board (idboard));
 diesel::joinable!(project_user -> role (idrole));
 diesel::joinable!(task -> columna (idcolumn));
 diesel::joinable!(user_friend -> users (idfriend));
-diesel::joinable!(user_invitation -> users (idguest));
 
 diesel::allow_tables_to_appear_in_same_query!(
     achievement,
@@ -214,6 +222,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     task,
     timeline,
     user_friend,
+    user_friend_invitation,
     user_invitation,
     users,
 );
