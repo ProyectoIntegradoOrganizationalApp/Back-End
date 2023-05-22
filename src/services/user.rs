@@ -1,4 +1,5 @@
 extern crate redis;
+
 use rust_api_rest::establish_connection;
 use diesel::prelude::*;
 use diesel::BelongingToDsl;
@@ -163,4 +164,58 @@ pub fn invite_user_to_project(guest_id: &String, project_id: &String, user_id: &
         },
         Err(err) => Err(GenericError { error: true, message: err.to_string() })
     }
-}   
+}
+
+pub fn change_role_user_project(guest_id: &String, project_id: &String, user_id: &String, role: &NewRole) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    let project_found = projects::table
+        .select(Project::as_select())
+        .filter(projects::idproject.eq(&project_id))
+        .get_result::<Project>(connection);
+    if guest_id != user_id {
+        match project_found {
+            Ok(project) => {
+                let user_in_project_found = UserProject::belonging_to(&project)
+                    .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+                    .select(User::as_select())
+                    .filter(project_user::iduser.eq(&user_id))
+                    .filter(project_user::idrole.eq("1"))
+                    .get_result::<User>(connection);
+                match user_in_project_found {
+                    Ok(_user) => {
+                        let guest_in_project_found = UserProject::belonging_to(&project)
+                            .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+                            .select(UserProject::as_select())
+                            .filter(project_user::iduser.eq(&guest_id))
+                            .get_result::<UserProject>(connection);
+                        match guest_in_project_found {
+                            Ok(mut guest) => {
+                                let idrole_number = role.idrole.clone().parse::<i32>();
+                                match idrole_number {
+                                    Ok(number) => {
+                                        if number > 0 && number < 3 {
+                                            guest.idrole = role.idrole.clone();
+                                            let updated_user_role = guest.save_changes::<UserProject>(connection);
+                                            match updated_user_role {
+                                                Ok(_user) => Ok(GenericError {error: false, message: "User's role successfully changed".to_string()}), 
+                                                Err(err) => Err(GenericError {error: true, message: err.to_string()})
+                                            }
+                                        } else {
+                                            Err(GenericError { error: true, message: "Invalid role".to_string() })
+                                        }
+                                    },
+                                    Err(err) => Err(GenericError {error: true, message: err.to_string()})
+                                }
+                            },
+                            Err(_err) => Err(GenericError { error: true, message: "The invited user is not in the project".to_string()})
+                        }
+                    },
+                    Err(_err) => Err(GenericError { error: true, message: "You are not member of the project or you don't have enough privileges to do it".to_string() })
+                }
+            },
+            Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        }
+    } else {
+        Err(GenericError { error: true, message: "You cannot change your own role".to_string() })
+    }
+}

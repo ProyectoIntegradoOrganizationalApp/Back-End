@@ -155,7 +155,7 @@ pub struct ProjectUserActivity {
     pub commits: i16
 }
 
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
 #[diesel(belongs_to(User, foreign_key = iduser))]
 #[diesel(belongs_to(Project, foreign_key = idproject))]
 #[diesel(primary_key(idproject, iduser))]
@@ -467,3 +467,10 @@ pub struct InvitationMessage {
     pub message: String
 }
 // USER INVITATION TO A PROJECT MESSAGE ········· END
+
+// USER ROLE IN PROJECT ········· START
+#[derive(Serialize, Deserialize, Debug)]
+pub struct NewRole {
+    pub idrole: String
+}
+// USER ROLE IN PROJECT ········· END
