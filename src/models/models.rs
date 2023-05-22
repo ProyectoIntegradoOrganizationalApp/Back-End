@@ -348,7 +348,9 @@ pub struct UserInfoResponse {
 pub struct UserProjectProfile {
     pub id: String,
     pub name: String,
-    pub description: String
+    pub description: String,
+    pub updated_at: String,
+    pub members: Vec<ProjectMembers>
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserNotificationProfile {
@@ -450,6 +452,7 @@ pub struct UserProjectsDetail {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ProjectMembers {
+    pub id: String,
     pub name: String,
     pub photo: String
 }

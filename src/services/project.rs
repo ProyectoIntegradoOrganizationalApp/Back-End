@@ -127,6 +127,7 @@ pub fn get_project(project_id: &String, token_data: &TokenValidation) -> Result<
                             user_member = true;
                         }
                         let project_members_info = ProjectMembers {
+                            id: member.id.clone(),
                             name: member.name.clone(),
                             photo: member.photo.clone()
                         };
@@ -191,6 +192,7 @@ pub fn get_user_projects(user_id: &String) -> Result<UserProjects, GenericError>
                             Ok(members) => {
                                 for member in &members {
                                     let project_members_info = ProjectMembers {
+                                        id: member.id.clone(),
                                         name: member.name.clone(),
                                         photo: member.photo.clone()
                                     };

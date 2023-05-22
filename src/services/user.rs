@@ -51,11 +51,31 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
                     match projects_found {
                         Ok(projects) => {
                             let mut projects_info:Vec<UserProjectProfile> = Vec::new();
-                            for i in &projects {
+                            for project in &projects {
+                                let members_found = UserProject::belonging_to(&project)
+                                    .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+                                    .select(User::as_select())
+                                    .load::<User>(connection);
+                                let mut project_members:Vec<ProjectMembers> = Vec::new();
+                                match members_found {
+                                    Ok(members) => {
+                                        for member in &members {
+                                            let project_members_info = ProjectMembers {
+                                                id: member.id.clone(),
+                                                name: member.name.clone(),
+                                                photo: member.photo.clone()
+                                            };
+                                            project_members.push(project_members_info);
+                                        }
+                                    },
+                                    Err(_) => ()
+                                };
                                 let user_projects_info = UserProjectProfile {
-                                    id: i.idproject.clone(),
-                                    name: i.name.clone(),
-                                    description: i.description.clone()
+                                    id: project.idproject.clone(),
+                                    name: project.name.clone(),
+                                    description: project.description.clone(),
+                                    updated_at: project.updated_at.clone(),
+                                    members: project_members
                                 };
                                 projects_info.push(user_projects_info);
                             }
