@@ -166,6 +166,40 @@ pub fn invite_user_to_project(guest_id: &String, project_id: &String, user_id: &
     }
 }
 
+pub fn accept_user_invitation(project_id: &String, user_id: &String) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    let invitation_found = user_invitation::table
+        .select(UserInvitation::as_select())
+        .filter(user_invitation::idproject.eq(&project_id))
+        .filter(user_invitation::idguest.eq(&user_id))
+        .get_result::<UserInvitation>(connection);
+    match invitation_found {
+        Ok(_invitation) => {
+            let new_user_project = UserProject {
+                idproject: project_id.clone(),
+                iduser: user_id.clone(),
+                idrole: "2".to_string()
+            };
+            let created_user_project = diesel::insert_into(project_user::table)
+                .values(&new_user_project)
+                .get_result::<UserProject>(connection);
+            match created_user_project {
+                Ok(_result) => {
+                    let deleted = diesel::delete(user_invitation::table.filter(user_invitation::idguest.eq(&user_id)))
+                    .filter(user_invitation::idproject.eq(&project_id))
+                    .execute(connection);
+                    match deleted {
+                        Ok(_) => Ok(GenericError { error: false, message: "User added to project successfully".to_string() }),
+                        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                    }
+                },
+                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+            }
+        },
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}
+
 pub fn change_role_user_project(guest_id: &String, project_id: &String, user_id: &String, role: &NewRole) -> Result<GenericError, GenericError> {
     let connection = &mut establish_connection();
     let project_found = projects::table
