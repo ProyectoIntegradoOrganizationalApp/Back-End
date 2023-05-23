@@ -1,5 +1,4 @@
 use bigdecimal::BigDecimal;
-use bigdecimal::ToPrimitive;
 use bigdecimal::FromPrimitive;
 use rust_api_rest::establish_connection;
 use crate::models::models::*;

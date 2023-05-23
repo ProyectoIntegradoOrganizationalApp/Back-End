@@ -5,6 +5,7 @@ use diesel::prelude::*;
 use diesel::BelongingToDsl;
 use crate::models::models::*;
 use crate::schema::{users, achievement, projects, project_user, user_invitation, user_friend_invitation, user_friend, achievement_user};
+use crate::utilities::achievements::*;
 
 pub fn profile(id_string: &String) -> Result<UserProfile, String>{
     let connection = &mut establish_connection();
@@ -155,7 +156,15 @@ pub fn invite_user_to_project(guest_id: &String, project_id: &String, user_id: &
                                 .values(&new_invitation)
                                 .get_result::<UserInvitation>(connection);
                             match created_invitation {
-                                Ok(_result) => Ok(GenericError { error: false, message: "Invitation sent successfully".to_string() }),
+                                Ok(_result) => {
+                                    // Check achievement - id: 5
+                                    let achievement_updated = check_update_user_achievement(user_id, "5");
+                                    match achievement_updated {
+                                        Ok(_) => {},
+                                        Err(err) => return Err(err)
+                                    }
+                                    Ok(GenericError { error: false, message: "Invitation sent successfully".to_string() })
+                                },
                                 Err(err) => Err(GenericError { error: true, message: err.to_string() })
                             }
                         }
@@ -187,6 +196,13 @@ pub fn accept_user_invitation(project_id: &String, user_id: &String) -> Result<G
                 .get_result::<UserProject>(connection);
             match created_user_project {
                 Ok(_result) => {
+                    // Check achievement - id: 12
+                    let achievement_updated = check_update_user_achievement(user_id, "12");
+                    match achievement_updated {
+                        Ok(_) => {},
+                        Err(err) => return Err(err)
+                    }
+                    // Delete user invitation
                     let deleted = diesel::delete(user_invitation::table.filter(user_invitation::idguest.eq(&user_id)))
                     .filter(user_invitation::idproject.eq(&project_id))
                     .execute(connection);
@@ -398,7 +414,21 @@ pub fn accept_friend_request(user_id: &String, guest_id: &String) -> Result<Gene
                             .filter(user_friend_invitation::idguest.eq(&guest_id))
                             .execute(connection);
                             match deleted {
-                                Ok(_) => Ok(GenericError { error: false, message: "You have made a new friend!".to_string() }),
+                                Ok(_) => {
+                                    // Check achievement - id: 1
+                                    let achievement_updated = check_update_user_achievement(user_id, "1");
+                                    match achievement_updated {
+                                        Ok(_) => {},
+                                        Err(err) => return Err(err)
+                                    }
+                                    // Check achievement - id: 1
+                                    let achievement_updated = check_update_user_achievement(guest_id, "1");
+                                    match achievement_updated {
+                                        Ok(_) => {},
+                                        Err(err) => return Err(err)
+                                    }
+                                    Ok(GenericError { error: false, message: "You have made a new friend!".to_string() })
+                                },
                                 Err(err) => Err(GenericError { error: true, message: err.to_string() })
                             }
                         },
