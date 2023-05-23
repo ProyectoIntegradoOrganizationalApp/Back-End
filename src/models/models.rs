@@ -3,6 +3,7 @@ use rocket::serde::{Serialize, Deserialize};
 use rocket_validation::Validate;
 use validator::Validate as Validate2;
 use crate::schema::*;
+use bigdecimal::BigDecimal;
 
 // TABLE'S STRUCTS ········ START
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Identifiable, PartialEq, AsChangeset)]
@@ -40,6 +41,7 @@ pub struct UserAchievement {
     pub idachievement: String,
     pub iduser: String,
     pub progress: i32,
+    pub percentage: BigDecimal,
     pub current_state: i32,
     pub completed: bool
 }

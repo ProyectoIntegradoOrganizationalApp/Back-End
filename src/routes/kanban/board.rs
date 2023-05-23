@@ -3,7 +3,7 @@ use rocket_validation::Validated;
 use crate::models::models::*;
 use crate::services;
 
-#[post("/board", data="<board_info>", format="json")]
+#[post("/kanban/board", data="<board_info>", format="json")]
 pub fn create_board(board_info: Validated<Json<BoardInputCreate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<Board>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
@@ -16,7 +16,7 @@ pub fn create_board(board_info: Validated<Json<BoardInputCreate>>, token: Result
     }
 }
 
-#[put("/board/<id>", data="<board_info>", format="json")]
+#[put("/kanban/board/<id>", data="<board_info>", format="json")]
 pub fn update_board(id: String, board_info: Validated<Json<BoardInputCreate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(_) => {
@@ -29,7 +29,7 @@ pub fn update_board(id: String, board_info: Validated<Json<BoardInputCreate>>, t
     }
 }
 
-#[delete("/board/<id>")]
+#[delete("/kanban/board/<id>")]
 pub fn delete_board(id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(_) => {

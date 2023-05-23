@@ -3,7 +3,7 @@ use rocket_validation::Validated;
 use crate::models::models::*;
 use crate::services;
 
-#[post("/task", data="<task_info>", format="json")]
+#[post("/kanban/task", data="<task_info>", format="json")]
 pub fn create_task(task_info: Validated<Json<TaskInputCreate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<Task>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
@@ -16,7 +16,7 @@ pub fn create_task(task_info: Validated<Json<TaskInputCreate>>, token: Result<To
     }
 }
 
-#[put("/task/<id>", data="<task_info>", format="json")]
+#[put("/kanban/task/<id>", data="<task_info>", format="json")]
 pub fn update_task(id: String, task_info: Validated<Json<TaskInputCreate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(_) => {
@@ -29,7 +29,7 @@ pub fn update_task(id: String, task_info: Validated<Json<TaskInputCreate>>, toke
     }
 }
 
-#[delete("/task/<id>")]
+#[delete("/kanban/task/<id>")]
 pub fn delete_task(id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(_) => {

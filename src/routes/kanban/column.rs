@@ -3,7 +3,7 @@ use rocket_validation::Validated;
 use crate::models::models::*;
 use crate::services;
 
-#[post("/column", data="<column_info>", format="json")]
+#[post("/kanban/column", data="<column_info>", format="json")]
 pub fn create_column(column_info: Validated<Json<ColumnInputCreate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<Columna>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
@@ -16,7 +16,7 @@ pub fn create_column(column_info: Validated<Json<ColumnInputCreate>>, token: Res
     }
 }
 
-#[put("/column/<id>", data="<column_info>", format="json")]
+#[put("/kanban/column/<id>", data="<column_info>", format="json")]
 pub fn update_column(id: String, column_info: Validated<Json<ColumnInputCreate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(_) => {
@@ -29,7 +29,7 @@ pub fn update_column(id: String, column_info: Validated<Json<ColumnInputCreate>>
     }
 }
 
-#[delete("/column/<id>")]
+#[delete("/kanban/column/<id>")]
 pub fn delete_column(id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(_) => {

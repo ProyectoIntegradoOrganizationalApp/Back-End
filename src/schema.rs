@@ -21,6 +21,7 @@ diesel::table! {
         idachievement -> Varchar,
         iduser -> Varchar,
         progress -> Int4,
+        percentage -> Numeric,
         current_state -> Int4,
         completed -> Bool,
     }

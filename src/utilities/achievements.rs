@@ -1,3 +1,6 @@
+use bigdecimal::BigDecimal;
+use bigdecimal::ToPrimitive;
+use bigdecimal::FromPrimitive;
 use rust_api_rest::establish_connection;
 use crate::models::models::*;
 use diesel::prelude::*;
@@ -8,18 +11,18 @@ use crate::schema::achievement_user;
 pub fn create_user_achievements(user_id: &str) -> Result<(), GenericError>{
     let connection = &mut establish_connection();
     let values = vec![
-        UserAchievement { idachievement: "1".to_owned(), iduser: user_id.to_owned(), progress: 0, current_state: 0, completed: false},
-        UserAchievement { idachievement: "2".to_owned(), iduser: user_id.to_owned(), progress: 0, current_state: 0, completed: false},
-        UserAchievement { idachievement: "3".to_owned(), iduser: user_id.to_owned(), progress: 0, current_state: 0, completed: false},
-        UserAchievement { idachievement: "4".to_owned(), iduser: user_id.to_owned(), progress: 0, current_state: 0, completed: false},
-        UserAchievement { idachievement: "5".to_owned(), iduser: user_id.to_owned(), progress: 0, current_state: 0, completed: false},
-        UserAchievement { idachievement: "6".to_owned(), iduser: user_id.to_owned(), progress: 0, current_state: 0, completed: false},
-        UserAchievement { idachievement: "7".to_owned(), iduser: user_id.to_owned(), progress: 0, current_state: 0, completed: false},
-        UserAchievement { idachievement: "8".to_owned(), iduser: user_id.to_owned(), progress: 0, current_state: 0, completed: false},
-        UserAchievement { idachievement: "9".to_owned(), iduser: user_id.to_owned(), progress: 0, current_state: 0, completed: false},
-        UserAchievement { idachievement: "10".to_owned(), iduser: user_id.to_owned(), progress: 0, current_state: 0, completed: false},
-        UserAchievement { idachievement: "11".to_owned(), iduser: user_id.to_owned(), progress: 0, current_state: 0, completed: false},
-        UserAchievement { idachievement: "12".to_owned(), iduser: user_id.to_owned(), progress: 0, current_state: 0, completed: false}
+        UserAchievement { idachievement: "1".to_owned(), iduser: user_id.to_owned(), progress: 0, percentage: BigDecimal::from(0), current_state: 0, completed: false},
+        UserAchievement { idachievement: "2".to_owned(), iduser: user_id.to_owned(), progress: 0, percentage: BigDecimal::from(0), current_state: 0, completed: false},
+        UserAchievement { idachievement: "3".to_owned(), iduser: user_id.to_owned(), progress: 0, percentage: BigDecimal::from(0), current_state: 0, completed: false},
+        UserAchievement { idachievement: "4".to_owned(), iduser: user_id.to_owned(), progress: 0, percentage: BigDecimal::from(0), current_state: 0, completed: false},
+        UserAchievement { idachievement: "5".to_owned(), iduser: user_id.to_owned(), progress: 0, percentage: BigDecimal::from(0), current_state: 0, completed: false},
+        UserAchievement { idachievement: "6".to_owned(), iduser: user_id.to_owned(), progress: 0, percentage: BigDecimal::from(0), current_state: 0, completed: false},
+        UserAchievement { idachievement: "7".to_owned(), iduser: user_id.to_owned(), progress: 0, percentage: BigDecimal::from(0), current_state: 0, completed: false},
+        UserAchievement { idachievement: "8".to_owned(), iduser: user_id.to_owned(), progress: 0, percentage: BigDecimal::from(0), current_state: 0, completed: false},
+        UserAchievement { idachievement: "9".to_owned(), iduser: user_id.to_owned(), progress: 0, percentage: BigDecimal::from(0), current_state: 0, completed: false},
+        UserAchievement { idachievement: "10".to_owned(), iduser: user_id.to_owned(), progress: 0, percentage: BigDecimal::from(0), current_state: 0, completed: false},
+        UserAchievement { idachievement: "11".to_owned(), iduser: user_id.to_owned(), progress: 0, percentage: BigDecimal::from(0), current_state: 0, completed: false},
+        UserAchievement { idachievement: "12".to_owned(), iduser: user_id.to_owned(), progress: 0, percentage: BigDecimal::from(0), current_state: 0, completed: false}
     ];
 
     let inserted_achievements = diesel::insert_into(achievement_user::table)
@@ -76,8 +79,16 @@ pub fn check_update_user_achievement(user_id: &str, achievement_id: &str) -> Res
         Ok(result) => {
             let (achiv, mut user_achiv) = result;
             user_achiv.progress += 1;
-            
-            // Si el logro está completo
+
+            let last_state = achiv.states[achiv.states.len() -1].unwrap();
+
+            // Actualizamos el porcentaje
+            if user_achiv.percentage < BigDecimal::from(100) {
+                let testing = user_achiv.progress as f64 * 100.0 / last_state as f64;
+                user_achiv.percentage = BigDecimal::from_f64(testing).unwrap();
+            }
+             
+            // Si el logro no está completo
             if !user_achiv.completed {
                 let current_state_value = achiv.states[user_achiv.current_state as usize].unwrap();
                 // Si el progreso en el state actual es mayor que el valor max del state actual
