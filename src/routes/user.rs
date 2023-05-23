@@ -156,3 +156,33 @@ pub fn send_friend_request(guest_id: String, invitation: Validated<Json<Invitati
         }
     }
 }
+
+#[get("/friend/<user_id>/accept")]
+pub fn accept_friend_request(user_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::user::accept_friend_request(&user_id, &token_data.token_iduser) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => {
+            Err(Json(err))
+        }
+    }
+}
+
+#[get("/friend/<user_id>/deny")]
+pub fn deny_friend_request(user_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::user::deny_friend_request(&user_id, &token_data.token_iduser) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => {
+            Err(Json(err))
+        }
+    }
+}

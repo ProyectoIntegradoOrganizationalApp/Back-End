@@ -4,7 +4,7 @@ use rust_api_rest::establish_connection;
 use diesel::prelude::*;
 use diesel::BelongingToDsl;
 use crate::models::models::*;
-use crate::schema::{users, achievement, projects, project_user, user_invitation, user_friend_invitation};
+use crate::schema::{users, achievement, projects, project_user, user_invitation, user_friend_invitation, user_friend};
 
 pub fn profile(id_string: &String) -> Result<UserProfile, String>{
     let connection = &mut establish_connection();
@@ -328,25 +328,106 @@ pub fn send_friend_request(guest_id: &String, invitation: &InvitationMessage, us
         
         match guest_found {
             Ok(_guest) => {
-                let new_user_friend_invitation = UserFriendInvitation {
-                    idguest: guest_id.clone(),
-                    iduser: user_id.clone(),
-                    title: invitation.title.clone(),
-                    message: invitation.message.clone()
-                };
-
-                let created = diesel::insert_into(user_friend_invitation::table)
-                .values(&new_user_friend_invitation)
-                .get_result::<UserFriendInvitation>(connection);
-
-                match created {
-                    Ok(_) => Ok(GenericError { error: false, message: "Friend request sent successfully".to_string() }),
-                    Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                let friend_found = user_friend::table
+                    .select(UserFriend::as_select())
+                    .filter(user_friend::idfriend.eq(&guest_id))
+                    .filter(user_friend::iduser.eq(&user_id))
+                    .get_result::<UserFriend>(connection);
+                
+                match friend_found {
+                    Ok(_) => Ok(GenericError { error: true, message: "You are already a friend of this user".to_string() }),
+                    Err(_) => {
+                        let new_user_friend_invitation = UserFriendInvitation {
+                            idguest: guest_id.clone(),
+                            iduser: user_id.clone(),
+                            title: invitation.title.clone(),
+                            message: invitation.message.clone()
+                        };
+        
+                        let created = diesel::insert_into(user_friend_invitation::table)
+                        .values(&new_user_friend_invitation)
+                        .get_result::<UserFriendInvitation>(connection);
+        
+                        match created {
+                            Ok(_) => Ok(GenericError { error: false, message: "Friend request sent successfully".to_string() }),
+                            Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                        }
+                    }
                 }
             },
             Err(err) => Err(GenericError { error: true, message: err.to_string() })
         }
     } else {
         Err(GenericError { error: true, message: "You cannot be a friend of yourself".to_string() })
+    }
+}
+
+pub fn accept_friend_request(user_id: &String, guest_id: &String) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    let invitation_found = user_friend_invitation::table
+            .select(UserFriendInvitation::as_select())
+            .filter(user_friend_invitation::idguest.eq(&guest_id))
+            .filter(user_friend_invitation::iduser.eq(&user_id))
+            .get_result::<UserFriendInvitation>(connection);
+    
+    match invitation_found {
+        Ok(_invitation) => {
+            let new_friend = UserFriend {
+                iduser: user_id.clone(),
+                idfriend: guest_id.clone()
+            };
+
+            let new_friend_guest = UserFriend {
+                iduser: guest_id.clone(),
+                idfriend: user_id.clone()
+            };
+
+            let created = diesel::insert_into(user_friend::table)
+            .values(&new_friend)
+            .get_result::<UserFriend>(connection);
+
+            match created {
+                Ok(_) => {
+                    let created = diesel::insert_into(user_friend::table)
+                    .values(&new_friend_guest)
+                    .get_result::<UserFriend>(connection);
+                    match created {
+                        Ok(_) => {
+                            let deleted = diesel::delete(user_friend_invitation::table.filter(user_friend_invitation::iduser.eq(&user_id)))
+                            .filter(user_friend_invitation::idguest.eq(&guest_id))
+                            .execute(connection);
+                            match deleted {
+                                Ok(_) => Ok(GenericError { error: false, message: "You have made a new friend!".to_string() }),
+                                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                            }
+                        },
+                        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                    }
+                },
+                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+            }
+        }, 
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}
+
+pub fn deny_friend_request(user_id: &String, guest_id: &String) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    let invitation_found = user_friend_invitation::table
+            .select(UserFriendInvitation::as_select())
+            .filter(user_friend_invitation::idguest.eq(&guest_id))
+            .filter(user_friend_invitation::iduser.eq(&user_id))
+            .get_result::<UserFriendInvitation>(connection);
+    match invitation_found {
+        Ok(_invitation) => {
+            let deleted = diesel::delete(user_friend_invitation::table.filter(user_friend_invitation::iduser.eq(&user_id)))
+            .filter(user_friend_invitation::idguest.eq(&guest_id))
+            .execute(connection);
+            match deleted {
+                Ok(_) => Ok(GenericError { error: false, message: "Friend request denied successfully".to_string() }),
+                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+            }
+        }, 
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
     }
 }
