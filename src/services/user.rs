@@ -431,3 +431,34 @@ pub fn deny_friend_request(user_id: &String, guest_id: &String) -> Result<Generi
         Err(err) => Err(GenericError { error: true, message: err.to_string() })
     }
 }
+
+pub fn delete_user_friend(friend_id: &String, user_id: &String) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    let friend_found = user_friend::table
+        .select(UserFriend::as_select())
+        .filter(user_friend::idfriend.eq(&friend_id))
+        .filter(user_friend::iduser.eq(&user_id))
+        .get_result::<UserFriend>(connection);
+
+    match friend_found {
+        Ok(_friend) => {
+            let deleted = diesel::delete(user_friend::table.filter(user_friend::iduser.eq(&user_id)))
+                .filter(user_friend::idfriend.eq(&friend_id))
+                .execute(connection);
+            match deleted {
+                Ok(_) => {
+                    let deleted = diesel::delete(user_friend::table.filter(user_friend::iduser.eq(&friend_id)))
+                    .filter(user_friend::idfriend.eq(&user_id))
+                    .execute(connection);
+                    
+                    match deleted {
+                        Ok(_) => Ok(GenericError { error: false, message: "You are no longer friends with this user".to_string() }),
+                        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                    }
+                },
+                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+            }
+        },
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}

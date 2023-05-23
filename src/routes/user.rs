@@ -142,7 +142,7 @@ pub fn delete_user_project(user_id: String, project_id: String, token: Result<To
     }
 }
 
-#[post("/user/<guest_id>/friend", data="<invitation>", format="json")]
+#[post("/friend/<guest_id>", data="<invitation>", format="json")]
 pub fn send_friend_request(guest_id: String, invitation: Validated<Json<InvitationMessage>>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
@@ -177,6 +177,21 @@ pub fn deny_friend_request(user_id: String, token: Result<TokenValidation, Gener
     match token {
         Ok(token_data) => {
             match services::user::deny_friend_request(&user_id, &token_data.token_iduser) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => {
+            Err(Json(err))
+        }
+    }
+}
+
+#[delete("/friend/<friend_id>")]
+pub fn delete_user_friend(friend_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::user::delete_user_friend(&friend_id, &token_data.token_iduser) {
                 Ok(result) => Ok(Json(result)),
                 Err(err) => Err(Json(err))
             }

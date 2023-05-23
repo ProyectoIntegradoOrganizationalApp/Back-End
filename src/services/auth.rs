@@ -53,7 +53,6 @@ pub fn register(user_info: &UserInput) -> Result<User, String> {
 #[allow(unused)]
 pub fn login(user_info: &UserLogin) -> Result<UserLoginResponse, String> {
     use crate::schema::users::dsl::*;
-    println!("{:#?}", user_info);
 
     let connection = &mut establish_connection();
     let user_found = users
