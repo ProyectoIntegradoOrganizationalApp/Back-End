@@ -4,7 +4,7 @@ use rust_api_rest::establish_connection;
 use diesel::prelude::*;
 use diesel::BelongingToDsl;
 use crate::models::models::*;
-use crate::schema::{users, achievement, projects, project_user, user_invitation, user_friend_invitation, user_friend};
+use crate::schema::{users, achievement, projects, project_user, user_invitation, user_friend_invitation, user_friend, achievement_user};
 
 pub fn profile(id_string: &String) -> Result<UserProfile, String>{
     let connection = &mut establish_connection();
@@ -26,6 +26,7 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
             let achievements_found = UserAchievement::belonging_to(&user)
             .inner_join(achievement::table)
             .select((Achievement::as_select(), UserAchievement::as_select()))
+            .filter(achievement_user::progress.gt(0))
             .load::<(Achievement, UserAchievement)>(connection);
             
             match achievements_found {
