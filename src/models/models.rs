@@ -187,6 +187,17 @@ pub struct UserFriend {
     pub idfriend: String
 }
 
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
+#[diesel(belongs_to(User, foreign_key = iduser))]
+#[diesel(primary_key(idguest, iduser))]
+#[diesel(table_name = user_friend_invitation)]
+pub struct UserFriendInvitation {
+    pub idguest: String, 
+    pub iduser: String,
+    pub title: String,
+    pub message: String
+}
+
 // TABLE'S STRUCTS ········ END
 
 // USER CRUD & LOGIN ········ START
@@ -197,7 +208,7 @@ pub struct UserInput {
     pub first_name: String,
     #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
     pub last_name: String,
-    // #[validate(phone(message = "Must be a valid phone"))]
+    #[validate(phone(message = "Must be a valid phone"))]
     pub phone: String,
     #[validate(email(message = "Must be a valid email"))]
     pub email: String,

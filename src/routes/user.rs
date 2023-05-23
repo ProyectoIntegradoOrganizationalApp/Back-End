@@ -141,3 +141,18 @@ pub fn delete_user_project(user_id: String, project_id: String, token: Result<To
         }
     }
 }
+
+#[post("/user/<guest_id>/friend", data="<invitation>", format="json")]
+pub fn send_friend_request(guest_id: String, invitation: Validated<Json<InvitationMessage>>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::user::send_friend_request(&guest_id, &invitation.0, &token_data.token_iduser) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => {
+            Err(Json(err))
+        }
+    }
+}

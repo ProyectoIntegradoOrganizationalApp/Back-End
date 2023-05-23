@@ -4,7 +4,7 @@ use rust_api_rest::establish_connection;
 use diesel::prelude::*;
 use diesel::BelongingToDsl;
 use crate::models::models::*;
-use crate::schema::{users, achievement, projects, project_user, user_invitation};
+use crate::schema::{users, achievement, projects, project_user, user_invitation, user_friend_invitation};
 
 pub fn profile(id_string: &String) -> Result<UserProfile, String>{
     let connection = &mut establish_connection();
@@ -118,6 +118,7 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
     }
 }
 
+// PROJECT MEMBERS MANAGEMENT
 pub fn invite_user_to_project(guest_id: &String, project_id: &String, user_id: &String, invitation: &InvitationMessage) -> Result<GenericError, GenericError> {
     let connection = &mut establish_connection();
     let project_found = projects::table
@@ -313,5 +314,39 @@ pub fn delete_user_project(guest_id: &String, project_id: &String, user_id: &Str
             }
         },
         Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}
+
+// USER FRIENDS MANAGEMENT
+pub fn send_friend_request(guest_id: &String, invitation: &InvitationMessage, user_id: &String) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    if user_id != guest_id {
+        let guest_found = users::table
+            .select(User::as_select())
+            .filter(users::id.eq(&guest_id))
+            .get_result::<User>(connection);
+        
+        match guest_found {
+            Ok(_guest) => {
+                let new_user_friend_invitation = UserFriendInvitation {
+                    idguest: guest_id.clone(),
+                    iduser: user_id.clone(),
+                    title: invitation.title.clone(),
+                    message: invitation.message.clone()
+                };
+
+                let created = diesel::insert_into(user_friend_invitation::table)
+                .values(&new_user_friend_invitation)
+                .get_result::<UserFriendInvitation>(connection);
+
+                match created {
+                    Ok(_) => Ok(GenericError { error: false, message: "Friend request sent successfully".to_string() }),
+                    Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                }
+            },
+            Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        }
+    } else {
+        Err(GenericError { error: true, message: "You cannot be a friend of yourself".to_string() })
     }
 }
