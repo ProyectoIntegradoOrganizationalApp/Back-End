@@ -416,19 +416,51 @@ pub fn accept_friend_request(user_id: &String, guest_id: &String) -> Result<Gene
                             .execute(connection);
                             match deleted {
                                 Ok(_) => {
-                                    // Check achievement - id: 1
-                                    let achievement_updated = check_update_user_achievement(user_id, "1");
-                                    match achievement_updated {
-                                        Ok(_) => {},
-                                        Err(err) => return Err(err)
+                                    let friend_invitation_found = user_friend_invitation::table
+                                        .filter(user_friend_invitation::iduser.eq(&guest_id))
+                                        .filter(user_friend_invitation::idguest.eq(&user_id))
+                                        .select(UserFriendInvitation::as_select())
+                                        .get_result::<UserFriendInvitation>(connection);
+                                    match friend_invitation_found {
+                                        Ok(friend_invitation) => {
+                                            let deleted = diesel::delete(user_friend_invitation::table.filter(user_friend_invitation::iduser.eq(&friend_invitation.iduser)))
+                                                .filter(user_friend_invitation::idguest.eq(&friend_invitation.idguest))
+                                                .execute(connection);
+                                            match deleted {
+                                                Ok(_) => {
+                                                    // Check achievement - id: 1
+                                                    let achievement_updated = check_update_user_achievement(user_id, "1");
+                                                    match achievement_updated {
+                                                        Ok(_) => {},
+                                                        Err(err) => return Err(err)
+                                                    }
+                                                    // Check achievement - id: 1
+                                                    let achievement_updated = check_update_user_achievement(guest_id, "1");
+                                                    match achievement_updated {
+                                                        Ok(_) => {},
+                                                        Err(err) => return Err(err)
+                                                    }
+                                                    Ok(GenericError { error: false, message: "You have made a new friend!".to_string() })
+                                                },
+                                                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                                            }
+                                        },
+                                        Err(_err) => {
+                                            // Check achievement - id: 1
+                                            let achievement_updated = check_update_user_achievement(user_id, "1");
+                                            match achievement_updated {
+                                                Ok(_) => {},
+                                                Err(err) => return Err(err)
+                                            }
+                                            // Check achievement - id: 1
+                                            let achievement_updated = check_update_user_achievement(guest_id, "1");
+                                            match achievement_updated {
+                                                Ok(_) => {},
+                                                Err(err) => return Err(err)
+                                            }
+                                            Ok(GenericError { error: false, message: "You have made a new friend!".to_string() })
+                                        }
                                     }
-                                    // Check achievement - id: 1
-                                    let achievement_updated = check_update_user_achievement(guest_id, "1");
-                                    match achievement_updated {
-                                        Ok(_) => {},
-                                        Err(err) => return Err(err)
-                                    }
-                                    Ok(GenericError { error: false, message: "You have made a new friend!".to_string() })
                                 },
                                 Err(err) => Err(GenericError { error: true, message: err.to_string() })
                             }
