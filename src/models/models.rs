@@ -136,17 +136,6 @@ pub struct Task {
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
 #[diesel(belongs_to(User, foreign_key = iduser))]
-#[diesel(primary_key(id))]
-#[diesel(table_name = notification)]
-pub struct Notification {
-    pub id: String,
-    pub iduser: String,
-    pub title: String,
-    pub content: String,
-    pub state: bool,
-}
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
-#[diesel(belongs_to(User, foreign_key = iduser))]
 #[diesel(belongs_to(Project, foreign_key = idproject))]
 #[diesel(primary_key(iduser, idproject, date))]
 #[diesel(table_name = project_user_activity)]
@@ -243,7 +232,8 @@ pub struct UserLoginResponse {
     pub updated_at: String,
     pub level: i16,
     pub _token: String,
-    pub notifications: Vec<UserNotificationProfile>
+    pub notifications: Notification,
+    pub friends: Vec<UserFriends>
 }
 #[derive(Serialize, Deserialize, Debug, Validate)]
 pub struct UserUpdate {
@@ -487,3 +477,20 @@ pub struct NewRole {
     pub idrole: String
 }
 // USER ROLE IN PROJECT ········· END
+
+// USER NOTIFICATIONS ········· START
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Notification {
+    pub friends: Vec<UserFriendInvitation>,
+    pub projects: Vec<UserInvitation>
+}
+// USER NOTIFICATIONS ········· END
+
+// USER FRIENDS ········· START
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserFriends {
+    pub idfriend: String,
+    pub name: String,
+    pub photo: String
+}
+// USER FRIENDS ········· END
