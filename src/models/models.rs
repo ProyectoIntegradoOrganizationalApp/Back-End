@@ -346,7 +346,8 @@ pub struct UserAchievementsProfile {
     pub icon: String,
     pub progress: i32,
     pub completed: bool,
-    pub current_state: i32
+    pub current_state: i32,
+    pub percentage: BigDecimal
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserInfoResponse {

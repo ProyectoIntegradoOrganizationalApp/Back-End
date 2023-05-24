@@ -42,7 +42,8 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
                             icon: i.0.icon.clone(),
                             progress: i.1.progress,
                             completed: i.1.completed,
-                            current_state: i.1.current_state
+                            current_state: i.1.current_state,
+                            percentage: i.1.percentage.clone()
                         };
                         achievements_info.push(user_achievements_info);
                     }
