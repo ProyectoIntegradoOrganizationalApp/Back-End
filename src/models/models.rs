@@ -29,6 +29,7 @@ pub struct Achievement {
     pub title: String,
     pub description: String,
     pub icon: String,
+    pub category: String,
     pub states: Vec<Option<i32>>
 }
 
@@ -65,41 +66,49 @@ pub struct Project {
 #[diesel(table_name = app)]
 pub struct App {
     pub id: String,
-    pub idproject: String
+    pub idproject: String,
+    pub name: String,
+    pub description: String,
+    pub photo: String
 }
 
 pub enum AppTypes {
-    Kanban(kanban::table),
-    Docs(docs::table),
-    Timeline(timeline::table),
+    TaskApp(task_app::table),
+    DocsApp(docs_app::table)
 }
+
+// #[derive(Serialize, Deserialize, Debug, PartialEq, AsExpression/*, AsChangeset*/)]
+// #[diesel(sql_type = sql_types::ValidTaskApp)]
+// pub enum ValidTaskApp {
+//     Kanban,
+//     Timeline
+// }
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq/*, AsChangeset*/)]
 #[diesel(belongs_to(Project, foreign_key = idproject))]
 #[diesel(belongs_to(App, foreign_key = idapp))]
 #[diesel(primary_key(idapp, idproject))]
-#[diesel(table_name = kanban)]
-pub struct Kanban {
+#[diesel(table_name = task_app)]
+pub struct TaskApp {
     pub idapp: String,
-    pub idproject: String
+    pub idproject: String,
+    pub app_type: String
 }
+
+// #[derive(Serialize, Deserialize, Debug, PartialEq, AsExpression/*, AsChangeset*/)]
+// #[sql_type="sql_types::ValidDocsApp"]
+// pub enum ValidDocsApp {
+//     Docs
+// }
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq/*, AsChangeset*/)]
 #[diesel(belongs_to(Project, foreign_key = idproject))]
 #[diesel(primary_key(idapp, idproject))]
-#[diesel(table_name = docs)]
-pub struct Docs {
+#[diesel(table_name = docs_app)]
+pub struct DocsApp {
     pub idapp: String,
-    pub idproject: String
-}
-
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq/*, AsChangeset*/)]
-#[diesel(belongs_to(Project, foreign_key = idproject))]
-#[diesel(primary_key(idapp, idproject))]
-#[diesel(table_name = timeline)]
-pub struct Timeline {
-    pub idapp: String,
-    pub idproject: String
+    pub idproject: String,
+    pub app_type: String
 }
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
@@ -394,25 +403,23 @@ pub struct ProjectDetail {
 // APPS AND SPECIFICATIONS ENDPOINT ········· START
 #[derive(Serialize, Deserialize, Debug, Validate2)]
 pub struct AppInputCreate {
+    pub name: String,
+    pub description: String,
+    #[validate(url(message = "Must be a valid photo url"))]
+    pub photo: String,
     pub apptype: String,
     #[validate]
-    pub kanban: Option<KanbanInputCreate>,
+    pub task_app: Option<TaskAppInputCreate>,
     #[validate]
-    pub docs: Option<DocsInputCreate>,
-    #[validate]
-    pub timeline: Option<TimelineInputCreate>
+    pub docs_app: Option<DocsAppInputCreate>,
 }
 #[derive(Serialize, Deserialize, Debug, Validate)]
-pub struct KanbanInputCreate {
-    // Atributos modificables de kanban
+pub struct TaskAppInputCreate {
+    pub app_type: String
 }
 #[derive(Serialize, Deserialize, Debug, Validate)]
-pub struct DocsInputCreate {
-    // Atributos modificables de docs
-}
-#[derive(Serialize, Deserialize, Debug, Validate)]
-pub struct TimelineInputCreate {
-    // Atributos modificables de timeline
+pub struct DocsAppInputCreate {
+    pub app_type: String
 }
 
 #[derive(Serialize, Deserialize, Debug, Validate)]

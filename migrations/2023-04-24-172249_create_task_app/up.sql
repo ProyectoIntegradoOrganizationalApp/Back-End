@@ -1,7 +1,10 @@
 -- Your SQL goes here
-CREATE TABLE kanban (
+CREATE TYPE valid_task_app AS ENUM ('kanban', 'timeline');
+
+CREATE TABLE task_app (
     idApp VARCHAR NOT NULL,
     idProject VARCHAR NOT NULL,
+    app_type VARCHAR NOT NULL,
     PRIMARY KEY(idApp, idProject),
     CONSTRAINT fk_app
         FOREIGN KEY(idApp)

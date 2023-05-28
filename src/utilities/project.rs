@@ -5,6 +5,8 @@ use diesel::result::Error;
 use rust_api_rest::establish_connection;
 
 pub fn is_admin(idproject: &str, iduser: &str) -> Result<UserProject, GenericError> {
+    println!("{}", idproject);
+    println!("{}", iduser);
     let connection = &mut establish_connection();
     let user_found: Result<User, Error> = users::table.filter(users::id.eq(&iduser)).first::<User>(connection);
     match user_found {

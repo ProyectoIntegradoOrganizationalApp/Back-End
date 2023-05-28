@@ -16,7 +16,10 @@ pub fn create_app(app_info: &AppInputCreate, idproject: &String, token_iduser: &
             let app_id = uuid::Uuid::new_v4().to_string();
             let new_app = App {
                 id: app_id.clone(),
-                idproject: idproject.clone()
+                idproject: idproject.clone(),
+                name: app_info.name.clone(),
+                description: app_info.description.clone(),
+                photo: app_info.photo.clone()
             };
             let created_app = diesel::insert_into(app::table)
                 .values(&new_app)
@@ -30,9 +33,9 @@ pub fn create_app(app_info: &AppInputCreate, idproject: &String, token_iduser: &
                         Err(err) => return Err(err)
                     }
                     match app_info.apptype.as_str() {
-                        "kanban" => {
-                            if app_info.kanban.is_some() {
-                                match app_utils::create_app_by_type(&app, app_info, AppTypes::Kanban(kanban::table), connection) {
+                        "task_app" => {
+                            if app_info.task_app.is_some() {
+                                match app_utils::create_app_by_type(&app, app_info, AppTypes::TaskApp(task_app::table), connection) {
                                     Ok(_) => {
                                         let achievement_updated = achievements::check_update_user_achievement(token_iduser, "3");
                                         match achievement_updated {
@@ -43,36 +46,27 @@ pub fn create_app(app_info: &AppInputCreate, idproject: &String, token_iduser: &
                                     Err(err) => return Err(err)
                                 }
                             } else {
-                                return Err(GenericError { error: true, message: "You need to provide the required info to create a kanban app".to_owned() })
+                                return Err(GenericError { error: true, message: "You need to provide the required info to create a task type app".to_owned() })
                             }
                         },
-                        "docs" => {
-                            if app_info.docs.is_some() {
-                                match app_utils::create_app_by_type(&app, app_info, AppTypes::Docs(docs::table), connection) {
+                        "docs_app" => {
+                            if app_info.docs_app.is_some() {
+                                match app_utils::create_app_by_type(&app, app_info, AppTypes::DocsApp(docs_app::table), connection) {
                                     Ok(_) => return Ok(app),
                                     Err(err) => return Err(err)
                                 }
                             } else {
-                                return Err(GenericError { error: true, message: "You need to provide the required info to create a docs app".to_owned() })
+                                return Err(GenericError { error: true, message: "You need to provide the required info to create a docs type app".to_owned() })
                             }
                         },
-                        "timeline" => {
-                            if app_info.timeline.is_some() {
-                                match app_utils::create_app_by_type(&app, app_info, AppTypes::Timeline(timeline::table), connection) {
-                                    Ok(_) => {
-                                        let achievement_updated = achievements::check_update_user_achievement(token_iduser, "4");
-                                        match achievement_updated {
-                                            Ok(_) => return Ok(app),
-                                            Err(err) => return Err(err)
-                                        }
-                                    },
-                                    Err(err) => return Err(err)
-                                }
-                            } else {
-                                return Err(GenericError { error: true, message: "You need to provide the required info to create a timeline app".to_owned() })
+                        _ => {
+                            let deleted = diesel::delete(app::table.filter(app::id.eq(app.id))).execute(connection);
+                            match deleted {
+                                Ok(_) => Err(GenericError { error: true, message: "The app type must be valid".to_owned() }),
+                                Err(_) => Err(GenericError { error: true, message: "An error ocurred while creating the app".to_owned() }),
                             }
-                        },
-                        _ => Err(GenericError { error: true, message: "The app type must be specified".to_owned() })
+                            
+                        }
                     }
                 },
                 Err(err) => Err(GenericError { error: true, message: err.to_string() })
@@ -86,20 +80,14 @@ pub fn update_app(app_info: &AppInputCreate, user_id: &String, project_id: &Stri
     match project::is_admin(&project_id, &user_id) {
         Ok(_) => {
             match app_info.apptype.as_str() {
-                "kanban" => {
-                    match app_utils::update_app_by_type(project_id, app_id, app_info, AppTypes::Kanban(kanban::table)) {
+                "task_app" => {
+                    match app_utils::update_app_by_type(project_id, app_id, app_info, AppTypes::TaskApp(task_app::table)) {
                         Ok(response) => return Ok(response),
                         Err(err) => return Err(err)
                     }
                 },
-                "docs" => {
-                    match app_utils::update_app_by_type(project_id, app_id, app_info, AppTypes::Docs(docs::table)) {
-                        Ok(response) => return Ok(response),
-                        Err(err) => return Err(err)
-                    }
-                },
-                "timeline" => {
-                    match app_utils::update_app_by_type(project_id, app_id, app_info, AppTypes::Timeline(timeline::table)) {
+                "docs_app" => {
+                    match app_utils::update_app_by_type(project_id, app_id, app_info, AppTypes::DocsApp(docs_app::table)) {
                         Ok(response) => return Ok(response),
                         Err(err) => return Err(err)
                     }

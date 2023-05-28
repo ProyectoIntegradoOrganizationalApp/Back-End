@@ -1,7 +1,10 @@
 -- Your SQL goes here
-CREATE TABLE timeline (
+CREATE TYPE valid_docs_app AS ENUM ('whiteboard');
+
+CREATE TABLE docs_app (
     idApp VARCHAR NOT NULL,
     idProject VARCHAR NOT NULL,
+    app_type VARCHAR NOT NULL,
     PRIMARY KEY(idApp, idProject),
     CONSTRAINT fk_app
         FOREIGN KEY(idApp)

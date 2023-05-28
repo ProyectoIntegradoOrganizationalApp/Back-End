@@ -44,8 +44,10 @@ pub fn register(user_info: &UserInput) -> Result<User, String> {
 
     match created_user {
         Ok(user) => {
-            create_user_achievements(&user.id);
-            Ok(user)
+            match create_user_achievements(&user.id) {
+                Ok(_) => Ok(user),
+                Err(e) => Err(e.message)
+            }
         },
         Err(e) => Err(e.to_string()),
     }

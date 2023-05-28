@@ -3,9 +3,9 @@ use routes::auth::{register, login, send_mail, change_password, logout, test_tok
 use routes::user::{achievements, user_achievements, profile, invite_user_to_project, change_role_user_project, delete_user_project, 
     accept_user_invitation, deny_user_invitation, send_friend_request, accept_friend_request, deny_friend_request, delete_user_friend};
 use routes::project::{create_project, update_project, delete_project, get_project, get_user_projects};
-use routes::kanban::board::{create_board, update_board, delete_board};
-use routes::kanban::column::{create_column, update_column, delete_column};
-use routes::kanban::task::{create_task, update_task, delete_task};
+use routes::task_app::board::{create_board, update_board, delete_board};
+use routes::task_app::column::{create_column, update_column, delete_column};
+use routes::task_app::task::{create_task, update_task, delete_task};
 use routes::app::{create_app, update_app, delete_app};
 use rocket_sync_db_pools::database;
 use rocket::fairing::{Fairing, Info, Kind};

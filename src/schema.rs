@@ -12,6 +12,7 @@ diesel::table! {
         title -> Varchar,
         description -> Varchar,
         icon -> Varchar,
+        category -> Varchar,
         states -> Array<Nullable<Int4>>,
     }
 }
@@ -31,6 +32,9 @@ diesel::table! {
     app (id) {
         id -> Varchar,
         idproject -> Varchar,
+        name -> Varchar,
+        description -> Varchar,
+        photo -> Varchar,
     }
 }
 
@@ -51,9 +55,10 @@ diesel::table! {
 }
 
 diesel::table! {
-    docs (idapp, idproject) {
+    docs_app (idapp, idproject) {
         idapp -> Varchar,
         idproject -> Varchar,
+        app_type -> Varchar,
     }
 }
 
@@ -64,13 +69,6 @@ diesel::table! {
         name -> Varchar,
         description -> Nullable<Varchar>,
         completed -> Int2,
-    }
-}
-
-diesel::table! {
-    kanban (idapp, idproject) {
-        idapp -> Varchar,
-        idproject -> Varchar,
     }
 }
 
@@ -151,9 +149,10 @@ diesel::table! {
 }
 
 diesel::table! {
-    timeline (idapp, idproject) {
+    task_app (idapp, idproject) {
         idapp -> Varchar,
         idproject -> Varchar,
+        app_type -> Varchar,
     }
 }
 
@@ -210,9 +209,8 @@ diesel::allow_tables_to_appear_in_same_query!(
     app,
     board,
     columna,
-    docs,
+    docs_app,
     goal,
-    kanban,
     notification,
     project_user,
     project_user_activity,
@@ -221,7 +219,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     review,
     role,
     task,
-    timeline,
+    task_app,
     user_friend,
     user_friend_invitation,
     user_invitation,
