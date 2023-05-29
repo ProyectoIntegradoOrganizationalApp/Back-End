@@ -26,7 +26,7 @@
 ```
 
 ## DISEÑO DE LA BASE DE DATOS  
-![Proyecto Integrado DB 11_04_2023](https://github.com/ProyectoIntegradoOrganizationalApp/Back-End/blob/main/Version%202%20Proyecto%20Integrado%20DB%2024_04_2023.jpg)
+![Proyecto Integrado DB 11_04_2023](https://github.com/ProyectoIntegradoOrganizationalApp/Back-End/blob/main/Version%203%20Proyecto%20Integrado%20DB%2020_04_2023.jpg)
 Una breve explicación sobre el diseño de la base de datos y las relaciones entre tablas.  
 
 #### USER    
@@ -43,6 +43,7 @@ Es el núcleo de la BBDD. De esta tabla dependen muchas otras que se verán más
 |                | `updated_at`  |
 |                | `level`  |
 
+La tabla **User** guarda la información personal del usuario, así como timestamps y el nivel del usuario en la aplicación.
 La tabla **User** se relaciona con **Project**. En esta última, la **FK** *idUser*
 se refiere al usuario que ha creado el proyecto. Mientras que por otro lado en la tabla **Project_user**, la **FK** *idUser* se refiere a cada uno de los usuarios pertenecientes al proyecto, incluido el creador. De esta manera se mantiene identificado al fundador para cualquier posible función posterior que pueda tener.
 
@@ -52,7 +53,12 @@ se refiere al usuario que ha creado el proyecto. Mientras que por otro lado en l
 | **PK**         | `id`     |
 | **FK**     | `idUser`  |
 |      | `name`  |
-|      | `configuration (json)`  |
+|      | `description`  |
+|      | `icon`  |
+|      | `created_at`  |
+|      | `updated_at`  |
+
+En la tabla **Project** es donde guardamos cada proyecto, tiene una **FK** (*idUser*) que se refiere al id del usuario creador del proyecto, también tiene nombre, descripción, icono y timestamps
 
 #### PROJECT_USER
 | Type           | Field    |
@@ -61,7 +67,17 @@ se refiere al usuario que ha creado el proyecto. Mientras que por otro lado en l
 | **PF2**     | `idUser`  |
 | **FK3**     | `idRol`  |
 
-En la tabla **Project_user** aparece una nueva **FK** (*idRol*), que pertenece claramente a la tabla **Role**. Los usuarios pueden tener distintos roles (Administrador, Escritor, Lector, ...) en distintos proyectos. Un mismo usuario puede ser administrador de un proyecto y únicamente lector en otro. Es por ello que la *FK* se ve representada en la tabla intermedia **Project_user**.
+En la tabla **Project_user** aparece una nueva **FK** (*idRol*), que pertenece a la tabla **Role**. Un mismo usuario puede ser administrador de un proyecto y lector en otro. Es por ello que la *FK* se ve representada en la tabla intermedia **Project_user**.
+
+#### PROJECT_USER_ACTIVITY
+| Type           | Field    |
+| :--------      | :------- |
+| **PK,FK**         | `idProject`     |
+| **PK,FK**     | `idUser`  |
+|      | `date`  |
+|      | `commits`  |
+
+En la tabla **Project_user_activity** guardaremos información referiada a la acciones de un usuario en un proyect, esta información la usaremos para mostrar una grafica en el perfil del usuario
 
 #### ROLE
 | Type           | Field    |
@@ -69,7 +85,7 @@ En la tabla **Project_user** aparece una nueva **FK** (*idRol*), que pertenece c
 | **PK**         | `id`     |
 | **UNIQUE**     | `Enum (Role)`  |
 
-Los usuarios pueden ser amigos de otros usuarios. Esto se trata de una relación recursiva *many to many*. La forma de representarla es haciendo uso de la tabla **User_friend**, en la que se guardan los ids de los usuarios que tienen amistad entre sí.
+En la table **Role** guardamos los distintios tipos de roles que puede tener un usuario (Administrador, Escritor, Lector, ...).
 
 #### USER_FRIEND
 | Type           | Field    |
@@ -77,7 +93,17 @@ Los usuarios pueden ser amigos de otros usuarios. Esto se trata de una relación
 | **PF1**         | `idUser`     |
 | **PF2**     | `idFriend`  |
 
-En todo sitio web los usuarios también pueden dar su opinión y comentar. Es por ello que existe la tabla **Review**, que tiene como **FK** *idUser* puesto que un comentario solo puede pertenecer a un usuario.
+Los usuarios pueden ser amigos de otros usuarios. Esto se trata de una relación recursiva *many to many*. La forma de representarla es haciendo uso de la tabla **User_friend**, en la que se guardan los ids de los usuarios que tienen amistad entre sí.
+
+#### USER_FRIEND_INVITATION
+| Type           | Field    |
+| :--------      | :------- |
+| **PK,FK**         | `idGuest`     |
+| **PK,FK**     | `idUser`  |
+|     | `title`  |
+|     | `message`  |
+
+Para ser amigo de un usuario hay que enviarle una invitación, la tabla **User_friend_invitation** se encarga de guardar estas peticiones hasta ser aceptadas o denegados por el usuario al que se ha enviado
 
 #### REVIEW
 | Type           | Field    |
@@ -88,7 +114,7 @@ En todo sitio web los usuarios también pueden dar su opinión y comentar. Es po
 |    | `content`  |
 |   | `rating`  |
 
-Siguiendo con las funcionalidades del usuario, hay que mencionar la tabla **User_invitation**, que se encarga de la invitación de un usuario a otro a un proyecto determinado. Es por ello que posee el id tanto del anfitrión como del invitado, así como del proyecto.
+En todo sitio web los usuarios también pueden dar su opinión y comentar. Es por ello que existe la tabla **Review**, que tiene como **FK** *idUser* puesto que un comentario solo puede pertenecer a un usuario.
 
 #### USER_INVITATION
 | Type           | Field    |
@@ -99,10 +125,7 @@ Siguiendo con las funcionalidades del usuario, hay que mencionar la tabla **User
 |     | `title`  |
 |    | `message`  |
 
-Los logros también son parte de la aplicación, que irá consiguiendo el usuario a medida que vaya cumpliendo los objetivos necesarios para alcanzar cada uno
-de ellos. De ahí nacen las tablas **Achievement** y **Achievement_user**. Puesto que un mismo logro puede pertenecer a muchos usuarios y un usuario puede
-tener muchos logros, necesitamos una tabla intermedia que recoja tanto las **PK** *idAchievement* e *idUser* además de registrar el progreso de ese usuario 
-en ese logro.
+Siguiendo con las funcionalidades del usuario, hay que mencionar la tabla **User_invitation**, que se encarga de la invitación de un usuario a otro a un proyecto determinado. Es por ello que posee el id tanto del anfitrión como del invitado, así como del proyecto.
 
 #### ACHIEVEMENT
 | Type           | Field    |
@@ -111,7 +134,11 @@ en ese logro.
 |      | `title`  |
 |      | `description`  |
 |      | `icon`  |
-|      | `configuration (json)`  |
+|      | `category`
+|      | `state`  |
+
+Los logros también son parte de la aplicación, que irá consiguiendo el usuario a medida que vaya cumpliendo los objetivos necesarios para alcanzar cada uno
+de ellos. De ahí nace la tablas **Achievement**. Cada logro tiene varios states, un ejemplo de esto sería un achievemnt que sea "Crear proyectos", el primer state sería 1 el segundo 5... siendo estos valores el número de proyectos creados necesarios para avanzar de state.
 
 #### ACHIEVEMENT_USER
 | Type           | Field    |
@@ -119,9 +146,11 @@ en ese logro.
 | **PF1**         | `idAchievement` |
 | **PF2**     | `idUser`  |
 |      | `progress`  |
+|      | `percentage` |
+|      | `current_state` |
 |      | `completed`  |
 
-El usuario también cuenta con un apartado de notificaciones. Para almacenarlos existe la tabla **Notification**.
+Puesto que un mismo logro puede pertenecer a muchos usuarios y un usuario puede tener muchos logros, necesitamos una tabla intermedia que recoja tanto las **PK** *idAchievement* e *idUser* además de registrar el progreso de ese usuario en ese logro, su state actual y si está completo o no.
 
 #### NOTIFICATION
 | Type           | Field    |
@@ -132,8 +161,7 @@ El usuario también cuenta con un apartado de notificaciones. Para almacenarlos 
 |      | `content`  |
 |      | `state`  |
 
-Finalizada la parte del usuario, pasamos a la del proyecto. Cada proyecto debe de tener unos objetivos a cumplir por los miembros del mismo. La tabla **Goal**
-es la encargada de almacenar estos objetivos.
+El usuario también cuenta con un apartado de notificaciones. Para almacenarlos existe la tabla **Notification**.
 
 #### GOAL
 | Type           | Field    |
@@ -144,7 +172,8 @@ es la encargada de almacenar estos objetivos.
 |      | `description`  |
 |      | `completed`  |
 
-Todo proyecto debería de tener una copia de seguridad. De ahí nace la tabla **Recent_change**, la cual almacena una copia del los cambios más recientes para que en caso de fallo no se pierdan los datos. La **PK** en este caso se trata de un campo de tipo fecha. Al tomar como unidad de tiempo hasta las milésimas, no es posible que se realicen dos cambios simultáneamente en el mismo proyecto y en el mismo momento. Es por ello que esta tabla no tiene id. El campo backup sería de tipo **BLOB** o **JSON** (aún por determinar).
+Finalizada la parte del usuario, pasamos a la del proyecto. Cada proyecto debe de tener unos objetivos a cumplir por los miembros del mismo. La tabla **Goal**
+es la encargada de almacenar estos objetivos.
 
 #### RECENT_CHANGE
 | Type           | Field    |
@@ -153,34 +182,49 @@ Todo proyecto debería de tener una copia de seguridad. De ahí nace la tabla **
 | **PF**     | `idProject`  |
 |     | `backup`  |
 
-Cada proyecto puede tener múltiples aplicaciones, que pueden ser de los siguientes tipos: **Docs**, **Kanban** y **Timeline**.
-En estas tablas se encuentran tanto campos comunes como específicos. Es el claro ejemplo de especificación.
+Todo proyecto debería de tener una copia de seguridad. De ahí nace la tabla **Recent_change**, la cual almacena una copia de los cambios más recientes para que en caso de fallo no se pierdan los datos. La **PK** en este caso se trata de un campo de tipo fecha. Al tomar como unidad de tiempo hasta las milésimas, no es posible que se realicen dos cambios simultáneamente en el mismo proyecto y en el mismo momento. Es por ello que esta tabla no tiene id. El campo backup sería de tipo **BLOB** o **JSON** (aún por determinar).
 
-#### APP, DOCS, KANBAN, TIMELINE
+### APP
 | Type           | Field    |
 | :--------      | :------- |
 | **PK**         | `id`     |
 | **PF**     | `idProject`  |
+|     | `name`  |
+|     | `description`  |
+|     | `photo`  |
+
+En la table **App** es donde guardaremos la información de todas las apps de cada proyecto, aquí se guardaran valores generales de cada app, como su nombre, descripción o imagen.
+
+#### TASK_APP & DOCS_APP
+| Type           | Field    |
+| :--------      | :------- |
+| **PK,FK**         | `idApp`     |
+| **PK,FK**     | `idProject`  |
+|     | `type`  |
 |     | `...`  |
 
-Las aplicaciones de tipo **Kanban** pueden tener múltiples tableros (**Board**). Estos a su vez pueden tener varias columnas (**Column**) en las que dividir las
-tareas a realizar (**Task**). Esto traspasado a tablas quedaría así:
+Tanto la tabla **Task_app** como la **Docs_app** representan tipos generales de apps que pueden haber, esta tiene una **FK** *idApp* que la relaciona con app, siendo que cuando se crea un registro en la tabla **App** se crea uno ya sea en **task_app** o en **docs_app** indicando así su tipo general.
+Dentro de estas tablas tenemos un parametro en común que es el tipo de app, por ejemplo en **Task_app** podemos tener una app de tipo *Kanban* o de tipo *Timeline*
 
-#### BOARD
+#### BOARD - TASK_APP
 | Type           | Field    |
 | :--------      | :------- |
 | **PK**         | `id`     |
 | **FK**         | `idApp`     |
 |      | `title`  |
 
-#### COLUMN
+La tabla **Board** representa una pizarra en el tipo de aplicación general task_app
+
+#### COLUMN - TASK_APP
 | Type           | Field    |
 | :--------      | :------- |
 | **PK**         | `id`     |
 | **FK**         | `idBoard`     |
 |      | `title`  |
 
-#### TASK
+La tabla **Column** representa una columna dentro de una pizarra en el tipo de aplicación general task_app
+
+#### TASK - TASK_APP
 | Type           | Field    |
 | :--------      | :------- |
 | **PK**         | `id`     |
@@ -190,8 +234,9 @@ tareas a realizar (**Task**). Esto traspasado a tablas quedaría así:
 |      | `github`  |
 |      | `configuration (json)`  |
 
+La tabla **Task** representa una tarea dentro de una columna en el tipo de aplicación general task_app
 
-## ESTRUCTURAS json
+## ESTRUCTURAS USADAS EN LAS RUTAS
 ```
 GenericError {
     error: bool,
@@ -255,15 +300,64 @@ UserAchievement {
 }
 ```
 ```
-pub struct UserAchievementsResponse {
-    pub total: usize,
-    pub achievements: Vec<UserAchievement> // Array de UserAchievement
+UserAchievementsResponse {
+    total: usize,
+    achievements: Vec<UserAchievement> // Array de UserAchievement
+}
+```
+
+```
+UserProfile {
+    user: UserInfoResponse,
+    achievements: Vec<UserAchievementsProfile>,
+    projects: Vec<UserProjectProfile>,
+    activity: Vec<UserActivityProfile>,
+    owner : bool
+}
+```
+
+```
+UserAchievementsProfile {
+    id: String,
+    title: String,
+    description: String,
+    icon: String,
+    progress: i32,
+    completed: bool,
+    current_state: i32,
+    percentage: BigDecimal
+}
+```
+
+```
+UserProjectProfile {
+    id: String,
+    name: String,
+    description: String,
+    updated_at: String,
+    members: Vec<ProjectMembers>
+}
+```
+
+```
+UserActivityProfile {
+    idproject: String,
+    date: String,
+    commits: i16
+}
+```
+
+```
+InvitationMessage {
+    length(min = 3, max = 50, message = "Title lenght must be between 3 and 50 characters")
+    title: String,
+    length(min = 10, max = 150, message = "Message lenght must be between 10 and 150 characters")
+    message: String
 }
 ```
 ## RUTAS DE LA API
 
 #### Registrar a un usuario
-
 ```http
   POST /register
 ```
@@ -275,10 +369,7 @@ pub struct UserAchievementsResponse {
 | :--------   | :-------      |
 | `user_info` | `UserInput`   |
 
- 
-
 #### Iniciar la sesión de un usuario
-
 ```http
   POST /login
 ```
@@ -291,7 +382,6 @@ pub struct UserAchievementsResponse {
 | `user_info` | `UserLogin`   |
 
 #### Enviar un correo a un usuario
-
 ```http
   POST /send_mail
 ```
@@ -304,7 +394,6 @@ pub struct UserAchievementsResponse {
 | `user_mail` | `String`   |
 
 #### Cambia la conraseña del usuario
-
 ```http
   POST /change_password
 ```
@@ -317,7 +406,6 @@ pub struct UserAchievementsResponse {
 | `user_info` | `ChangePass`   | 
 
 #### Desloguear al usuario
-
 ```http
   POST /logout
 ```
@@ -326,7 +414,6 @@ pub struct UserAchievementsResponse {
 | Yes            |
 
 #### Devuelve todos los achievements de la base de datos
-
 ```http
   GET /achievements
 ```
@@ -343,7 +430,7 @@ pub struct UserAchievementsResponse {
 | :-------       | :-------    | 
 | Yes            | `UserAchievementsResponse` o `GenericError` |
 
-#### Devuelve todos los achievements de un usuario
+#### Devuelve datos del perfil del usuario
 ```http
   GET /profile/<id>
 ```
@@ -351,6 +438,14 @@ pub struct UserAchievementsResponse {
 | :-------       | :-------    | 
 | Yes            | `UserProfile` o `GenericError` |
 
+#### Inivar usuario a un proyecto
+```http
+  POST /user/<user_id>/project/<project_id>
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
 | Parameter   | Type          | 
 | :--------   | :-------      | 
-| `id` | `String`   | 
+| `invitation` | `InvitationMessage`   | 
