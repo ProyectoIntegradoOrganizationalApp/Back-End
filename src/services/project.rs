@@ -18,6 +18,7 @@ pub fn create_project(project_info: &ProjectInputCreate, token_iduser: String) -
         iduser: token_iduser.clone(),
         name: project_info.name.clone(),
         description: project_info.description.clone(),
+        icon: project_info.icon.clone(),
         created_at: now.clone(),
         updated_at: now.clone()
     };
@@ -66,6 +67,7 @@ pub fn update_project(project_info: &ProjectInputCreate, user_id: &String, proje
                 Ok(mut project) => {
                     project.name = project_info.name.clone();
                     project.description = project_info.description.clone();
+                    project.icon = project_info.icon.clone();
                     project.updated_at = (Utc::now()).to_string();
 
                     let updated_project = project.save_changes::<Project>(connection);
@@ -154,6 +156,7 @@ pub fn get_project(project_id: &String, token_data: &TokenValidation) -> Result<
                         iduser: project.iduser.clone(),
                         name: project.name.clone(),
                         description: project.description.clone(),
+                        icon: project.icon.clone(),
                         created_at: project.created_at.clone(),
                         updated_at: project.updated_at.clone(),
                         members: project_members,
@@ -205,6 +208,7 @@ pub fn get_user_projects(user_id: &String) -> Result<UserProjects, GenericError>
                             id: project.idproject.clone(),
                             name: project.name.clone(),
                             description: project.description.clone(),
+                            icon: project.icon.clone(),
                             members: project_members
                         };
                         user_projects_detail.push(user_project_detail_info);

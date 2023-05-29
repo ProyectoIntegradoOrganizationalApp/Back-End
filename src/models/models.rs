@@ -56,6 +56,7 @@ pub struct Project {
     pub iduser: String,
     pub name: String,
     pub description: String,
+    pub icon: String,
     pub created_at: String,
     pub updated_at: String
 }
@@ -361,6 +362,7 @@ pub struct UserProjectProfile {
     pub id: String,
     pub name: String,
     pub description: String,
+    pub icon: String,
     pub updated_at: String,
     pub members: Vec<ProjectMembers>
 }
@@ -385,7 +387,9 @@ pub struct ProjectInputCreate {
     #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
     pub name: String,
     #[validate(length(min = 10, max = 150, message = "Lenght must be between 10 and 150 characters"))]
-    pub description: String
+    pub description: String,
+    #[validate(url)]
+    pub icon: String
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ProjectDetail {
@@ -393,6 +397,7 @@ pub struct ProjectDetail {
     pub iduser: String,
     pub name: String,
     pub description: String,
+    pub icon: String,
     pub created_at: String,
     pub updated_at: String,
     pub members: Vec<ProjectMembers>,
@@ -458,6 +463,7 @@ pub struct UserProjectsDetail {
     pub id: String,
     pub name: String, 
     pub description: String,
+    pub icon: String,
     pub members: Vec<ProjectMembers>
 }
 #[derive(Serialize, Deserialize, Debug)]

@@ -4,6 +4,7 @@ CREATE TABLE projects (
     idUser VARCHAR NOT NULL,
     name VARCHAR NOT NULL,
     description VARCHAR NOT NULL,
+    icon VARCHAR NOT NULL,
     created_at VARCHAR NOT NULL,
     updated_at VARCHAR NOT NULL,
     CONSTRAINT fk_user

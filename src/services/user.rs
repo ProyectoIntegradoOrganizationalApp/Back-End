@@ -78,6 +78,7 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
                                     id: project.idproject.clone(),
                                     name: project.name.clone(),
                                     description: project.description.clone(),
+                                    icon: project.icon.clone(),
                                     updated_at: project.updated_at.clone(),
                                     members: project_members
                                 };
