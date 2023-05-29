@@ -187,20 +187,14 @@ pub fn get_user_projects(user_id: &String) -> Result<UserProjects, GenericError>
     let user_found = users::table.filter(users::id.eq(&user_id)).first::<User>(connection);
     match user_found {
         Ok(user) => {
-            let projects_found = UserProject::belonging_to(&user)
-                            .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
-                            .select(Project::as_select())
-                            .load::<Project>(connection);
-            
-            match projects_found {
-                Ok(projects) => {
-                    let projects_info = project::get_user_projects(projects, connection);
+            match project::get_user_projects(&user, connection) {
+                Ok(projects_info) => {
                     let user_projects = UserProjects {
                         projects: projects_info
                     };
                     Ok(user_projects)
                 },
-                Err(err) => Err(GenericError {error: true, message: err.to_string()})
+                Err(err) => Err(GenericError { error: true, message: err.to_string() })
             }
         }, 
         Err(err) => Err(GenericError {error: true, message: err.to_string()})

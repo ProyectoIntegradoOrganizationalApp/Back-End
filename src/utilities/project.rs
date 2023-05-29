@@ -30,25 +30,34 @@ pub fn is_admin(idproject: &str, iduser: &str) -> Result<UserProject, GenericErr
     }
 }
 
-pub fn get_user_projects(projects: Vec<Project>, connection: &mut PgConnection) -> Vec<UserProjectsDetail>{
-    let mut projects_info:Vec<UserProjectsDetail> = Vec::new();
-    for project in &projects {
-        match get_project_members(&project, connection) {
-            Ok(project_members) => {
-                let user_projects_info = UserProjectsDetail {
-                    id: project.idproject.clone(),
-                    name: project.name.clone(),
-                    description: project.description.clone(),
-                    icon: project.icon.clone(),
-                    updated_at: project.updated_at.clone(),
-                    members: project_members
+pub fn get_user_projects(user: &User, connection: &mut PgConnection) -> Result<Vec<UserProjectsDetail>, String> {
+    let projects_found = UserProject::belonging_to(&user)
+        .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
+        .select(Project::as_select())
+        .load::<Project>(connection);
+    match projects_found {
+        Ok(projects) => {
+            let mut projects_info:Vec<UserProjectsDetail> = Vec::new();
+            for project in &projects {
+                match get_project_members(&project, connection) {
+                    Ok(project_members) => {
+                        let user_projects_info = UserProjectsDetail {
+                            id: project.idproject.clone(),
+                            name: project.name.clone(),
+                            description: project.description.clone(),
+                            icon: project.icon.clone(),
+                            updated_at: project.updated_at.clone(),
+                            members: project_members
+                        };
+                        projects_info.push(user_projects_info);
+                    },
+                    Err(_) => ()
                 };
-                projects_info.push(user_projects_info);
-            },
-            Err(_) => ()
-        };
+            }
+            Ok(projects_info)
+        },
+        Err(err) => Err(err.to_string())
     }
-    projects_info
 }
 
 pub fn get_project_members(project: &Project, connection: &mut PgConnection) -> Result<Vec<ProjectMembers>, String> {
@@ -77,6 +86,28 @@ pub fn get_project_members(project: &Project, connection: &mut PgConnection) -> 
                 };
             }
             Ok(project_members)
+        },
+        Err(err) => Err(err.to_string())
+    }
+}
+
+pub fn get_project_user_activity(user: &User, connection: &mut PgConnection) -> Result<Vec<UserActivityProfile>, String> {
+    let activity_found = ProjectUserActivity::belonging_to(&user)
+            .select(ProjectUserActivity::as_select())
+            .load::<ProjectUserActivity>(connection);
+            
+    match activity_found {
+        Ok(activity) => {
+            let mut activity_info:Vec<UserActivityProfile> = Vec::new();
+            for i in &activity {
+                let user_activity_info = UserActivityProfile {
+                    idproject: i.idproject.clone(),
+                    date: i.date.clone(),
+                    commits: i.commits
+                };
+                activity_info.push(user_activity_info);
+            }
+            Ok(activity_info)
         },
         Err(err) => Err(err.to_string())
     }

@@ -112,3 +112,33 @@ pub fn check_update_user_achievement(user_id: &str, achievement_id: &str) -> Res
         Err(err) => Err(GenericError { error: true, message: err.to_string() })
     }
 }
+
+pub fn get_user_achievements_profile(user: &User, connection: &mut PgConnection) -> Result<Vec<UserAchievementsProfile>, String> {
+    let achievements_found = UserAchievement::belonging_to(&user)
+        .inner_join(achievement::table)
+        .select((Achievement::as_select(), UserAchievement::as_select()))
+        .filter(achievement_user::progress.gt(0))
+        .load::<(Achievement, UserAchievement)>(connection);
+    
+    match achievements_found {
+        Ok(achievements) => {
+            // Pick up only the achievements' information we need
+            let mut achievements_info:Vec<UserAchievementsProfile> = Vec::new();
+            for i in &achievements {
+                let user_achievements_info = UserAchievementsProfile {
+                    id: i.0.id.clone(),
+                    title: i.0.title.clone(),
+                    description: i.0.description.clone(),
+                    icon: i.0.icon.clone(),
+                    progress: i.1.progress,
+                    completed: i.1.completed,
+                    current_state: i.1.current_state,
+                    percentage: i.1.percentage.clone()
+                };
+                achievements_info.push(user_achievements_info);
+            }
+            Ok(achievements_info)
+        },
+        Err(err) => Err(err.to_string())
+    }
+}
