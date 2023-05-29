@@ -1,11 +1,5 @@
 // @generated automatically by Diesel CLI.
 
-pub mod sql_types {
-    #[derive(diesel::sql_types::SqlType)]
-    #[diesel(postgres_type(name = "valid_roles"))]
-    pub struct ValidRoles;
-}
-
 diesel::table! {
     achievement (id) {
         id -> Varchar,
@@ -130,12 +124,9 @@ diesel::table! {
 }
 
 diesel::table! {
-    use diesel::sql_types::*;
-    use super::sql_types::ValidRoles;
-
     role (id) {
         id -> Varchar,
-        name -> Nullable<ValidRoles>,
+        name -> Varchar,
     }
 }
 

@@ -1,9 +1,7 @@
 -- Your SQL goes here
-CREATE TYPE valid_roles AS ENUM ('administrator', 'editor', 'reader');
-
 CREATE TABLE role (
     id VARCHAR PRIMARY KEY NOT NULL,
-    name valid_roles UNIQUE
+    name VARCHAR UNIQUE NOT NULL
 );
 
 INSERT INTO "role" VALUES

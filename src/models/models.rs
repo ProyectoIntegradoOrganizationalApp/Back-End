@@ -21,6 +21,13 @@ pub struct User {
     pub level: i16,
     pub photo: String
 }
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Identifiable, PartialEq, AsChangeset)]
+#[diesel(primary_key(id))]
+#[diesel(table_name = role)]
+pub struct Role {
+    pub id: String,
+    pub name: String
+}
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Identifiable, PartialEq)]
 #[diesel(primary_key(id))]
 #[diesel(table_name = achievement)]
@@ -334,7 +341,7 @@ pub struct UserAchievementsResponse {
 pub struct UserProfile {
     pub user: UserInfoResponse,
     pub achievements: Vec<UserAchievementsProfile>,
-    pub projects: Vec<UserProjectProfile>,
+    pub projects: Vec<UserProjectsDetail>,
     pub activity: Vec<UserActivityProfile>,
     pub owner : bool
 }
@@ -356,15 +363,6 @@ pub struct UserInfoResponse {
     pub email: String,
     pub level: i16,
     pub photo: String
-}
-#[derive(Serialize, Deserialize, Debug)]
-pub struct UserProjectProfile {
-    pub id: String,
-    pub name: String,
-    pub description: String,
-    pub icon: String,
-    pub updated_at: String,
-    pub members: Vec<ProjectMembers>
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserNotificationProfile {
@@ -464,13 +462,16 @@ pub struct UserProjectsDetail {
     pub name: String, 
     pub description: String,
     pub icon: String,
+    pub updated_at: String,
     pub members: Vec<ProjectMembers>
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ProjectMembers {
     pub id: String,
     pub name: String,
-    pub photo: String
+    pub photo: String,
+    pub idrole: String,
+    pub role: String
 }
 // USER PROJECTS ENDPOINT ········· END
 

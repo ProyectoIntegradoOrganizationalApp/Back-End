@@ -6,6 +6,7 @@ use diesel::prelude::*;
 use diesel::result::Error;
 use rust_api_rest::establish_connection;
 use crate::utilities::achievements::*;
+use crate::utilities::*;
 
 use chrono::Utc;
 
@@ -117,23 +118,32 @@ pub fn get_project(project_id: &String, token_data: &TokenValidation) -> Result<
         Ok(project) => {
             let members_found = UserProject::belonging_to(&project)
                 .inner_join(users::table.on(project_user::iduser.eq(users::id)))
-                .select(User::as_select())
-                .load::<User>(connection);
+                .select((User::as_select(), UserProject::as_select()))
+                .load::<(User, UserProject)>(connection);
             let mut project_members:Vec<ProjectMembers> = Vec::new();
             match members_found {
                 Ok(members) => {
                     let mut user_member = false;
                     let mut owner = false;
                     for member in &members {
-                        if member.id == token_data.token_iduser {
+                        if member.0.id == token_data.token_iduser {
                             user_member = true;
                         }
-                        let project_members_info = ProjectMembers {
-                            id: member.id.clone(),
-                            name: member.name.clone(),
-                            photo: member.photo.clone()
+                        let role_found = role::table.filter(role::id.eq(&member.1.idrole))
+                            .first::<Role>(connection);
+                        match role_found {
+                            Ok(role) => {
+                                let project_members_info = ProjectMembers {
+                                    id: member.0.id.clone(),
+                                    name: member.0.name.clone(),
+                                    photo: member.0.photo.clone(),
+                                    idrole: role.id.clone(),
+                                    role: role.name.clone()
+                                };
+                                project_members.push(project_members_info);
+                            },
+                            Err(_) => ()
                         };
-                        project_members.push(project_members_info);
                     }
 
                     if user_member {
@@ -184,37 +194,9 @@ pub fn get_user_projects(user_id: &String) -> Result<UserProjects, GenericError>
             
             match projects_found {
                 Ok(projects) => {
-                    let mut user_projects_detail:Vec<UserProjectsDetail> = Vec::new();
-                    for project in &projects {
-                        let members_found = UserProject::belonging_to(&project)
-                            .inner_join(users::table.on(project_user::iduser.eq(users::id)))
-                            .select(User::as_select())
-                            .load::<User>(connection);
-                        let mut project_members:Vec<ProjectMembers> = Vec::new();
-                        match members_found {
-                            Ok(members) => {
-                                for member in &members {
-                                    let project_members_info = ProjectMembers {
-                                        id: member.id.clone(),
-                                        name: member.name.clone(),
-                                        photo: member.photo.clone()
-                                    };
-                                    project_members.push(project_members_info);
-                                }
-                            },
-                            Err(_) => ()
-                        };
-                        let user_project_detail_info = UserProjectsDetail {
-                            id: project.idproject.clone(),
-                            name: project.name.clone(),
-                            description: project.description.clone(),
-                            icon: project.icon.clone(),
-                            members: project_members
-                        };
-                        user_projects_detail.push(user_project_detail_info);
-                    }
+                    let projects_info = project::get_user_projects(projects, connection);
                     let user_projects = UserProjects {
-                        projects: user_projects_detail
+                        projects: projects_info
                     };
                     Ok(user_projects)
                 },

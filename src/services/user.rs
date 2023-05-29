@@ -6,6 +6,7 @@ use diesel::BelongingToDsl;
 use crate::models::models::*;
 use crate::schema::{users, achievement, projects, project_user, user_invitation, user_friend_invitation, user_friend, achievement_user};
 use crate::utilities::achievements::*;
+use crate::utilities::project::*;
 
 pub fn profile(id_string: &String) -> Result<UserProfile, String>{
     let connection = &mut establish_connection();
@@ -54,37 +55,7 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String>{
                     
                     match projects_found {
                         Ok(projects) => {
-                            let mut projects_info:Vec<UserProjectProfile> = Vec::new();
-                            for project in &projects {
-                                let members_found = UserProject::belonging_to(&project)
-                                    .inner_join(users::table.on(project_user::iduser.eq(users::id)))
-                                    .select(User::as_select())
-                                    .load::<User>(connection);
-                                let mut project_members:Vec<ProjectMembers> = Vec::new();
-                                match members_found {
-                                    Ok(members) => {
-                                        for member in &members {
-                                            let project_members_info = ProjectMembers {
-                                                id: member.id.clone(),
-                                                name: member.name.clone(),
-                                                photo: member.photo.clone()
-                                            };
-                                            project_members.push(project_members_info);
-                                        }
-                                    },
-                                    Err(_) => ()
-                                };
-                                let user_projects_info = UserProjectProfile {
-                                    id: project.idproject.clone(),
-                                    name: project.name.clone(),
-                                    description: project.description.clone(),
-                                    icon: project.icon.clone(),
-                                    updated_at: project.updated_at.clone(),
-                                    members: project_members
-                                };
-                                projects_info.push(user_projects_info);
-                            }
-
+                            let projects_info = get_user_projects(projects, connection);
                             let activity_found = ProjectUserActivity::belonging_to(&user)
                                     .select(ProjectUserActivity::as_select())
                                     .load::<ProjectUserActivity>(connection);
