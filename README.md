@@ -349,10 +349,116 @@ UserActivityProfile {
 
 ```
 InvitationMessage {
-    length(min = 3, max = 50, message = "Title lenght must be between 3 and 50 characters")
     title: String,
-    length(min = 10, max = 150, message = "Message lenght must be between 10 and 150 characters")
     message: String
+}
+```
+
+```
+NewRole {
+    idrole: String
+}
+```
+
+```
+ProjectInputCreate {
+    name: String,
+    description: String
+}
+```
+
+```
+ProjectDetail {
+    idproject: String,
+    iduser: String,
+    name: String,
+    description: String,
+    created_at: String,
+    updated_at: String,
+    members: Vec<ProjectMembers>,
+    owner: bool
+}
+```
+
+```
+App {
+    id: String,
+    idproject: String,
+    name: String,
+    description: String,
+    photo: String
+}
+```
+
+```
+AppInputCreate {
+    name: String,
+    description: String,
+    pub photo: String,
+    pub apptype: String,
+    pub task_app: Option<TaskAppInputCreate>,
+    pub docs_app: Option<DocsAppInputCreate>,
+}
+```
+
+```
+TaskAppInputCreate {
+    app_type: String
+}
+```
+
+```
+DocsAppInputCreate {
+    app_type: String
+}
+```
+
+```
+Board {
+    id: String,
+    idapp: String,
+    title: String
+}
+```
+
+```
+BoardInputCreate {
+    idapp: String,
+    title: String
+}
+```
+
+```
+Columna {
+    id: String,
+    idboard: String,
+    title: String
+}
+```
+
+```
+ColumnInputCreate {
+    idboard: String,
+    title: String
+}
+```
+
+```
+Task {
+    id: String,
+    idcolumn: String,
+    title: String,
+    description: Option<String>,
+    github: Option<String>
+}
+```
+
+```
+TaskInputCreate {
+    idcolumn: String,
+    title: String,
+    description: Option<String>,
+    github: Option<String>
 }
 ```
 ## RUTAS DE LA API
@@ -368,6 +474,26 @@ InvitationMessage {
 | Parameter   | Type          |
 | :--------   | :-------      |
 | `user_info` | `UserInput`   |
+
+#### Actualizar un usuario
+```http
+  PUT /user/<id>
+```
+| Requires token | Returns     | 
+| :-------       | :-------    | 
+| Yes             | `GenericError` o `GenericError`|
+
+| Parameter   | Type          |
+| :--------   | :-------      |
+| `user_info` | `UserInput`   |
+
+#### Eliminar un usuario
+```http
+  DELETE /user/<id>
+```
+| Requires token | Returns     | 
+| :-------       | :-------    | 
+| Yes             | `GenericError` o `GenericError`|
 
 #### Iniciar la sesión de un usuario
 ```http
@@ -438,6 +564,54 @@ InvitationMessage {
 | :-------       | :-------    | 
 | Yes            | `UserProfile` o `GenericError` |
 
+#### Crear un proyecto
+```http
+  POST /project
+```
+| Requires token | Returns     | 
+| :-------       | :-------    | 
+| Yes            | `Project` o `GenericError` |
+
+| Parameter   | Type          | 
+| :--------   | :-------      | 
+| `project_info` | `ProjectInputCreate` |
+
+#### Actualizar un proyecto
+```http
+  PUT /project/<id>
+```
+| Requires token | Returns     | 
+| :-------       | :-------    | 
+| Yes            | `GenericError` o `GenericError` |
+
+| Parameter   | Type          | 
+| :--------   | :-------      | 
+| `project_info` | `ProjectInputCreate` |
+
+#### Eliminar un proyecto
+```http
+  DELETE /project/<id>
+```
+| Requires token | Returns     | 
+| :-------       | :-------    | 
+| Yes            | `GenericError` o `GenericError` |
+
+#### Conseguir los datos de un proyecto
+```http
+  GET /project/<id>
+```
+| Requires token | Returns     | 
+| :-------       | :-------    | 
+| Yes            | `ProjectDetail` o `GenericError` |
+
+#### Conseguir todos los proyectos de un usuario
+```http
+  GET /user/<id>/projects
+```
+| Requires token | Returns     | 
+| :-------       | :-------    | 
+| Yes            | `UserProjects` o `GenericError` |
+
 #### Inivar usuario a un proyecto
 ```http
   POST /user/<user_id>/project/<project_id>
@@ -448,4 +622,204 @@ InvitationMessage {
 
 | Parameter   | Type          | 
 | :--------   | :-------      | 
-| `invitation` | `InvitationMessage`   | 
+| `invitation` | `InvitationMessage`   |
+
+#### Aceptar la invitación a un proyecto
+```http
+  GET /invitation/<project_id>/accept
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
+#### Denegar la invitación a un proyecto
+```http
+  GET /invitation/<project_id>/deny
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
+#### Cambiar el rol de un usuario en un proyecto
+```http
+  PUT /user/<user_id>/project/<project_id>
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
+| Parameter   | Type          | 
+| :--------   | :-------      | 
+| `role` | `NewRole`   |
+
+#### Eliminar un usuario de un proyecto
+```http
+  DELETE /user/<user_id>/project/<project_id>
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
+#### Enviar petición de amistad a un usuario
+```http
+  POST /friend/<guest_id>
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
+| Parameter   | Type          | 
+| :--------   | :-------      | 
+| `invitation` | `InvitationMessage`   |
+
+#### Aceptar petición de amistad de usuario
+```http
+  GET /friend/<user_id>/accept
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
+#### Denegar petición de amistad de usuario
+```http
+  GET /friend/<user_id>/deny
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
+#### Eliminar amigo
+```http
+  DELETE /friend/<friend_id>
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
+#### Añadir un app de un proyecto
+```http
+  POST /project/<project_id>/app
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `App` o `GenericError` |
+
+| Parameter   | Type          | 
+| :--------   | :-------      | 
+| `app_info` | `AppInputCreate` |
+
+#### Actualizar una app de un proyecto
+```http
+  PUT /project/<project_id>/app
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
+| Parameter   | Type          | 
+| :--------   | :-------      | 
+| `app_info` | `AppInputCreate` |
+
+#### Eliminar una app de un proyecto
+```http
+  DELETE /project/<project_id>/app
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
+#### Añadir una pizarra a una app tipo task_app
+```http
+  POST /task_app/board
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `Board` o `GenericError` |
+
+| Parameter   | Type          | 
+| :--------   | :-------      | 
+| `board_info` | `BoardInputCreate` |
+
+#### Actualizar una pizarra de una app tipo task_app
+```http
+  PUT /task_app/board/<id>
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
+| Parameter   | Type          | 
+| :--------   | :-------      | 
+| `board_info` | `BoardInputCreate` |
+
+#### Eliminar una pizarra de una app tipo task_app
+```http
+  DELETE /task_app/board/<id>
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
+#### Añadir una columna a una pizarra
+```http
+  POST /task_app/column
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `Column` o `GenericError` |
+
+| Parameter   | Type          | 
+| :--------   | :-------      | 
+| `column_info` | `ColumnInputCreate` |
+
+#### Actualizar un columna de una pizarra
+```http
+  PUT /task_app/column/<id>
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
+| Parameter   | Type          | 
+| :--------   | :-------      | 
+| `column_info` | `ColumnInputCreate` |
+
+#### Eliminar una columna de una pizarra
+```http
+  DELETE /task_app/column/<id>
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
+#### Añadir una terea a una columna
+```http
+  POST /task_app/task
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `Task` o `GenericError` |
+
+| Parameter   | Type          | 
+| :--------   | :-------      | 
+| `task_info` | `TaskInputCreate` |
+
+#### Actualizar un tarea de una column
+```http
+  PUT /task_app/task/<id>
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
+
+| Parameter   | Type          | 
+| :--------   | :-------      | 
+| `task_info` | `TaskInputCreate` |
+
+#### Eliminar una tarea de una columna
+```http
+  DELETE /task_app/task/<id>
+ ```
+| Requires token | Returns       |
+| :-------       | :---------    |
+| Yes            | `GenericError` o `GenericError` |
