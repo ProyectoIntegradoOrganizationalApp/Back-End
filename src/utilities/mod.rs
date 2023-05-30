@@ -4,3 +4,4 @@ pub mod achievements;
 pub mod project;
 pub mod app;
 pub mod notifications;
+pub mod user;

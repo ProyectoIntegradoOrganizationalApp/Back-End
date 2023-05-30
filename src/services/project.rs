@@ -6,6 +6,7 @@ use diesel::prelude::*;
 use diesel::result::Error;
 use rust_api_rest::establish_connection;
 use crate::utilities::achievements::*;
+use crate::utilities::project::*;
 use crate::utilities::*;
 
 use chrono::Utc;
@@ -81,6 +82,195 @@ pub fn update_project(project_info: &ProjectInputCreate, user_id: &String, proje
             }
         }, 
         Err(err) => Err(GenericError {error: true, message: err.to_string()})
+    }
+}
+
+// PROJECT MEMBERS MANAGEMENT
+pub fn invite_user_to_project(guest_id: &String, project_id: &String, user_id: &String, invitation: &InvitationMessage) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    match project::get_project(&project_id, connection) {
+        Ok(project) => {
+            match is_admin_project(&project, &user_id, connection) {
+                Ok(_user) => {
+                    match is_member_project(&project, &guest_id, connection) {
+                        Ok(_guest) => Ok(GenericError { error: true, message: "The invited user is already in the project".to_string()}),
+                        Err(_err) => {
+                            match create_project_invitation(&project_id, &guest_id, &user_id, &invitation, connection) {
+                                Ok(_result) => {
+                                    // Check achievement - id: 5
+                                    let achievement_updated = check_update_user_achievement(user_id, "5");
+                                    match achievement_updated {
+                                        Ok(_) => {},
+                                        Err(err) => return Err(err)
+                                    }
+                                    Ok(GenericError { error: false, message: "Invitation sent successfully".to_string() })
+                                },
+                                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                            }
+                        }
+                    }
+                },
+                Err(_err) => Err(GenericError { error: true, message: "You are not member of the project or you don't have enough privileges to invite anyone".to_string() })
+            }
+        },
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}
+
+pub fn accept_user_invitation(project_id: &String, user_id: &String) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    let invitation_found = user_invitation::table
+        .select(UserInvitation::as_select())
+        .filter(user_invitation::idproject.eq(&project_id))
+        .filter(user_invitation::idguest.eq(&user_id))
+        .get_result::<UserInvitation>(connection);
+    match invitation_found {
+        Ok(_invitation) => {
+            let new_user_project = UserProject {
+                idproject: project_id.clone(),
+                iduser: user_id.clone(),
+                idrole: "2".to_string()
+            };
+            let created_user_project = diesel::insert_into(project_user::table)
+                .values(&new_user_project)
+                .get_result::<UserProject>(connection);
+            match created_user_project {
+                Ok(_result) => {
+                    // Check achievement - id: 12
+                    let achievement_updated = check_update_user_achievement(user_id, "12");
+                    match achievement_updated {
+                        Ok(_) => {},
+                        Err(err) => return Err(err)
+                    }
+                    // Delete user invitation
+                    let deleted = diesel::delete(user_invitation::table.filter(user_invitation::idguest.eq(&user_id)))
+                    .filter(user_invitation::idproject.eq(&project_id))
+                    .execute(connection);
+                    match deleted {
+                        Ok(_) => Ok(GenericError { error: false, message: "User added to project successfully".to_string() }),
+                        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                    }
+                },
+                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+            }
+        },
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}
+
+pub fn deny_user_invitation(project_id: &String, user_id: &String) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    let invitation_found = user_invitation::table
+        .select(UserInvitation::as_select())
+        .filter(user_invitation::idproject.eq(&project_id))
+        .filter(user_invitation::idguest.eq(&user_id))
+        .get_result::<UserInvitation>(connection);
+    match invitation_found {
+        Ok(_invitation) => {
+            let deleted = diesel::delete(user_invitation::table.filter(user_invitation::idguest.eq(&user_id)))
+            .filter(user_invitation::idproject.eq(&project_id))
+            .execute(connection);
+            match deleted {
+                Ok(_) => Ok(GenericError { error: false, message: "Invitation to project denied successfully".to_string() }),
+                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+            }
+        },
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}
+
+pub fn change_role_user_project(guest_id: &String, project_id: &String, user_id: &String, role: &NewRole) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    let project_found = projects::table
+        .select(Project::as_select())
+        .filter(projects::idproject.eq(&project_id))
+        .get_result::<Project>(connection);
+    if guest_id != user_id {
+        match project_found {
+            Ok(project) => {
+                let user_in_project_found = UserProject::belonging_to(&project)
+                    .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+                    .select(User::as_select())
+                    .filter(project_user::iduser.eq(&user_id))
+                    .filter(project_user::idrole.eq("1"))
+                    .get_result::<User>(connection);
+                match user_in_project_found {
+                    Ok(_user) => {
+                        let guest_in_project_found = UserProject::belonging_to(&project)
+                            .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+                            .select(UserProject::as_select())
+                            .filter(project_user::iduser.eq(&guest_id))
+                            .get_result::<UserProject>(connection);
+                        match guest_in_project_found {
+                            Ok(mut guest) => {
+                                let idrole_number = role.idrole.clone().parse::<i32>();
+                                match idrole_number {
+                                    Ok(number) => {
+                                        if number > 0 && number < 3 {
+                                            guest.idrole = role.idrole.clone();
+                                            let updated_user_role = guest.save_changes::<UserProject>(connection);
+                                            match updated_user_role {
+                                                Ok(_user) => Ok(GenericError {error: false, message: "User's role successfully changed".to_string()}), 
+                                                Err(err) => Err(GenericError {error: true, message: err.to_string()})
+                                            }
+                                        } else {
+                                            Err(GenericError { error: true, message: "Invalid role".to_string() })
+                                        }
+                                    },
+                                    Err(err) => Err(GenericError {error: true, message: err.to_string()})
+                                }
+                            },
+                            Err(_err) => Err(GenericError { error: true, message: "The invited user is not in the project".to_string()})
+                        }
+                    },
+                    Err(_err) => Err(GenericError { error: true, message: "You are not member of the project or you don't have enough privileges to do it".to_string() })
+                }
+            },
+            Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        }
+    } else {
+        Err(GenericError { error: true, message: "You cannot change your own role".to_string() })
+    }
+}
+
+pub fn delete_user_project(guest_id: &String, project_id: &String, user_id: &String) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    let project_found = projects::table
+        .select(Project::as_select())
+        .filter(projects::idproject.eq(&project_id))
+        .get_result::<Project>(connection);
+    match project_found {
+        Ok(project) => {
+            let user_in_project_found = UserProject::belonging_to(&project)
+                .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+                .select(User::as_select())
+                .filter(project_user::iduser.eq(&user_id))
+                .filter(project_user::idrole.eq("1"))
+                .get_result::<User>(connection);
+            match user_in_project_found {
+                Ok(_user) => {
+                    let guest_in_project_found = UserProject::belonging_to(&project)
+                        .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+                        .select(UserProject::as_select())
+                        .filter(project_user::iduser.eq(&guest_id))
+                        .get_result::<UserProject>(connection);
+                    match guest_in_project_found {
+                        Ok(guest) => {
+                            let deleted = diesel::delete(project_user::table.filter(project_user::iduser.eq(&guest.iduser)))
+                            .filter(project_user::idproject.eq(&guest.idproject))
+                            .execute(connection);
+                            match deleted {
+                                Ok(_) => Ok(GenericError { error: false, message: "User removed from project successfully".to_string() }),
+                                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                            }
+                        },
+                        Err(_err) => Err(GenericError { error: true, message: "The user to delete is not in the project".to_string()})
+                    }
+                },
+                Err(_err) => Err(GenericError { error: true, message: "You are not member of the project or you don't have enough privileges to do it".to_string() })
+            }
+        },
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
     }
 }
 

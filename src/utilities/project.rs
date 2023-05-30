@@ -5,8 +5,6 @@ use diesel::result::Error;
 use rust_api_rest::establish_connection;
 
 pub fn is_admin(idproject: &str, iduser: &str) -> Result<UserProject, GenericError> {
-    println!("{}", idproject);
-    println!("{}", iduser);
     let connection = &mut establish_connection();
     let user_found: Result<User, Error> = users::table.filter(users::id.eq(&iduser)).first::<User>(connection);
     match user_found {
@@ -109,6 +107,59 @@ pub fn get_project_user_activity(user: &User, connection: &mut PgConnection) -> 
             }
             Ok(activity_info)
         },
+        Err(err) => Err(err.to_string())
+    }
+}
+
+pub fn get_project(project_id: &String, connection: &mut PgConnection) -> Result<Project, String> {
+    let project_found = projects::table
+        .select(Project::as_select())
+        .filter(projects::idproject.eq(&project_id))
+        .get_result::<Project>(connection);
+    match project_found {
+        Ok(project) => Ok(project),
+        Err(err) => Err(err.to_string())
+    }
+}
+
+pub fn is_admin_project(project: &Project, user_id: &String, connection: &mut PgConnection) -> Result<User, String> {
+    let user_in_project_found = UserProject::belonging_to(&project)
+        .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+        .select(User::as_select())
+        .filter(project_user::iduser.eq(&user_id))
+        .filter(project_user::idrole.eq("1"))
+        .get_result::<User>(connection);
+    match user_in_project_found {
+        Ok(user) => Ok(user),
+        Err(err) => Err(err.to_string())
+    }
+}
+
+pub fn is_member_project(project: &Project, user_id: &String, connection: &mut PgConnection) -> Result<User, String> {
+    let project_member_found = UserProject::belonging_to(&project)
+        .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+        .select(User::as_select())
+        .filter(project_user::iduser.eq(&user_id))
+        .get_result::<User>(connection);
+    match project_member_found {
+        Ok(member) => Ok(member),
+        Err(err) => Err(err.to_string())
+    }
+}
+
+pub fn create_project_invitation(project_id: &String, guest_id: &String, user_id: &String, invitation: &InvitationMessage,  connection: &mut PgConnection) -> Result<UserInvitation, String> {
+    let new_invitation = UserInvitation {
+        idproject: project_id.clone(),
+        idguest: guest_id.clone(),
+        iduser: user_id.clone(),
+        title: invitation.title.clone(),
+        message: invitation.message.clone()
+    };
+    let created_invitation = diesel::insert_into(user_invitation::table)
+        .values(&new_invitation)
+        .get_result::<UserInvitation>(connection);
+    match created_invitation {
+        Ok(user_invitation) => Ok(user_invitation),
         Err(err) => Err(err.to_string())
     }
 }

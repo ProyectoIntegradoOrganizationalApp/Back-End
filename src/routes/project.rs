@@ -50,6 +50,81 @@ pub fn delete_project(id: String, token: Result<TokenValidation, GenericError>) 
     }
 }
 
+#[post("/user/<user_id>/project/<project_id>", data="<invitation>", format="json")]
+pub fn invite_user_to_project(user_id: String, project_id: String, invitation: Validated<Json<InvitationMessage>>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::project::invite_user_to_project(&user_id, &project_id, &token_data.token_iduser, &invitation.0) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => {
+            Err(Json(err))
+        }
+    }
+}
+
+#[get("/invitation/<project_id>/accept")]
+pub fn accept_user_invitation(project_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::project::accept_user_invitation(&project_id, &token_data.token_iduser) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => {
+            Err(Json(err))
+        }
+    }
+}
+
+#[get("/invitation/<project_id>/deny")]
+pub fn deny_user_invitation(project_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::project::deny_user_invitation(&project_id, &token_data.token_iduser) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => {
+            Err(Json(err))
+        }
+    }
+}
+
+#[put("/user/<user_id>/project/<project_id>", data="<role>", format="json")]
+pub fn change_role_user_project(user_id: String, project_id: String, role: Json<NewRole>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::project::change_role_user_project(&user_id, &project_id, &token_data.token_iduser, &role) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => {
+            Err(Json(err))
+        }
+    }
+}
+
+#[delete("/user/<user_id>/project/<project_id>")]
+pub fn delete_user_project(user_id: String, project_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::project::delete_user_project(&user_id, &project_id, &token_data.token_iduser) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => {
+            Err(Json(err))
+        }
+    }
+}
+
 #[get("/project/<id>")]
 pub fn get_project(id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<ProjectDetail>, Json<GenericError>> {
     match token {

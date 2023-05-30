@@ -1,8 +1,8 @@
 use rocket::{serde::{json::{json, Value}}};
 use routes::auth::{register, login, send_mail, change_password, logout, test_token, update_user, delete_user};
-use routes::user::{achievements, user_achievements, profile, invite_user_to_project, change_role_user_project, delete_user_project, 
-    accept_user_invitation, deny_user_invitation, send_friend_request, accept_friend_request, deny_friend_request, delete_user_friend};
-use routes::project::{create_project, update_project, delete_project, get_project, get_user_projects};
+use routes::user::{achievements, user_achievements, profile, send_friend_request, accept_friend_request, deny_friend_request, delete_user_friend};
+use routes::project::{create_project, update_project, delete_project, invite_user_to_project, change_role_user_project, delete_user_project, 
+    accept_user_invitation, deny_user_invitation, get_project, get_user_projects};
 use routes::task_app::board::{create_board, update_board, delete_board};
 use routes::task_app::column::{create_column, update_column, delete_column};
 use routes::task_app::task::{create_task, update_task, delete_task};
