@@ -65,11 +65,11 @@ pub fn invite_user_to_project(user_id: String, project_id: String, invitation: V
     }
 }
 
-#[get("/invitation/<project_id>/accept")]
-pub fn accept_user_invitation(project_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+#[get("/user/<user_id>/project/<project_id>/accept")]
+pub fn accept_user_project_invitation(project_id: String, user_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
-            match services::project::accept_user_invitation(&project_id, &token_data.token_iduser) {
+            match services::project::accept_user_project_invitation(&project_id, &user_id, &token_data.token_iduser) {
                 Ok(result) => Ok(Json(result)),
                 Err(err) => Err(Json(err))
             }
@@ -80,11 +80,11 @@ pub fn accept_user_invitation(project_id: String, token: Result<TokenValidation,
     }
 }
 
-#[get("/invitation/<project_id>/deny")]
-pub fn deny_user_invitation(project_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+#[get("/user/<user_id>/project/<project_id>/deny")]
+pub fn deny_user_project_invitation(project_id: String, user_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
-            match services::project::deny_user_invitation(&project_id, &token_data.token_iduser) {
+            match services::project::deny_user_project_invitation(&project_id, &user_id, &token_data.token_iduser) {
                 Ok(result) => Ok(Json(result)),
                 Err(err) => Err(Json(err))
             }

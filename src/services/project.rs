@@ -117,18 +117,19 @@ pub fn invite_user_to_project(guest_id: &String, project_id: &String, user_id: &
     }
 }
 
-pub fn accept_user_invitation(project_id: &String, user_id: &String) -> Result<GenericError, GenericError> {
+pub fn accept_user_project_invitation(project_id: &String, user_id: &String, guest_id: &String) -> Result<GenericError, GenericError> {
     let connection = &mut establish_connection();
     let invitation_found = user_invitation::table
         .select(UserInvitation::as_select())
         .filter(user_invitation::idproject.eq(&project_id))
-        .filter(user_invitation::idguest.eq(&user_id))
+        .filter(user_invitation::iduser.eq(&user_id))
+        .filter(user_invitation::idguest.eq(&guest_id))
         .get_result::<UserInvitation>(connection);
     match invitation_found {
         Ok(_invitation) => {
             let new_user_project = UserProject {
                 idproject: project_id.clone(),
-                iduser: user_id.clone(),
+                iduser: guest_id.clone(),
                 idrole: "2".to_string()
             };
             let created_user_project = diesel::insert_into(project_user::table)
@@ -137,13 +138,13 @@ pub fn accept_user_invitation(project_id: &String, user_id: &String) -> Result<G
             match created_user_project {
                 Ok(_result) => {
                     // Check achievement - id: 12
-                    let achievement_updated = check_update_user_achievement(user_id, "12");
+                    let achievement_updated = check_update_user_achievement(guest_id, "12");
                     match achievement_updated {
                         Ok(_) => {},
                         Err(err) => return Err(err)
                     }
                     // Delete user invitation
-                    let deleted = diesel::delete(user_invitation::table.filter(user_invitation::idguest.eq(&user_id)))
+                    let deleted = diesel::delete(user_invitation::table.filter(user_invitation::idguest.eq(&guest_id)))
                     .filter(user_invitation::idproject.eq(&project_id))
                     .execute(connection);
                     match deleted {
@@ -158,17 +159,19 @@ pub fn accept_user_invitation(project_id: &String, user_id: &String) -> Result<G
     }
 }
 
-pub fn deny_user_invitation(project_id: &String, user_id: &String) -> Result<GenericError, GenericError> {
+pub fn deny_user_project_invitation(project_id: &String, user_id: &String, guest_id: &String) -> Result<GenericError, GenericError> {
     let connection = &mut establish_connection();
     let invitation_found = user_invitation::table
         .select(UserInvitation::as_select())
         .filter(user_invitation::idproject.eq(&project_id))
-        .filter(user_invitation::idguest.eq(&user_id))
+        .filter(user_invitation::iduser.eq(&user_id))
+        .filter(user_invitation::idguest.eq(&guest_id))
         .get_result::<UserInvitation>(connection);
     match invitation_found {
         Ok(_invitation) => {
-            let deleted = diesel::delete(user_invitation::table.filter(user_invitation::idguest.eq(&user_id)))
+            let deleted = diesel::delete(user_invitation::table.filter(user_invitation::idguest.eq(&guest_id)))
             .filter(user_invitation::idproject.eq(&project_id))
+            .filter(user_invitation::iduser.eq(&user_id))
             .execute(connection);
             match deleted {
                 Ok(_) => Ok(GenericError { error: false, message: "Invitation to project denied successfully".to_string() }),
