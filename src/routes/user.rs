@@ -3,6 +3,7 @@ use rocket_validation::Validated;
 use crate::models::models::*;
 use crate::services;
 use crate::utilities::achievements::*;
+use crate::utilities::notifications::*;
 
 #[get("/achievements")]
 pub fn achievements(token: Result<TokenValidation, GenericError>) -> Result<Json<AllAchievementsResponse>, Json<GenericError>> {
@@ -119,6 +120,36 @@ pub fn delete_user_friend(friend_id: String, token: Result<TokenValidation, Gene
             match services::user::delete_user_friend(&friend_id, &token_data.token_iduser) {
                 Ok(result) => Ok(Json(result)),
                 Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => {
+            Err(Json(err))
+        }
+    }
+}
+
+#[get("/notifications")]
+pub fn user_notifications(token: Result<TokenValidation, GenericError>) -> Result<Json<Notification>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match get_user_notifications(&token_data.token_iduser) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(GenericError { error: true, message: err.to_string() }))
+            }
+        },
+        Err(err) => {
+            Err(Json(err))
+        }
+    }
+}
+
+#[get("/friends")]
+pub fn user_friends(token: Result<TokenValidation, GenericError>) -> Result<Json<Vec<UserFriends>>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match get_user_friends(&token_data.token_iduser) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(GenericError { error: true, message: err.to_string() }))
             }
         },
         Err(err) => {

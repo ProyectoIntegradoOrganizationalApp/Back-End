@@ -1,6 +1,7 @@
 use rocket::{serde::{json::{json, Value}}};
 use routes::auth::{register, login, send_mail, change_password, logout, test_token, update_user, delete_user};
-use routes::user::{achievements, user_achievements, profile, send_friend_request, accept_friend_request, deny_friend_request, delete_user_friend};
+use routes::user::{achievements, user_achievements, profile, send_friend_request, accept_friend_request, deny_friend_request, delete_user_friend,
+                    user_notifications, user_friends};
 use routes::project::{create_project, update_project, delete_project, invite_user_to_project, change_role_user_project, delete_user_project, 
     accept_user_invitation, deny_user_invitation, get_project, get_user_projects};
 use routes::task_app::board::{create_board, update_board, delete_board};
@@ -84,7 +85,9 @@ fn rocket() -> _ {
             all_options, 
             test_token, 
             achievements, 
-            user_achievements, 
+            user_achievements,
+            user_notifications,
+            user_friends,
             profile,
             update_user,
             delete_user,

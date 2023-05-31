@@ -6,7 +6,6 @@ use crate::schema::users;
 use crate::utilities::jwt::*;
 use crate::utilities::redis::*;
 use crate::utilities::achievements::*;
-use crate::utilities::notifications::*;
 use std::env;
 
 use bcrypt::verify;
@@ -71,32 +70,18 @@ pub fn login(user_info: &UserLogin) -> Result<UserLoginResponse, String> {
                         match create_token(&user.id) {
                             Ok(token) => match whitelist_token(token.as_str(), &user.id) {
                                 Ok(r) => {
-                                    let notifications_found = get_user_notifications(&user.id);
-                                    match notifications_found {
-                                        Ok(notifications) => {
-                                            let friends_found = get_user_friends(&user.id);
-                                            match friends_found {
-                                                Ok(friends) => {
-                                                    let response = UserLoginResponse {
-                                                        id: user.id,
-                                                        email: user.email,
-                                                        name: user.name,
-                                                        lastname: user.lastname,
-                                                        phone: user.phone,
-                                                        created_at: user.created_at,
-                                                        updated_at: user.updated_at,
-                                                        level: user.level,
-                                                        _token: token,
-                                                        notifications,
-                                                        friends
-                                                    };
-                                                    Ok(response)
-                                                },
-                                                Err(err) => Err(err)
-                                            }
-                                        },
-                                        Err(err) => Err(err)
-                                    }
+                                    let response = UserLoginResponse {
+                                        id: user.id,
+                                        email: user.email,
+                                        name: user.name,
+                                        lastname: user.lastname,
+                                        phone: user.phone,
+                                        created_at: user.created_at,
+                                        updated_at: user.updated_at,
+                                        level: user.level,
+                                        _token: token
+                                    };
+                                    Ok(response)
                                 },
                                 Err(err) => Err(err.to_string()),
                             },

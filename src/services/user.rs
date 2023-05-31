@@ -8,7 +8,7 @@ use crate::utilities::achievements::*;
 use crate::utilities::project::*;
 use crate::utilities::user::*;
 
-pub fn profile(id_string: &String) -> Result<UserProfile, String>{
+pub fn profile(id_string: &String) -> Result<UserProfile, String> {
     let connection = &mut establish_connection();
     match get_user(&id_string, connection) {
         Ok(user) => {

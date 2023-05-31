@@ -248,9 +248,7 @@ pub struct UserLoginResponse {
     pub created_at: String,
     pub updated_at: String,
     pub level: i16,
-    pub _token: String,
-    pub notifications: Notification,
-    pub friends: Vec<UserFriends>
+    pub _token: String
 }
 #[derive(Serialize, Deserialize, Debug, Validate)]
 pub struct UserUpdate {
