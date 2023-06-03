@@ -30,14 +30,8 @@ pub fn achievements(token: Result<TokenValidation, GenericError>) -> Result<Json
 pub fn user_achievements(token: Result<TokenValidation, GenericError>, id: String) -> Result<Json<UserAchievementsResponse>, Json<GenericError>> {
     match token {
         Ok(_) => {
-            match get_user_achievements(&id) {
-                Ok(achievements) => {
-                    let response = UserAchievementsResponse {
-                        total: achievements.len(),
-                        achievements
-                    };
-                    Ok(Json(response))
-                },
+            match services::user::get_user_achievements(id) {
+                Ok(achievements) => Ok(Json(achievements)),
                 Err(e) => Err(Json(e))
             }
         },

@@ -105,7 +105,7 @@ pub fn update_user(id: String, user_info: Validated<Json<UserUpdate>>, token: Re
     match token {
         Ok(token_data) => {
             if token_data.owner {
-                match services::auth::update_user(&user_info.0, &token_data.token_iduser) {
+                match services::auth::update_user(&user_info.0, &id) {
                     Ok(result) => Ok(Json(result)),
                     Err(err) => Err(Json(err))
                 }

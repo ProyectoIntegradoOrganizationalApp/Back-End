@@ -50,18 +50,32 @@ pub fn get_all_achievements() -> Result<Vec<Achievement>, GenericError> {
 }
 
 // Get all the achievements related to an user
-pub fn get_user_achievements(user_id: &str) -> Result<Vec<UserAchievement>, GenericError>  {
-    let connection = &mut establish_connection();
+pub fn get_user_achievements_util(user: &User, connection: &mut PgConnection) -> Result<Vec<UserAchievementsInfo>, GenericError>  {
+    let achievements_found = UserAchievement::belonging_to(&user)
+        .inner_join(achievement::table)
+        .select((Achievement::as_select(), UserAchievement::as_select()))
+        .load::<(Achievement, UserAchievement)>(connection);
     
-    let results = achievement_user::table.filter(achievement_user::iduser.eq(user_id.to_owned()))
-    .load::<UserAchievement>(connection);
-
-    match results {
-        Ok(res) => Ok(res),
-        Err(_) => Err(GenericError {
-            error: true,
-            message: "An error ocurred while trying to get the achievements".to_owned()
-        })
+    match achievements_found {
+        Ok(achievements) => {
+            let mut achievements_info:Vec<UserAchievementsInfo> = Vec::new();
+            for i in &achievements {
+                let user_achievements_info = UserAchievementsInfo {
+                    id: i.0.id.clone(),
+                    title: i.0.title.clone(),
+                    description: i.0.description.clone(),
+                    icon: i.0.icon.clone(),
+                    category: i.0.category.clone(),
+                    progress: i.1.progress,
+                    completed: i.1.completed,
+                    current_state: i.1.current_state,
+                    percentage: i.1.percentage.clone()
+                };
+                achievements_info.push(user_achievements_info);
+            }
+            Ok(achievements_info)
+        },
+        Err(_) => Err(GenericError { error: true, message: "An error ocurred while trying to get the achievements".to_owned() })
     }
 }
 
@@ -113,7 +127,7 @@ pub fn check_update_user_achievement(user_id: &str, achievement_id: &str) -> Res
     }
 }
 
-pub fn get_user_achievements_profile(user: &User, connection: &mut PgConnection) -> Result<Vec<UserAchievementsProfile>, String> {
+pub fn get_user_achievements_profile(user: &User, connection: &mut PgConnection) -> Result<Vec<UserAchievementsInfo>, String> {
     let achievements_found = UserAchievement::belonging_to(&user)
         .inner_join(achievement::table)
         .select((Achievement::as_select(), UserAchievement::as_select()))
@@ -123,13 +137,14 @@ pub fn get_user_achievements_profile(user: &User, connection: &mut PgConnection)
     match achievements_found {
         Ok(achievements) => {
             // Pick up only the achievements' information we need
-            let mut achievements_info:Vec<UserAchievementsProfile> = Vec::new();
+            let mut achievements_info:Vec<UserAchievementsInfo> = Vec::new();
             for i in &achievements {
-                let user_achievements_info = UserAchievementsProfile {
+                let user_achievements_info = UserAchievementsInfo {
                     id: i.0.id.clone(),
                     title: i.0.title.clone(),
                     description: i.0.description.clone(),
                     icon: i.0.icon.clone(),
+                    category: i.0.category.clone(),
                     progress: i.1.progress,
                     completed: i.1.completed,
                     current_state: i.1.current_state,

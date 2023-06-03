@@ -1,32 +1,6 @@
 use crate::models::models::*;
 use diesel::prelude::*;
 use crate::schema::*;
-use diesel::result::Error;
-use rust_api_rest::establish_connection;
-
-pub fn is_admin(idproject: &str, iduser: &str) -> Result<UserProject, GenericError> {
-    let connection = &mut establish_connection();
-    let user_found: Result<User, Error> = users::table.filter(users::id.eq(&iduser)).first::<User>(connection);
-    match user_found {
-        Ok(user) => {
-            let user_project_found: Result<UserProject, Error> = UserProject::belonging_to(&user)
-                                    .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
-                                    .filter(projects::idproject.eq(idproject))
-                                    .filter(project_user::idrole.eq("1".to_string()))
-                                    .select(UserProject::as_select())
-                                    .get_result::<UserProject>(connection);
-            match user_project_found {
-                Ok(user_project) => {
-                    Ok(user_project)
-                },
-                Err(_) => Err(GenericError { error: true, message: "The user is not a member of the project or is not an Administrator".to_owned() })
-            }
-        },
-        Err(_) => {
-            Err(GenericError { error: true, message: "The user provided was not found".to_owned() })
-        }
-    }
-}
 
 pub fn get_user_projects(user: &User, connection: &mut PgConnection) -> Result<Vec<UserProjectsDetail>, String> {
     let projects_found = UserProject::belonging_to(&user)
@@ -118,7 +92,7 @@ pub fn get_project(project_id: &String, connection: &mut PgConnection) -> Result
         .get_result::<Project>(connection);
     match project_found {
         Ok(project) => Ok(project),
-        Err(err) => Err(err.to_string())
+        Err(_) => Err("Couldn't find a project with that id".to_owned())
     }
 }
 
@@ -143,7 +117,7 @@ pub fn is_member_project(project: &Project, user_id: &String, connection: &mut P
         .get_result::<User>(connection);
     match project_member_found {
         Ok(member) => Ok(member),
-        Err(err) => Err(err.to_string())
+        Err(_) => Err("The user is not a member of the project".to_owned())
     }
 }
 

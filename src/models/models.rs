@@ -68,9 +68,9 @@ pub struct Project {
     pub updated_at: String
 }
 
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
 #[diesel(belongs_to(Project, foreign_key = idproject))]
-#[diesel(primary_key(id, idproject))]
+#[diesel(primary_key(id))]
 #[diesel(table_name = app)]
 pub struct App {
     pub id: String,
@@ -79,18 +79,6 @@ pub struct App {
     pub description: String,
     pub photo: String
 }
-
-pub enum AppTypes {
-    TaskApp(task_app::table),
-    DocsApp(docs_app::table)
-}
-
-// #[derive(Serialize, Deserialize, Debug, PartialEq, AsExpression/*, AsChangeset*/)]
-// #[diesel(sql_type = sql_types::ValidTaskApp)]
-// pub enum ValidTaskApp {
-//     Kanban,
-//     Timeline
-// }
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq/*, AsChangeset*/)]
 #[diesel(belongs_to(Project, foreign_key = idproject))]
@@ -102,12 +90,6 @@ pub struct TaskApp {
     pub idproject: String,
     pub app_type: String
 }
-
-// #[derive(Serialize, Deserialize, Debug, PartialEq, AsExpression/*, AsChangeset*/)]
-// #[sql_type="sql_types::ValidDocsApp"]
-// pub enum ValidDocsApp {
-//     Docs
-// }
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq/*, AsChangeset*/)]
 #[diesel(belongs_to(Project, foreign_key = idproject))]
@@ -126,7 +108,8 @@ pub struct DocsApp {
 pub struct Board {
     pub id: String,
     pub idapp: String,
-    pub title: String
+    pub title: String,
+    pub photo: String
 }
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
@@ -136,7 +119,14 @@ pub struct Board {
 pub struct Columna {
     pub id: String,
     pub idboard: String,
-    pub title: String
+    pub title: String,
+}
+
+#[derive(Serialize)]
+pub struct ColumnTasks {
+    pub id: String,
+    pub title: String,
+    pub tasks: Vec<Task>
 }
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
@@ -329,7 +319,7 @@ pub struct AllAchievementsResponse {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserAchievementsResponse {
     pub total: usize,
-    pub achievements: Vec<UserAchievement>
+    pub achievements: Vec<UserAchievementsInfo>
 }
 
 // ACHIEVEMENTS ENDPOINT ········· END
@@ -338,17 +328,18 @@ pub struct UserAchievementsResponse {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserProfile {
     pub user: UserInfoResponse,
-    pub achievements: Vec<UserAchievementsProfile>,
+    pub achievements: Vec<UserAchievementsInfo>,
     pub projects: Vec<UserProjectsDetail>,
     pub activity: Vec<UserActivityProfile>,
     pub owner : bool
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct UserAchievementsProfile {
+pub struct UserAchievementsInfo {
     pub id: String,
     pub title: String,
     pub description: String,
     pub icon: String,
+    pub category: String,
     pub progress: i32,
     pub completed: bool,
     pub current_state: i32,
@@ -425,9 +416,10 @@ pub struct DocsAppInputCreate {
 
 #[derive(Serialize, Deserialize, Debug, Validate)]
 pub struct BoardInputCreate {
-    pub idapp: String,
     #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
-    pub title: String
+    pub title: String,
+    #[validate(url)]
+    pub photo: String
 }
 
 #[derive(Serialize, Deserialize, Debug, Validate)]

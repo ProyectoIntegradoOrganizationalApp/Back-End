@@ -240,3 +240,22 @@ pub fn delete_user_friend(friend_id: &String, user_id: &String) -> Result<Generi
         Err(err) => Err(GenericError { error: true, message: err.to_string() })
     }
 }
+
+pub fn get_user_achievements(user_id: String) -> Result<UserAchievementsResponse, GenericError> {
+    let connection = &mut establish_connection();
+    match get_user(&user_id, connection) {
+        Ok(user) => {
+            match get_user_achievements_util(&user, connection) {
+                Ok(achievements) => { 
+                    let response = UserAchievementsResponse {
+                        total: achievements.len(),
+                        achievements
+                    };
+                    Ok(response)
+                },
+                Err(err) => Err(err)
+            }
+        },
+        Err(err) => Err(GenericError { error: true, message: err })
+    }
+}

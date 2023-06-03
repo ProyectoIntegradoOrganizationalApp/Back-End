@@ -37,6 +37,7 @@ diesel::table! {
         id -> Varchar,
         idapp -> Varchar,
         title -> Varchar,
+        photo -> Varchar,
     }
 }
 
