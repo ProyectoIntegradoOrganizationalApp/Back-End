@@ -14,7 +14,7 @@ pub fn get_user_projects(user: &User, connection: &mut PgConnection) -> Result<V
                 match get_project_members(&project, connection) {
                     Ok(project_members) => {
                         let user_projects_info = UserProjectsDetail {
-                            id: project.idproject.clone(),
+                            idproject: project.idproject.clone(),
                             name: project.name.clone(),
                             description: project.description.clone(),
                             icon: project.icon.clone(),

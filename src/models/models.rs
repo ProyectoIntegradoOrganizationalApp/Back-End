@@ -448,7 +448,7 @@ pub struct UserProjects {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserProjectsDetail {
-    pub id: String,
+    pub idproject: String,
     pub name: String, 
     pub description: String,
     pub icon: String,
