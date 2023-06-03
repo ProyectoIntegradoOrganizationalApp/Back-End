@@ -5,7 +5,7 @@ CREATE TABLE projects (
     name VARCHAR NOT NULL,
     description VARCHAR NOT NULL,
     icon VARCHAR NOT NULL,
-    state SMALLINT NOT NULL, -- 1. Public | 2. Private | 3. Friends
+    state SMALLINT NOT NULL DEFAULT 1, -- 1. Public | 2. Private | 3. Friends
     created_at VARCHAR NOT NULL,
     updated_at VARCHAR NOT NULL,
     CONSTRAINT fk_user
