@@ -277,6 +277,27 @@ pub fn delete_user_project(guest_id: &String, project_id: &String, user_id: &Str
     }
 }
 
+pub fn leave_project(project_id: &String, user_id: &String) -> Result<GenericError, GenericError> {
+    let connection = &mut establish_connection();
+    match project::get_project(&project_id, connection) {
+        Ok(project) => {
+            match is_member_project(&project, user_id, connection) {
+                Ok(_user_project) => {
+                    let deleted = diesel::delete(project_user::table.filter(project_user::iduser.eq(&user_id)))
+                        .filter(project_user::idproject.eq(&project_id))
+                        .execute(connection);
+                    match deleted {
+                        Ok(_) => Ok(GenericError { error: false, message: "You left the project successfully".to_string() }),
+                        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                    }
+                },
+                Err(_err) => Err(GenericError { error: true, message: "You are not a member of the project".to_string() })
+            }
+        },
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}
+
 pub fn delete_project(user_id: &String, project_id: &String) -> Result<GenericError, GenericError> {
     let connection = &mut establish_connection();
     let user_found = users::table.filter(users::id.eq(&user_id)).first::<User>(connection);

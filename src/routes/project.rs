@@ -125,6 +125,21 @@ pub fn delete_user_project(user_id: String, project_id: String, token: Result<To
     }
 }
 
+#[delete("/project/<project_id>/leave")]
+pub fn leave_project(project_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::project::leave_project(&project_id, &token_data.token_iduser) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => {
+            Err(Json(err))
+        }
+    }
+}
+
 #[get("/project/<id>")]
 pub fn get_project(id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<ProjectDetail>, Json<GenericError>> {
     match token {
