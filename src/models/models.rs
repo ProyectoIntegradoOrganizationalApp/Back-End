@@ -4,9 +4,10 @@ use rocket_validation::Validate;
 use validator::Validate as Validate2;
 use crate::schema::*;
 use bigdecimal::BigDecimal;
+use diesel::QueryableByName;
 
 // TABLE'S STRUCTS ········ START
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Identifiable, PartialEq, AsChangeset)]
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Identifiable, PartialEq, AsChangeset, QueryableByName)]
 #[diesel(primary_key(id))]
 #[diesel(table_name = users)]
 pub struct User {
@@ -498,3 +499,15 @@ pub struct UserFriends {
     pub photo: String
 }
 // USER FRIENDS ········· END
+
+// USER SEARCH ········· START
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserSearch {
+    pub id: String,
+    pub name: String,
+    pub lastname: String,
+    pub email: String,
+    pub level: i16,
+    pub photo: String
+}
+// USER SEARCH ········· END

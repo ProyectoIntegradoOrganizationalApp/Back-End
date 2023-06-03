@@ -2,6 +2,7 @@ extern crate redis;
 
 use rust_api_rest::establish_connection;
 use diesel::prelude::*;
+use diesel::sql_query;
 use crate::models::models::*;
 use crate::schema::{users, user_friend_invitation, user_friend};
 use crate::utilities::achievements::*;
@@ -257,5 +258,34 @@ pub fn get_user_achievements(user_id: String) -> Result<UserAchievementsResponse
             }
         },
         Err(err) => Err(GenericError { error: true, message: err })
+    }
+}
+
+pub fn search_users(name: &String) -> Result<Vec<UserSearch>, GenericError> {
+    let connection = &mut establish_connection();
+    let users_found = sql_query(format!("
+        SELECT * 
+        FROM users 
+        WHERE name LIKE '%{name}%' 
+        OR lastname LIKE '%{name}%'
+        LIMIT 10
+    ")).load::<User>(connection);
+    match users_found {
+        Ok(users) => {
+            let mut users_search:Vec<UserSearch> = Vec::new();
+            for user in &users {
+                let new_user_search = UserSearch {
+                    id: user.id.clone(),
+                    name: user.name.clone(),
+                    lastname: user.lastname.clone(),
+                    email: user.email.clone(),
+                    level: user.level,
+                    photo: user.photo.clone()
+                };
+                users_search.push(new_user_search);
+            }
+            Ok(users_search)
+        },
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
     }
 }
