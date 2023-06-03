@@ -65,6 +65,7 @@ pub struct Project {
     pub name: String,
     pub description: String,
     pub icon: String,
+    pub state: i16,
     pub created_at: String,
     pub updated_at: String
 }
@@ -252,7 +253,9 @@ pub struct UserUpdate {
     #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
     pub lastname: String,
     #[validate(phone(message = "Must be a valid phone"))]
-    pub phone: String
+    pub phone: String,
+    #[validate(url(message = "Must be a valid photo url"))]
+    pub photo: String
 }
 // USER CRUD & LOGIN ········ END
 
@@ -377,7 +380,8 @@ pub struct ProjectInputCreate {
     #[validate(length(min = 10, max = 150, message = "Lenght must be between 10 and 150 characters"))]
     pub description: String,
     #[validate(url)]
-    pub icon: String
+    pub icon: String,
+    pub state: i16
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ProjectDetail {

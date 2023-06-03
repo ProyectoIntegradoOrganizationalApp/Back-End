@@ -195,6 +195,10 @@ pub fn update_user(user_info: &UserUpdate, token_iduser: &String) -> Result<Gene
             if user_to_update.phone != user_info.phone {
                 user_to_update.phone = user_info.phone.clone();
             }
+
+            if user_to_update.photo != user_info.photo {
+                user_to_update.photo = user_info.photo.clone();
+            }
             
             let now: String = (Utc::now()).to_string();
             user_to_update.updated_at = now;

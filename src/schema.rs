@@ -101,6 +101,7 @@ diesel::table! {
         name -> Varchar,
         description -> Varchar,
         icon -> Varchar,
+        state -> Int2,
         created_at -> Varchar,
         updated_at -> Varchar,
     }

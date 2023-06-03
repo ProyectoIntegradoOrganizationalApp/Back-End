@@ -21,6 +21,7 @@ pub fn create_project(project_info: &ProjectInputCreate, token_iduser: String) -
         name: project_info.name.clone(),
         description: project_info.description.clone(),
         icon: project_info.icon.clone(),
+        state: project_info.state,
         created_at: now.clone(),
         updated_at: now.clone()
     };
@@ -70,6 +71,7 @@ pub fn update_project(project_info: &ProjectInputCreate, user_id: &String, proje
                     project.name = project_info.name.clone();
                     project.description = project_info.description.clone();
                     project.icon = project_info.icon.clone();
+                    project.state = project_info.state;
                     project.updated_at = (Utc::now()).to_string();
 
                     let updated_project = project.save_changes::<Project>(connection);
