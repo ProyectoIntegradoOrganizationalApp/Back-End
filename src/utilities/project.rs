@@ -19,7 +19,11 @@ pub fn get_user_projects(user: &User, request_id: &String, connection: &mut PgCo
             .load::<Project>(connection);
     }
     match projects_found {
-        Ok(projects) => {
+        Ok(mut projects) => {
+            let mut common_projects = get_common_private_projects(&user.id, &request_id, connection);
+            if common_projects.len() != 0 {
+                projects.append(&mut common_projects);
+            }
             let mut projects_info:Vec<UserProjectsDetail> = Vec::new();
             for project in &projects {
                 match get_project_members(&project, connection) {
@@ -176,5 +180,46 @@ pub fn create_project_invitation(project_id: &String, guest_id: &String, user_id
     match created_invitation {
         Ok(user_invitation) => Ok(user_invitation),
         Err(err) => Err(err.to_string())
+    }
+}
+
+pub fn get_common_private_projects(user_id: &String, request_id: &String, connection: &mut PgConnection) -> Vec<Project> {
+    let projects_fail:Vec<Project> = Vec::new();
+    let user_private_projects = project_user::table
+        .inner_join(projects::table.on(projects::idproject.eq(project_user::idproject)))
+        .select(projects::idproject)
+        .filter(project_user::iduser.eq(&user_id))
+        .filter(projects::state.eq(3))
+        .load::<String>(connection);
+    match user_private_projects {
+        Ok(user_projects) => {
+            let request_user_projects_found = project_user::table
+                .select(project_user::idproject)
+                .filter(project_user::iduser.eq(&request_id))
+                .load::<String>(connection);
+            match request_user_projects_found {
+                Ok(request_user_projects) => {
+                    let mut common_projects_id:Vec<String> = Vec::new();
+                    for project_id in &request_user_projects {
+                        if user_projects.contains(project_id) {
+                            common_projects_id.push(project_id.clone());
+                        }
+                    }
+                    if common_projects_id.len() != 0 {
+                        let common_projects_found = projects::table
+                            .filter(projects::idproject.eq_any(common_projects_id))
+                            .load::<Project>(connection);
+                        match common_projects_found {
+                            Ok(common_projects) => common_projects,
+                            Err(_) => projects_fail
+                        }
+                    } else {
+                        projects_fail
+                    }
+                },
+                Err(_) => projects_fail
+            }
+        },
+        Err(_) => projects_fail
     }
 }
