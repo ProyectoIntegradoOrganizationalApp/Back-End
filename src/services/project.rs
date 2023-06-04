@@ -398,19 +398,31 @@ pub fn get_project(project_id: &String, token_data: &TokenValidation) -> Result<
     }
 }
 
-pub fn get_user_projects(user_id: &String) -> Result<UserProjects, GenericError> {
+pub fn get_user_projects(user_id: &String, request_id: &String) -> Result<UserProjects, GenericError> {
     let connection = &mut establish_connection();
     let user_found = users::table.filter(users::id.eq(&user_id)).first::<User>(connection);
     match user_found {
         Ok(user) => {
-            match project::get_user_projects(&user, connection) {
-                Ok(projects_info) => {
-                    let user_projects = UserProjects {
-                        projects: projects_info
-                    };
-                    Ok(user_projects)
-                },
-                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+            if user_id == request_id {
+                match project::get_own_projects(&user, connection) {
+                    Ok(projects_info) => {
+                        let user_projects = UserProjects {
+                            projects: projects_info
+                        };
+                        Ok(user_projects)
+                    },
+                    Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                }
+            } else {
+                match project::get_user_projects(&user, request_id, connection) {
+                    Ok(projects_info) => {
+                        let user_projects = UserProjects {
+                            projects: projects_info
+                        };
+                        Ok(user_projects)
+                    },
+                    Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                }
             }
         }, 
         Err(err) => Err(GenericError {error: true, message: err.to_string()})

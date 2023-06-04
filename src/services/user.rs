@@ -24,7 +24,7 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String> {
             
             match get_user_achievements_profile(&user, connection) {
                 Ok(achievements_info) => {
-                    match get_user_projects(&user, connection) {
+                    match get_own_projects(&user, connection) {
                         Ok(projects_info) => {
                             match get_project_user_activity(&user, connection) {
                                 Ok(activity_info) => {

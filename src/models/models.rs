@@ -379,8 +379,9 @@ pub struct ProjectInputCreate {
     pub name: String,
     #[validate(length(min = 10, max = 150, message = "Lenght must be between 10 and 150 characters"))]
     pub description: String,
-    #[validate(url)]
+    #[validate(url(message = "Must be a valid icon url"))]
     pub icon: String,
+    #[validate(range(min = 1, max = 3, message = "Number range must be between 1 and 3"))]
     pub state: i16
 }
 #[derive(Serialize, Deserialize, Debug)]

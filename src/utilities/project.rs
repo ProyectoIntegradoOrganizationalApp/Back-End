@@ -1,8 +1,49 @@
 use crate::models::models::*;
 use diesel::prelude::*;
 use crate::schema::*;
+use crate::utilities::user::*;
 
-pub fn get_user_projects(user: &User, connection: &mut PgConnection) -> Result<Vec<UserProjectsDetail>, String> {
+pub fn get_user_projects(user: &User, request_id: &String, connection: &mut PgConnection) -> Result<Vec<UserProjectsDetail>, String> {
+    let projects_found:Result<_, _>;
+    if is_friend(&user.id, &request_id, connection) {
+        projects_found = UserProject::belonging_to(&user)
+            .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
+            .filter(projects::state.lt(3))
+            .select(Project::as_select())
+            .load::<Project>(connection);
+    } else {
+        projects_found = UserProject::belonging_to(&user)
+            .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
+            .filter(projects::state.eq(1))
+            .select(Project::as_select())
+            .load::<Project>(connection);
+    }
+    match projects_found {
+        Ok(projects) => {
+            let mut projects_info:Vec<UserProjectsDetail> = Vec::new();
+            for project in &projects {
+                match get_project_members(&project, connection) {
+                    Ok(project_members) => {
+                        let user_projects_info = UserProjectsDetail {
+                            idproject: project.idproject.clone(),
+                            name: project.name.clone(),
+                            description: project.description.clone(),
+                            icon: project.icon.clone(),
+                            updated_at: project.updated_at.clone(),
+                            members: project_members
+                        };
+                        projects_info.push(user_projects_info);
+                    },
+                    Err(_) => ()
+                };
+            }
+            Ok(projects_info)
+        },
+        Err(err) => Err(err.to_string())
+    }
+}
+
+pub fn get_own_projects(user: &User, connection: &mut PgConnection) -> Result<Vec<UserProjectsDetail>, String> {
     let projects_found = UserProject::belonging_to(&user)
         .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
         .select(Project::as_select())
