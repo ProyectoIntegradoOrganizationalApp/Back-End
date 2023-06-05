@@ -5,3 +5,4 @@ pub mod project;
 pub mod app;
 pub mod notifications;
 pub mod user;
+pub mod chat;

@@ -68,6 +68,32 @@ diesel::table! {
 }
 
 diesel::table! {
+    group_user (idgroup, iduser) {
+        idgroup -> Varchar,
+        iduser -> Varchar,
+        joined_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    groups (id) {
+        id -> Varchar,
+        title -> Varchar,
+    }
+}
+
+diesel::table! {
+    message (id) {
+        id -> Varchar,
+        idsender -> Varchar,
+        idfriend -> Nullable<Varchar>,
+        idgroup -> Nullable<Varchar>,
+        content -> Text,
+        sent_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     notification (id) {
         id -> Varchar,
         iduser -> Varchar,
@@ -193,9 +219,9 @@ diesel::table! {
 
 diesel::joinable!(achievement_user -> achievement (idachievement));
 diesel::joinable!(columna -> board (idboard));
+diesel::joinable!(message -> users (idsender));
 diesel::joinable!(project_user -> role (idrole));
 diesel::joinable!(task -> columna (idcolumn));
-diesel::joinable!(user_friend -> users (idfriend));
 
 diesel::allow_tables_to_appear_in_same_query!(
     achievement,
@@ -205,6 +231,9 @@ diesel::allow_tables_to_appear_in_same_query!(
     columna,
     docs_app,
     goal,
+    group_user,
+    groups,
+    message,
     notification,
     project_user,
     project_user_activity,

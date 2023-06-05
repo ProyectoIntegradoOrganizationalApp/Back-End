@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use diesel::{Insertable, Queryable, Selectable, Associations, Identifiable, AsChangeset};
 use rocket::serde::{Serialize, Deserialize};
 use rocket_validation::Validate;
@@ -196,6 +197,37 @@ pub struct UserFriendInvitation {
     pub iduser: String,
     pub title: String,
     pub message: String
+}
+
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
+#[diesel(belongs_to(User, foreign_key = idsender))]
+#[diesel(primary_key(id))]
+#[diesel(table_name = message)]
+pub struct Message {
+    pub id: String,
+    pub idsender: String,
+    pub idfriend: Option<String>,
+    pub idgroup: Option<String>,
+    pub content: String,
+    pub sent_at: NaiveDateTime,
+}
+
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Identifiable, PartialEq, AsChangeset)]
+#[diesel(primary_key(id))]
+#[diesel(table_name = groups)]
+pub struct Group {
+    pub id: String,
+    pub title: String,
+}
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Identifiable, PartialEq)]
+#[diesel(belongs_to(User, foreign_key = iduser))]
+#[diesel(belongs_to(Group, foreign_key = idgroup))]
+#[diesel(primary_key(iduser, idgroup))]
+#[diesel(table_name = group_user)]
+pub struct GroupUser {
+    pub iduser: String,
+    pub idgroup: String,
+    pub joined_at: NaiveDateTime
 }
 
 // TABLE'S STRUCTS ········ END
@@ -516,3 +548,16 @@ pub struct UserSearch {
     pub photo: String
 }
 // USER SEARCH ········· END
+
+// MESSAGE CRUD ········· START
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MessageInput {
+    pub idfriend: Option<String>,
+    pub idgroup: Option<String>,
+    pub content: String
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MessageUpdate {
+    pub content: String
+}
+// MESSAGE CRUD ········· END
