@@ -1,4 +1,8 @@
-use rocket::{serde::{json::{json, Value}}};
+
+
+use tokio::net::TcpListener;
+
+use rocket::{serde::{json::{json, Value}}, tokio::{signal::ctrl_c, self}};
 use routes::auth::{register, login, send_mail, change_password, logout, test_token, update_user, delete_user};
 use routes::user::{achievements, user_achievements, profile, send_friend_request, accept_friend_request, deny_friend_request, delete_user_friend,
                     user_notifications, user_friends, search_users};
@@ -13,6 +17,12 @@ use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Header;
 use rocket::{Request, Response};
 use dotenvy::dotenv;
+
+
+use services::chat::websocket_handler;
+use routes::chat::websocket_route;
+
+// use crate::services::chat::ws_test;
 
 #[macro_use] extern crate rocket;
 
@@ -69,11 +79,13 @@ fn server_error() -> Value {
     })
 }
 
-#[launch]
-fn rocket() -> _ {
+#[rocket::main]
+async fn main() {
     dotenv().ok();
-    let rocket = rocket::build();
-    rocket
+    // Iniciamos servidor ws
+    let listener = TcpListener::bind("127.0.0.1:9001").await.expect("Failed to bind");
+
+    let rocket = rocket::build()
         .attach(Cors)
         .attach(Db::fairing())
         .mount("/", routes![
@@ -120,7 +132,21 @@ fn rocket() -> _ {
             accept_friend_request,
             deny_friend_request,
             delete_user_friend,
-            search_users
+            search_users,
+            websocket_route
         ])
-        .register("/", catchers![not_found, server_error, rocket_validation::validation_catcher])
+        .register("/", catchers![not_found, server_error, rocket_validation::validation_catcher]);
+
+
+        // Thread listener de servidor ws
+        tokio::spawn(async move {
+            loop {
+                let socket = listener.accept().await.unwrap();
+                tokio::spawn(websocket_handler(socket.0));
+            }
+        });
+    
+        // ws_server.await.expect("WebSocket server failed");
+        
+        rocket.launch().await.expect("ERROR ROCKET");
 }

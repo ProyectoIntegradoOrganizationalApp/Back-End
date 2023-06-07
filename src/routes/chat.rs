@@ -1,5 +1,4 @@
-use rocket::serde::json::{Json};
-use rocket_validation::Validated;
+use rocket::{serde::json::{Json}, futures::{StreamExt, SinkExt}};
 use crate::models::models::*;
 use crate::services;
 
@@ -40,4 +39,9 @@ pub fn delete_message(id: String, token: Result<TokenValidation, GenericError>) 
         },
         Err(err) => Err(Json(err))
     }
+}
+
+#[get("/websocket")]
+pub fn websocket_route() -> &'static str {
+    "Conexión WebSocket establecida"
 }

@@ -5,6 +5,12 @@ use diesel::prelude::*;
 use rust_api_rest::establish_connection;
 use crate::utilities::user as user_utils;
 use crate::utilities::chat as chat_utils;
+use crate::middlewares::middlewares::ws_request_validation;
+
+use tokio::net::TcpStream;
+use serde_json::{Result as SerdeResult, Value};
+use tokio_tungstenite::{tungstenite::Message as WSMessage, accept_hdr_async};
+use rocket::{futures::{StreamExt, SinkExt}};
 
 pub fn create_message(user_id: &String, message_data: &MessageInput) -> Result<Message, GenericError> {
     let connection = &mut establish_connection();
@@ -67,4 +73,40 @@ pub fn delete_message(message_id: &String, user_id: &String) -> Result<GenericEr
         },
         Err(err) => Err(err)
     }
+}
+
+pub async fn websocket_handler(stream: TcpStream) -> SerdeResult<()> {
+    let ws_validation = accept_hdr_async(stream, ws_request_validation).await;
+
+    match ws_validation {
+        Ok(ws) => {
+            let (mut write, mut read) = ws.split();
+            
+            // Aquí puedes implementar la lógica específica para tu servidor WebSocket
+            while let Some(Ok(msg)) = read.next().await {
+                // Procesar los mensajes recibidos
+                match msg {
+                    WSMessage::Text(text) => {
+                        // Manejar mensaje de texto
+                        println!("Mensaje recibido: {}", text);
+                        write.send(WSMessage::Text("asdas".to_owned())).await;
+                        let json: Value = serde_json::from_str(text.as_str())?;
+        
+                        println!("test: {} at lol {}", json["test"], json["lol"]);
+                        // match sended {
+                        //     Ok(()) => {},
+                        //     Err(err) => println!("{}", err.to_string())
+                        // }
+                    }
+                    WSMessage::Close(_) => {
+                        // Manejar cierre de conexión
+                        break;
+                    }
+                    _ => {}
+                }
+            }
+        },
+        Err(err) => {println!("{}", err.to_string())}
+    }
+    Ok(())
 }

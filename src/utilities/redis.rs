@@ -33,3 +33,6 @@ pub fn unwhitelist_token(token: &str) -> Result<(), RedisError> {
     let test:Result<(), redis::RedisError> = con.del(token);
     test
 }
+
+
+// CHAT --------------------------------
