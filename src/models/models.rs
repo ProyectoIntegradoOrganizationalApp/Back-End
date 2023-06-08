@@ -144,18 +144,6 @@ pub struct Task {
     pub github: Option<String>
 }
 
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
-#[diesel(belongs_to(User, foreign_key = iduser))]
-#[diesel(belongs_to(Project, foreign_key = idproject))]
-#[diesel(primary_key(iduser, idproject, date))]
-#[diesel(table_name = project_user_activity)]
-pub struct ProjectUserActivity {
-    pub iduser: String,
-    pub idproject: String,
-    pub date: String,
-    pub commits: i16
-}
-
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
 #[diesel(belongs_to(User, foreign_key = iduser))]
 #[diesel(belongs_to(Project, foreign_key = idproject))]
@@ -366,7 +354,6 @@ pub struct UserProfile {
     pub user: UserInfoResponse,
     pub achievements: Vec<UserAchievementsInfo>,
     pub projects: Vec<UserProjectsDetail>,
-    pub activity: Vec<UserActivityProfile>,
     pub owner : bool
 }
 #[derive(Serialize, Deserialize, Debug)]
@@ -395,12 +382,6 @@ pub struct UserNotificationProfile {
     pub title: String,
     pub content: String,
     pub state: bool,
-}
-#[derive(Serialize, Deserialize, Debug)]
-pub struct UserActivityProfile {
-    pub idproject: String,
-    pub date: String,
-    pub commits: i16
 }
 // PROFILE ENDPOINT ········· END
 

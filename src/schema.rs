@@ -26,6 +26,7 @@ diesel::table! {
     app (id) {
         id -> Varchar,
         idproject -> Varchar,
+        iduser -> Varchar,
         name -> Varchar,
         description -> Varchar,
         photo -> Varchar,
@@ -36,8 +37,11 @@ diesel::table! {
     board (id) {
         id -> Varchar,
         idapp -> Varchar,
+        iduser -> Varchar,
         title -> Varchar,
         photo -> Varchar,
+        created_at -> Varchar,
+        updated_at -> Varchar,
     }
 }
 
@@ -45,7 +49,10 @@ diesel::table! {
     columna (id) {
         id -> Varchar,
         idboard -> Varchar,
+        iduser -> Varchar,
         title -> Varchar,
+        created_at -> Varchar,
+        updated_at -> Varchar,
     }
 }
 
@@ -53,6 +60,7 @@ diesel::table! {
     docs_app (idapp, idproject) {
         idapp -> Varchar,
         idproject -> Varchar,
+        iduser -> Varchar,
         app_type -> Varchar,
     }
 }
@@ -112,15 +120,6 @@ diesel::table! {
 }
 
 diesel::table! {
-    project_user_activity (iduser, idproject, date) {
-        iduser -> Varchar,
-        idproject -> Varchar,
-        date -> Varchar,
-        commits -> Int2,
-    }
-}
-
-diesel::table! {
     projects (idproject) {
         idproject -> Varchar,
         iduser -> Varchar,
@@ -161,10 +160,11 @@ diesel::table! {
 diesel::table! {
     task (id) {
         id -> Varchar,
+        iduser -> Varchar,
         idcolumn -> Varchar,
         title -> Varchar,
         description -> Nullable<Varchar>,
-        github -> Nullable<Varchar>,
+        state -> Int2,
     }
 }
 
@@ -172,7 +172,10 @@ diesel::table! {
     task_app (idapp, idproject) {
         idapp -> Varchar,
         idproject -> Varchar,
+        iduser -> Varchar,
         app_type -> Varchar,
+        created_at -> Varchar,
+        updated_at -> Varchar,
     }
 }
 
@@ -236,7 +239,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     message,
     notification,
     project_user,
-    project_user_activity,
     projects,
     recent_change,
     review,

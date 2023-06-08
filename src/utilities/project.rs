@@ -108,28 +108,6 @@ pub fn get_project_members(project: &Project, connection: &mut PgConnection) -> 
     }
 }
 
-pub fn get_project_user_activity(user: &User, connection: &mut PgConnection) -> Result<Vec<UserActivityProfile>, String> {
-    let activity_found = ProjectUserActivity::belonging_to(&user)
-            .select(ProjectUserActivity::as_select())
-            .load::<ProjectUserActivity>(connection);
-            
-    match activity_found {
-        Ok(activity) => {
-            let mut activity_info:Vec<UserActivityProfile> = Vec::new();
-            for i in &activity {
-                let user_activity_info = UserActivityProfile {
-                    idproject: i.idproject.clone(),
-                    date: i.date.clone(),
-                    commits: i.commits
-                };
-                activity_info.push(user_activity_info);
-            }
-            Ok(activity_info)
-        },
-        Err(err) => Err(err.to_string())
-    }
-}
-
 pub fn get_project(project_id: &String, connection: &mut PgConnection) -> Result<Project, String> {
     let project_found = projects::table
         .select(Project::as_select())

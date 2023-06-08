@@ -1,13 +1,20 @@
 -- Your SQL goes here
 CREATE TABLE task (
     id VARCHAR NOT NULL,
+    idUser VARCHAR NOT NULL,
     idColumn VARCHAR NOT NULL,
     title VARCHAR NOT NULL,
     description VARCHAR,
-    github VARCHAR,
+    state SMALLINT NOT NULL DEFAULT 0,
+    created_at VARCHAR NOT NULL,
+    updated_at VARCHAR NOT NULL,
     PRIMARY KEY(id),
     CONSTRAINT fk_column
         FOREIGN KEY(idColumn)
             REFERENCES columna(id)
+            ON DELETE CASCADE,
+    CONSTRAINT fk_user
+        FOREIGN KEY(idUser)
+            REFERENCES users(id)
             ON DELETE CASCADE
 );

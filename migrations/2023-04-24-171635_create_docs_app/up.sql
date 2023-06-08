@@ -4,6 +4,7 @@ CREATE TYPE valid_docs_app AS ENUM ('whiteboard');
 CREATE TABLE docs_app (
     idApp VARCHAR NOT NULL,
     idProject VARCHAR NOT NULL,
+    idUser VARCHAR NOT NULL,
     app_type VARCHAR NOT NULL,
     PRIMARY KEY(idApp, idProject),
     CONSTRAINT fk_app
@@ -13,5 +14,9 @@ CREATE TABLE docs_app (
     CONSTRAINT fk_project
         FOREIGN KEY(idProject)
             REFERENCES projects(idProject)
+            ON DELETE CASCADE,
+    CONSTRAINT fk_user
+        FOREIGN KEY(idUser)
+            REFERENCES users(id)
             ON DELETE CASCADE
 );
