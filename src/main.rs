@@ -5,7 +5,7 @@ use tokio::net::TcpListener;
 use rocket::{serde::{json::{json, Value}}, tokio::{signal::ctrl_c, self}};
 use routes::auth::{register, login, send_mail, change_password, logout, test_token, update_user, delete_user};
 use routes::user::{achievements, user_achievements, profile, send_friend_request, accept_friend_request, deny_friend_request, delete_user_friend,
-                    user_notifications, user_friends, search_users};
+                    user_notifications, user_friends, search_users, account};
 use routes::project::{create_project, update_project, delete_project, invite_user_to_project, change_role_user_project, delete_user_project, 
     accept_user_project_invitation, deny_user_project_invitation, get_project, get_user_projects, leave_project, search_projects};
 use routes::task_app::board::{create_board, update_board, delete_board, get_boards};
@@ -101,6 +101,7 @@ async fn main() {
             user_notifications,
             user_friends,
             profile,
+            account,
             update_user,
             delete_user,
             create_project,

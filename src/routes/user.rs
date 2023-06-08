@@ -166,3 +166,18 @@ pub fn search_users(name: String, token: Result<TokenValidation, GenericError>) 
         }
     }
 }
+
+#[get("/account")]
+pub fn account(token: Result<TokenValidation, GenericError>) -> Result<Json<UserAccount>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::user::account(&token_data.token_iduser) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => {
+            Err(Json(err))
+        }
+    }
+}

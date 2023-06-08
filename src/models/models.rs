@@ -575,3 +575,14 @@ pub struct ProjectSearch {
     pub state: i16
 }
 // PROJECT SEARCH ········· END
+
+// USER ACCOUNT ········· START
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserAccount {
+    pub iduser: String,
+    pub name: String,
+    pub lastname: String,
+    pub phone: String,
+    pub email: String
+}
+// USER ACCOUNT ········· END

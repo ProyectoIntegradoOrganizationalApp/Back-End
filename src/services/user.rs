@@ -4,6 +4,7 @@ use rust_api_rest::establish_connection;
 use diesel::prelude::*;
 use diesel::sql_query;
 use crate::models::models::*;
+use crate::schema::users::phone;
 use crate::schema::{users, user_friend_invitation, user_friend};
 use crate::utilities::achievements::*;
 use crate::utilities::project::*;
@@ -279,6 +280,23 @@ pub fn search_users(name: &String) -> Result<Vec<UserSearch>, GenericError> {
                 users_search.push(new_user_search);
             }
             Ok(users_search)
+        },
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}
+
+pub fn account(user_id: &String) -> Result<UserAccount, GenericError> {
+    let connection = &mut establish_connection();
+    match get_user(&user_id, connection) {
+        Ok(user) => {
+            let user_account = UserAccount {
+                iduser: user.id.clone(),
+                name: user.name.clone(),
+                lastname: user.lastname.clone(),
+                phone: user.phone.clone(),
+                email: user.email.clone()
+            };
+            Ok(user_account)
         },
         Err(err) => Err(GenericError { error: true, message: err.to_string() })
     }
