@@ -6,6 +6,8 @@ CREATE TABLE docs_app (
     idProject VARCHAR NOT NULL,
     idUser VARCHAR NOT NULL,
     app_type VARCHAR NOT NULL,
+    created_at VARCHAR NOT NULL,
+    updated_at VARCHAR NOT NULL,
     PRIMARY KEY(idApp, idProject),
     CONSTRAINT fk_app
         FOREIGN KEY(idApp)

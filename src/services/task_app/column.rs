@@ -8,6 +8,7 @@ use rust_api_rest::establish_connection;
 use crate::utilities::achievements::*;
 use crate::utilities::user as user_utils;
 use crate::utilities::app as app_utils;
+use chrono::Utc;
 
 pub fn create_column(column_info: &ColumnInputCreate, id_app: &str, user_id: &str) -> Result<Columna, GenericError> { 
     let connection = &mut establish_connection();
@@ -15,10 +16,14 @@ pub fn create_column(column_info: &ColumnInputCreate, id_app: &str, user_id: &st
         Ok(project_id) => {
             if user_utils::is_admin(&project_id, user_id, connection) || user_utils::is_editor(&project_id, user_id, connection) {
                 let column_id = uuid::Uuid::new_v4().to_string();
+                let now: String = (Utc::now()).to_string();
                 let new_column = Columna {
                     id: column_id.clone(),
                     idboard: column_info.idboard.clone(),
-                    title: column_info.title.clone()
+                    iduser: user_id.to_owned().clone(),
+                    title: column_info.title.clone(),
+                    created_at: now.clone(),
+                    updated_at: now.clone()
                 };
                 let created_column = diesel::insert_into(columna::table)
                     .values(&new_column)
@@ -50,7 +55,9 @@ pub fn update_column(column_info: &ColumnInputCreate, column_id: &String, id_app
                 let column_found: Result<Columna, Error> = columna::table.filter(columna::id.eq(column_id)).first::<Columna>(connection);
                 match column_found {
                     Ok(mut column) => {
+                        let now: String = (Utc::now()).to_string();
                         column.title = column_info.title.clone();
+                        column.updated_at = now.clone();
             
                         let updated_project = column.save_changes::<Columna>(connection);
                         match updated_project {

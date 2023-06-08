@@ -7,6 +7,7 @@ use diesel::result::Error;
 use rust_api_rest::establish_connection;
 use crate::utilities::user as user_utils;
 use crate::utilities::app as app_utils;
+use chrono::Utc;
 
 pub fn create_board(id_app: &str, board_info: &BoardInputCreate, user_id: &str) -> Result<Board, GenericError> {
     let connection = &mut establish_connection();
@@ -14,11 +15,15 @@ pub fn create_board(id_app: &str, board_info: &BoardInputCreate, user_id: &str) 
         Ok(project_id) => {
             if user_utils::is_admin(&project_id, user_id, connection) || user_utils::is_editor(&project_id, user_id, connection) {
                 let board_id = uuid::Uuid::new_v4().to_string();
+                let now: String = (Utc::now()).to_string();
                 let new_board = Board {
                     id: board_id.clone(),
                     idapp: id_app.to_owned(),
+                    iduser: user_id.to_owned().clone(),
                     title: board_info.title.clone(),
-                    photo: board_info.photo.clone()
+                    photo: board_info.photo.clone(),
+                    created_at: now.clone(),
+                    updated_at: now.clone()
                 };
                 let created_board = diesel::insert_into(board::table)
                     .values(&new_board)
@@ -44,7 +49,10 @@ pub fn update_board(id_app: &str, board_info: &BoardInputCreate, board_id: &Stri
                 let board_found: Result<Board, Error> = board::table.filter(board::id.eq(board_id)).first::<Board>(connection);
                 match board_found {
                     Ok(mut board) => {
+                        let now: String = (Utc::now()).to_string();
                         board.title = board_info.title.clone();
+                        board.photo = board_info.photo.clone();
+                        board.updated_at = now.clone();
             
                         let updated_project = board.save_changes::<Board>(connection);
                         match updated_project {

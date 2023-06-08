@@ -2,6 +2,7 @@ extern crate redis;
 
 use crate::models::models::*;
 use crate::schema::*;
+use diesel::sql_query;
 use diesel::prelude::*;
 use diesel::result::Error;
 use rust_api_rest::establish_connection;
@@ -426,5 +427,20 @@ pub fn get_user_projects(user_id: &String, request_id: &String) -> Result<UserPr
             }
         }, 
         Err(err) => Err(GenericError {error: true, message: err.to_string()})
+    }
+}
+
+pub fn search_projects(name: &String) -> Result<Vec<Project>, GenericError> {
+    let connection = &mut establish_connection();
+    let projects_found = sql_query(format!("
+        SELECT * 
+        FROM projects 
+        WHERE name LIKE '%{name}%' AND state = 1
+        LIMIT 10
+    ")).load::<Project>(connection);
+
+    match projects_found {
+        Ok(projects) => Ok(projects),
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
     }
 }

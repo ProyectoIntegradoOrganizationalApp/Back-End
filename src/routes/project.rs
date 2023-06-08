@@ -165,3 +165,16 @@ pub fn get_user_projects(id: String, token: Result<TokenValidation, GenericError
         Err(err) => Err(Json(err))
     }
 }
+
+#[get("/projects/<name>")]
+pub fn search_projects(name: String, token: Result<TokenValidation, GenericError>) -> Result<Json<Vec<Project>>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::project::search_projects(&name) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => Err(Json(err))
+    }
+}

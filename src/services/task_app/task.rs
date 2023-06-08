@@ -8,6 +8,7 @@ use rust_api_rest::establish_connection;
 use crate::utilities::achievements::*;
 use crate::utilities::user as user_utils;
 use crate::utilities::app as app_utils;
+use chrono::Utc;
 
 pub fn create_task(task_info: &TaskInputCreate, id_app: &str, user_id: &str) -> Result<Task, GenericError> {
     let connection = &mut establish_connection();
@@ -15,12 +16,16 @@ pub fn create_task(task_info: &TaskInputCreate, id_app: &str, user_id: &str) -> 
         Ok(project_id) => {
             if user_utils::is_admin(&project_id, user_id, connection) || user_utils::is_editor(&project_id, user_id, connection) {
                 let task_id = uuid::Uuid::new_v4().to_string();
+                let now: String = (Utc::now()).to_string();
                 let new_task = Task {
                     id: task_id.clone(),
                     idcolumn: task_info.idcolumn.clone(),
+                    iduser: user_id.to_owned().clone(),
                     title: task_info.title.clone(),
                     description: task_info.description.clone(),
-                    github: task_info.github.clone()
+                    state: task_info.state,
+                    created_at: now.clone(),
+                    updated_at: now.clone()
                 };
                 let created_task = diesel::insert_into(task::table)
                     .values(&new_task)
@@ -53,9 +58,11 @@ pub fn update_task(task_info: &TaskInputCreate, task_id: &String, id_app: &str, 
                 let task_found: Result<Task, Error> = task::table.filter(task::id.eq(task_id)).first::<Task>(connection);
                 match task_found {
                     Ok(mut task) => {
+                        let now: String = (Utc::now()).to_string();
                         task.title = task_info.title.clone();
                         task.description = task_info.description.clone();
-                        task.github = task_info.github.clone();
+                        task.state = task_info.state;
+                        task.updated_at = now.clone();
             
                         let updated_project = task.save_changes::<Task>(connection);
                         match updated_project {

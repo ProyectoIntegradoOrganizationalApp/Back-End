@@ -56,7 +56,7 @@ pub struct UserAchievement {
     pub completed: bool
 }
 
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset, QueryableByName)]
 #[diesel(belongs_to(User, foreign_key = iduser))]
 #[diesel(primary_key(idproject))]
 #[diesel(table_name = projects)]
@@ -73,11 +73,13 @@ pub struct Project {
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
 #[diesel(belongs_to(Project, foreign_key = idproject))]
+#[diesel(belongs_to(User, foreign_key = iduser))]
 #[diesel(primary_key(id))]
 #[diesel(table_name = app)]
 pub struct App {
     pub id: String,
     pub idproject: String,
+    pub iduser: String,
     pub name: String,
     pub description: String,
     pub photo: String
@@ -86,43 +88,59 @@ pub struct App {
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq/*, AsChangeset*/)]
 #[diesel(belongs_to(Project, foreign_key = idproject))]
 #[diesel(belongs_to(App, foreign_key = idapp))]
+#[diesel(belongs_to(User, foreign_key = iduser))]
 #[diesel(primary_key(idapp, idproject))]
 #[diesel(table_name = task_app)]
 pub struct TaskApp {
     pub idapp: String,
     pub idproject: String,
-    pub app_type: String
+    pub iduser: String,
+    pub app_type: String,
+    pub created_at: String,
+    pub updated_at: String
 }
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq/*, AsChangeset*/)]
 #[diesel(belongs_to(Project, foreign_key = idproject))]
+#[diesel(belongs_to(User, foreign_key = iduser))]
 #[diesel(primary_key(idapp, idproject))]
 #[diesel(table_name = docs_app)]
 pub struct DocsApp {
     pub idapp: String,
     pub idproject: String,
-    pub app_type: String
+    pub iduser: String,
+    pub app_type: String,
+    pub created_at: String,
+    pub updated_at: String
 }
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
 #[diesel(belongs_to(App, foreign_key = idapp))]
+#[diesel(belongs_to(User, foreign_key = iduser))]
 #[diesel(primary_key(id))]
 #[diesel(table_name = board)]
 pub struct Board {
     pub id: String,
     pub idapp: String,
+    pub iduser: String,
     pub title: String,
-    pub photo: String
+    pub photo: String,
+    pub created_at: String,
+    pub updated_at: String
 }
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
-#[diesel(belongs_to(App, foreign_key = idboard))]
+#[diesel(belongs_to(Board, foreign_key = idboard))]
+#[diesel(belongs_to(User, foreign_key = iduser))]
 #[diesel(primary_key(id))]
 #[diesel(table_name = columna)]
 pub struct Columna {
     pub id: String,
     pub idboard: String,
+    pub iduser: String,
     pub title: String,
+    pub created_at: String,
+    pub updated_at: String
 }
 
 #[derive(Serialize)]
@@ -139,9 +157,12 @@ pub struct ColumnTasks {
 pub struct Task {
     pub id: String,
     pub idcolumn: String,
+    pub iduser: String,
     pub title: String,
     pub description: Option<String>,
-    pub github: Option<String>
+    pub state: i16,
+    pub created_at: String,
+    pub updated_at: String
 }
 
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
@@ -455,8 +476,8 @@ pub struct TaskInputCreate {
     pub title: String,
     #[validate(length(min = 10, max = 150, message = "Lenght must be between 10 and 150 characters"))]
     pub description: Option<String>,
-    #[validate(url)]
-    pub github: Option<String>
+    #[validate(range(min = 0, max = 1, message = "Number range must be between 0 and 1"))]
+    pub state: i16
 }
 // APPS AND SPECIFICATIONS ENDPOINT ········· END
 
@@ -542,3 +563,15 @@ pub struct MessageUpdate {
     pub content: String
 }
 // MESSAGE CRUD ········· END
+
+// PROJECT SEARCH ········· START
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ProjectSearch {
+    pub idproject: String,
+    pub iduser: String,
+    pub name: String,
+    pub description: String,
+    pub icon: String,
+    pub state: i16
+}
+// PROJECT SEARCH ········· END

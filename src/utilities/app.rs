@@ -3,13 +3,15 @@ extern crate redis;
 use crate::models::models::*;
 use crate::schema::*;
 use diesel::prelude::*;
+use chrono::Utc;
 use crate::utilities::achievements as achievement_utils;
 
-fn create_app(project_id: &str, app_info: &AppInputCreate, connection: &mut PgConnection) -> Result<App, GenericError> {
+fn create_app(project_id: &str, user_id: &str, app_info: &AppInputCreate, connection: &mut PgConnection) -> Result<App, GenericError> {
     let app_id = uuid::Uuid::new_v4().to_string();
     let new_app = App {
         id: app_id.clone(),
         idproject: project_id.to_owned().clone(),
+        iduser: user_id.to_owned().clone(),
         name: app_info.name.clone(),
         description: app_info.description.clone(),
         photo: app_info.photo.clone()
@@ -44,15 +46,19 @@ fn update_app(app_id: &str, app_info: &AppInputCreate, connection: &mut PgConnec
 }
 
 pub fn create_app_by_type(project_id: &str, user_id: &str, app_info: &AppInputCreate, connection: &mut PgConnection) -> Result<App, GenericError> {
-    match create_app(project_id, app_info, connection) {
+    match create_app(project_id, user_id, app_info, connection) {
         Ok(app) => {
+            let now: String = (Utc::now()).to_string();
             match app_info.apptype.as_str() {
                 "task_app" => {
                     let task_app_info = app_info.task_app.as_ref().unwrap();
                     let new_task_app = TaskApp {
                         idapp: app.id.clone(),
                         idproject: app.idproject.clone(),
-                        app_type: task_app_info.app_type.clone()
+                        iduser: user_id.to_owned().clone(),
+                        app_type: task_app_info.app_type.clone(),
+                        created_at: now.clone(),
+                        updated_at: now.clone()
                     };
                     let created_app_type = diesel::insert_into(task_app::table)
                         .values(&new_task_app)
@@ -73,7 +79,10 @@ pub fn create_app_by_type(project_id: &str, user_id: &str, app_info: &AppInputCr
                     let new_docs_app = DocsApp {
                         idapp: app.id.clone(),
                         idproject: app.idproject.clone(),
-                        app_type: docs_app_info.app_type.clone()
+                        iduser: user_id.to_owned().clone(),
+                        app_type: docs_app_info.app_type.clone(),
+                        created_at: now.clone(),
+                        updated_at: now.clone()
                     };
                     let created_app_type = diesel::insert_into(docs_app::table)
                         .values(&new_docs_app)

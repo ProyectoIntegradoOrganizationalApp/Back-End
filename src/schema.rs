@@ -62,6 +62,8 @@ diesel::table! {
         idproject -> Varchar,
         iduser -> Varchar,
         app_type -> Varchar,
+        created_at -> Varchar,
+        updated_at -> Varchar,
     }
 }
 
@@ -165,6 +167,8 @@ diesel::table! {
         title -> Varchar,
         description -> Nullable<Varchar>,
         state -> Int2,
+        created_at -> Varchar,
+        updated_at -> Varchar,
     }
 }
 
