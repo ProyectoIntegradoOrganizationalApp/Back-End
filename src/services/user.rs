@@ -4,7 +4,6 @@ use rust_api_rest::establish_connection;
 use diesel::prelude::*;
 use diesel::sql_query;
 use crate::models::models::*;
-use crate::schema::users::phone;
 use crate::schema::{users, user_friend_invitation, user_friend};
 use crate::utilities::achievements::*;
 use crate::utilities::project::*;

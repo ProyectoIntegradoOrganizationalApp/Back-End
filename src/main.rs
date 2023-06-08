@@ -1,7 +1,7 @@
 
 
 use tokio::net::TcpListener;
-
+#[allow(unused)]
 use rocket::{serde::{json::{json, Value}}, tokio::{signal::ctrl_c, self}};
 use routes::auth::{register, login, send_mail, change_password, logout, test_token, update_user, delete_user};
 use routes::user::{achievements, user_achievements, profile, send_friend_request, accept_friend_request, deny_friend_request, delete_user_friend,

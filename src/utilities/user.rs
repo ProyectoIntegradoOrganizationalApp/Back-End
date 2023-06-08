@@ -71,7 +71,7 @@ pub fn is_editor(idproject: &str, iduser: &str, connection: &mut PgConnection) -
         Err(_) => false
     }
 }
-
+#[allow(unused)]
 pub fn is_friend(user_id: &String, friend_id: &String, connection: &mut PgConnection) -> bool {
     let friend_found = user_friend::table
         .filter(user_friend::iduser.eq(&user_id).and(user_friend::idfriend.eq(&friend_id)))
