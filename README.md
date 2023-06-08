@@ -26,7 +26,7 @@
 ```
 
 ## DISEÑO DE LA BASE DE DATOS  
-![Proyecto Integrado DB 11_04_2023](https://github.com/ProyectoIntegradoOrganizationalApp/Back-End/blob/main/Version%206%20Proyecto%20Integrado%20DB%2001_06_2023.jpg)
+![Proyecto Integrado DB 11_04_2023](https://github.com/ProyectoIntegradoOrganizationalApp/Back-End/blob/main/Version%208%20Proyecto%20Integrado%20DB%2008_06_2023.jpg)
 Una breve explicación sobre el diseño de la base de datos y las relaciones entre tablas.  
 
 #### USER    
