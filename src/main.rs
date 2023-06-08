@@ -7,7 +7,7 @@ use routes::auth::{register, login, send_mail, change_password, logout, test_tok
 use routes::user::{achievements, user_achievements, profile, send_friend_request, accept_friend_request, deny_friend_request, delete_user_friend,
                     user_notifications, user_friends, search_users};
 use routes::project::{create_project, update_project, delete_project, invite_user_to_project, change_role_user_project, delete_user_project, 
-    accept_user_project_invitation, deny_user_project_invitation, get_project, get_user_projects, leave_project};
+    accept_user_project_invitation, deny_user_project_invitation, get_project, get_user_projects, leave_project, search_projects};
 use routes::task_app::board::{create_board, update_board, delete_board, get_boards};
 use routes::task_app::column::{create_column, update_column, delete_column, get_columns_tasks};
 use routes::task_app::task::{create_task, update_task, delete_task};
@@ -133,6 +133,7 @@ async fn main() {
             deny_friend_request,
             delete_user_friend,
             search_users,
+            search_projects,
             websocket_route
         ])
         .register("/", catchers![not_found, server_error, rocket_validation::validation_catcher]);

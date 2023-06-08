@@ -95,21 +95,20 @@ pub fn invite_user_to_project(guest_id: &String, project_id: &String, user_id: &
         Ok(project) => {
             match is_admin_project(&project, &user_id, connection) {
                 Ok(_user) => {
-                    match is_member_project(&project, &guest_id, connection) {
-                        Ok(_guest) => Ok(GenericError { error: true, message: "The invited user is already in the project".to_string()}),
-                        Err(_err) => {
-                            match create_project_invitation(&project_id, &guest_id, &user_id, &invitation, connection) {
-                                Ok(_result) => {
-                                    // Check achievement - id: 5
-                                    let achievement_updated = check_update_user_achievement(user_id, "5");
-                                    match achievement_updated {
-                                        Ok(_) => {},
-                                        Err(err) => return Err(err)
-                                    }
-                                    Ok(GenericError { error: false, message: "Invitation sent successfully".to_string() })
-                                },
-                                Err(err) => Err(GenericError { error: true, message: err.to_string() })
-                            }
+                    if is_member_project(&project, &guest_id, connection) {
+                        Err(GenericError { error: true, message: "The invited user is already in the project".to_string()})
+                    } else {
+                        match create_project_invitation(&project_id, &guest_id, &user_id, &invitation, connection) {
+                            Ok(_result) => {
+                                // Check achievement - id: 5
+                                let achievement_updated = check_update_user_achievement(user_id, "5");
+                                match achievement_updated {
+                                    Ok(_) => {},
+                                    Err(err) => return Err(err)
+                                }
+                                Ok(GenericError { error: false, message: "Invitation sent successfully".to_string() })
+                            },
+                            Err(err) => Err(GenericError { error: true, message: err.to_string() })
                         }
                     }
                 },
@@ -284,17 +283,16 @@ pub fn leave_project(project_id: &String, user_id: &String) -> Result<GenericErr
     let connection = &mut establish_connection();
     match project::get_project(&project_id, connection) {
         Ok(project) => {
-            match is_member_project(&project, user_id, connection) {
-                Ok(_user_project) => {
-                    let deleted = diesel::delete(project_user::table.filter(project_user::iduser.eq(&user_id)))
-                        .filter(project_user::idproject.eq(&project_id))
-                        .execute(connection);
-                    match deleted {
-                        Ok(_) => Ok(GenericError { error: false, message: "You left the project successfully".to_string() }),
-                        Err(err) => Err(GenericError { error: true, message: err.to_string() })
-                    }
-                },
-                Err(_err) => Err(GenericError { error: true, message: "You are not a member of the project".to_string() })
+            if is_member_project(&project, user_id, connection) {
+                let deleted = diesel::delete(project_user::table.filter(project_user::iduser.eq(&user_id)))
+                    .filter(project_user::idproject.eq(&project_id))
+                    .execute(connection);
+                match deleted {
+                    Ok(_) => Ok(GenericError { error: false, message: "You left the project successfully".to_string() }),
+                    Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                }
+            } else {
+                Err(GenericError { error: true, message: "You are not a member of the project".to_string() })
             }
         },
         Err(err) => Err(GenericError { error: true, message: err.to_string() })
@@ -430,17 +428,25 @@ pub fn get_user_projects(user_id: &String, request_id: &String) -> Result<UserPr
     }
 }
 
-pub fn search_projects(name: &String) -> Result<Vec<Project>, GenericError> {
+pub fn search_projects(name: &String, user_id: &String) -> Result<Vec<Project>, GenericError> {
     let connection = &mut establish_connection();
     let projects_found = sql_query(format!("
         SELECT * 
         FROM projects 
-        WHERE name LIKE '%{name}%' AND state = 1
+        WHERE name LIKE '%{name}%'
         LIMIT 10
     ")).load::<Project>(connection);
 
     match projects_found {
-        Ok(projects) => Ok(projects),
+        Ok(projects) => {
+            let mut project_response:Vec<Project> = Vec::new();
+            for project in projects {
+                if is_member_project(&project, &user_id, connection) || project.state != 2 {
+                    project_response.push(project);
+                }
+            }
+            Ok(project_response)
+        },
         Err(err) => Err(GenericError { error: true, message: err.to_string() })
     }
 }

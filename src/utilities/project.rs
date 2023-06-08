@@ -1,23 +1,14 @@
 use crate::models::models::*;
 use diesel::prelude::*;
 use crate::schema::*;
-use crate::utilities::user::*;
 
 pub fn get_user_projects(user: &User, request_id: &String, connection: &mut PgConnection) -> Result<Vec<UserProjectsDetail>, String> {
     let projects_found:Result<_, _>;
-    if is_friend(&user.id, &request_id, connection) {
-        projects_found = UserProject::belonging_to(&user)
-            .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
-            .filter(projects::state.lt(3))
-            .select(Project::as_select())
-            .load::<Project>(connection);
-    } else {
-        projects_found = UserProject::belonging_to(&user)
-            .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
-            .filter(projects::state.eq(1))
-            .select(Project::as_select())
-            .load::<Project>(connection);
-    }
+    projects_found = UserProject::belonging_to(&user)
+        .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
+        .filter(projects::state.eq(1))
+        .select(Project::as_select())
+        .load::<Project>(connection);
     match projects_found {
         Ok(mut projects) => {
             let mut common_projects = get_common_private_projects(&user.id, &request_id, connection);
@@ -132,15 +123,15 @@ pub fn is_admin_project(project: &Project, user_id: &String, connection: &mut Pg
     }
 }
 
-pub fn is_member_project(project: &Project, user_id: &String, connection: &mut PgConnection) -> Result<User, String> {
+pub fn is_member_project(project: &Project, user_id: &String, connection: &mut PgConnection) -> bool {
     let project_member_found = UserProject::belonging_to(&project)
         .inner_join(users::table.on(project_user::iduser.eq(users::id)))
         .select(User::as_select())
         .filter(project_user::iduser.eq(&user_id))
         .get_result::<User>(connection);
     match project_member_found {
-        Ok(member) => Ok(member),
-        Err(_) => Err("The user is not a member of the project".to_owned())
+        Ok(_member) => true,
+        Err(_) => false
     }
 }
 
@@ -167,7 +158,7 @@ pub fn get_common_private_projects(user_id: &String, request_id: &String, connec
         .inner_join(projects::table.on(projects::idproject.eq(project_user::idproject)))
         .select(projects::idproject)
         .filter(project_user::iduser.eq(&user_id))
-        .filter(projects::state.eq(3))
+        .filter(projects::state.eq(2))
         .load::<String>(connection);
     match user_private_projects {
         Ok(user_projects) => {
