@@ -18,9 +18,7 @@ use rocket::http::Header;
 use rocket::{Request, Response};
 use dotenvy::dotenv;
 
-
 use services::chat::websocket_handler;
-use routes::chat::websocket_route;
 
 // use crate::services::chat::ws_test;
 
@@ -134,8 +132,7 @@ async fn main() {
             deny_friend_request,
             delete_user_friend,
             search_users,
-            search_projects,
-            websocket_route
+            search_projects
         ])
         .register("/", catchers![not_found, server_error, rocket_validation::validation_catcher]);
 

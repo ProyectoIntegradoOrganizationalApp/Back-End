@@ -7,4 +7,3 @@ pub mod task_app {
     pub mod task;
     pub mod column;
 }
-pub mod chat;

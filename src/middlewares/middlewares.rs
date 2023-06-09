@@ -1,14 +1,9 @@
 use crate::models::models::*;
 use crate::utilities::jwt::*;
-use rocket::{request::*, response::status};
+use rocket::{request::*};
 use rocket::http::Status;
 
 use tungstenite::http::{Request as WSRequest, Response, StatusCode};
-
-use std::io::Cursor;
-use rocket::response::Response as RocketResponse;
-use rocket::http::{Status as RocketStatus, ContentType};
-
 use tungstenite::http::Response as WsResponse;
 
 #[rocket::async_trait]
@@ -50,17 +45,20 @@ pub fn ws_request_validation(req: &WSRequest<()>, res: Response<()>) -> Result<R
     // Obtener el token
     if let Some(token_header) = headers.get("Sec-WebSocket-Protocol") {
         let token = token_header.to_str().unwrap();
-        println!("{}", token);
 
-        validate_token(token, None, None);
+        let auth = validate_token(token, None, None);
+        if auth.0 == false {
+            let response = WsResponse::builder()
+                .status(StatusCode::UNAUTHORIZED)
+                .body(Some("Token is not valid".to_owned())).unwrap();
+            return Err(response)
+        }
         Ok(res)
     } else{
+        println!("TOKEN NOT FOUND");
         let response = WsResponse::builder()
             .status(StatusCode::UNAUTHORIZED)
-            .body(Some("TOKEN NOT FOUND WE".to_owned())).unwrap();
+            .body(Some("Token not found".to_owned())).unwrap();
         Err(response)
-        // Err(tungstenite::handshake::server::ErrorResponse::new(
-        //     Some("Token not found".to_owned()),
-        // ))
     }
 }

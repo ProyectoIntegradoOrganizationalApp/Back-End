@@ -562,6 +562,10 @@ pub struct MessageInput {
 pub struct MessageUpdate {
     pub content: String
 }
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MessageDelete {
+    pub idmessage: String
+}
 // MESSAGE CRUD ········· END
 
 // PROJECT SEARCH ········· START
@@ -586,3 +590,15 @@ pub struct UserAccount {
     pub email: String
 }
 // USER ACCOUNT ········· END
+
+// WEBSOCKET STRUCTS ········· START
+#[derive(Serialize, Deserialize, Debug)]
+pub struct WSMessage {
+    pub iduser: String,
+    pub idmessage: Option<String>,
+    pub action_type: String,
+    pub action: String,
+    pub data_create: Option<MessageInput>,
+    pub data_update: Option<MessageUpdate>
+}
+// WEBSOCKET STRUCTS ········· END
