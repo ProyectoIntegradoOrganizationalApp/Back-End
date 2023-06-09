@@ -138,7 +138,7 @@ pub fn user_notifications(token: Result<TokenValidation, GenericError>) -> Resul
 }
 
 #[get("/friends")]
-pub fn user_friends(token: Result<TokenValidation, GenericError>) -> Result<Json<Vec<UserFriends>>, Json<GenericError>> {
+pub fn user_friends(token: Result<TokenValidation, GenericError>) -> Result<Json<Friends>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
             match get_user_friends(&token_data.token_iduser) {

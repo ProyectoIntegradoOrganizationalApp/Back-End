@@ -591,6 +591,13 @@ pub struct UserAccount {
 }
 // USER ACCOUNT ········· END
 
+// FRIENDS ········· START
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Friends {
+    pub friends: Vec<UserFriends>
+}
+// FRIENDS ········· END
+
 // WEBSOCKET STRUCTS ········· START
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WSMessage {
