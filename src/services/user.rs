@@ -269,7 +269,7 @@ pub fn search_users(name_str: &String, user_id: &String) -> Result<Users, Generi
         Ok(users) => {
             let mut users_search:Vec<UserSearch> = Vec::new();
             for user in &users {
-                if user.id != user_id.to_owned() {
+                if user.id != user_id.to_owned() && !is_friend(&user.id, &user_id, connection) {
                     let new_user_search = UserSearch {
                         id: user.id.clone(),
                         name: user.name.clone(),
