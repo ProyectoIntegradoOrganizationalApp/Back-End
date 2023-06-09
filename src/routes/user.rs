@@ -153,7 +153,7 @@ pub fn user_friends(token: Result<TokenValidation, GenericError>) -> Result<Json
 }
 
 #[get("/users/<name>")]
-pub fn search_users(name: String, token: Result<TokenValidation, GenericError>) -> Result<Json<Vec<UserSearch>>, Json<GenericError>> {
+pub fn search_users(name: String, token: Result<TokenValidation, GenericError>) -> Result<Json<Users>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
             match services::user::search_users(&name, &token_data.token_iduser) {

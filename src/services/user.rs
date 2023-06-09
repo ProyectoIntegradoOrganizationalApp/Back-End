@@ -255,13 +255,14 @@ pub fn get_user_achievements(user_id: String) -> Result<UserAchievementsResponse
     }
 }
 
-pub fn search_users(name: &String, user_id: &String) -> Result<Vec<UserSearch>, GenericError> {
+pub fn search_users(name_str: &String, user_id: &String) -> Result<Users, GenericError> {
     let connection = &mut establish_connection();
+    let name = name_str.to_lowercase();
     let users_found = sql_query(format!("
         SELECT * 
         FROM users 
-        WHERE name LIKE '%{name}%' 
-        OR lastname LIKE '%{name}%'
+        WHERE LOWER(name) LIKE '%{name}%' 
+        OR LOWER(lastname) LIKE '%{name}%'
         LIMIT 10
     ")).load::<User>(connection);
     match users_found {
@@ -280,7 +281,10 @@ pub fn search_users(name: &String, user_id: &String) -> Result<Vec<UserSearch>, 
                     users_search.push(new_user_search);
                 }
             }
-            Ok(users_search)
+            let users_response = Users {
+                users: users_search
+            };
+            Ok(users_response)
         },
         Err(err) => Err(GenericError { error: true, message: err.to_string() })
     }

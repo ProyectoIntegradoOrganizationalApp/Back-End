@@ -428,12 +428,13 @@ pub fn get_user_projects(user_id: &String, request_id: &String) -> Result<UserPr
     }
 }
 
-pub fn search_projects(name: &String, user_id: &String) -> Result<Vec<Project>, GenericError> {
+pub fn search_projects(name_str: &String, user_id: &String) -> Result<Vec<Project>, GenericError> {
     let connection = &mut establish_connection();
+    let name = name_str.to_lowercase();
     let projects_found = sql_query(format!("
         SELECT * 
         FROM projects 
-        WHERE name LIKE '%{name}%'
+        WHERE LOWER(name) LIKE '%{name}%'
         LIMIT 10
     ")).load::<Project>(connection);
 
