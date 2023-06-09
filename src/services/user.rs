@@ -255,7 +255,7 @@ pub fn get_user_achievements(user_id: String) -> Result<UserAchievementsResponse
     }
 }
 
-pub fn search_users(name: &String) -> Result<Vec<UserSearch>, GenericError> {
+pub fn search_users(name: &String, user_id: &String) -> Result<Vec<UserSearch>, GenericError> {
     let connection = &mut establish_connection();
     let users_found = sql_query(format!("
         SELECT * 
@@ -268,15 +268,17 @@ pub fn search_users(name: &String) -> Result<Vec<UserSearch>, GenericError> {
         Ok(users) => {
             let mut users_search:Vec<UserSearch> = Vec::new();
             for user in &users {
-                let new_user_search = UserSearch {
-                    id: user.id.clone(),
-                    name: user.name.clone(),
-                    lastname: user.lastname.clone(),
-                    email: user.email.clone(),
-                    level: user.level,
-                    photo: user.photo.clone()
-                };
-                users_search.push(new_user_search);
+                if user.id != user_id.to_owned() {
+                    let new_user_search = UserSearch {
+                        id: user.id.clone(),
+                        name: user.name.clone(),
+                        lastname: user.lastname.clone(),
+                        email: user.email.clone(),
+                        level: user.level,
+                        photo: user.photo.clone()
+                    };
+                    users_search.push(new_user_search);
+                }
             }
             Ok(users_search)
         },
