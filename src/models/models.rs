@@ -630,6 +630,13 @@ pub struct AppResponse {
 }
 // APP RESPONSE ········· END
 
+// TOTAL PROJECT TASKS ········· START
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TotalProjectTasks {
+    pub tasks: i16
+}
+// TOTAL PROJECT TASKS ········· END
+
 // WEBSOCKET STRUCTS ········· START
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WSMessage {

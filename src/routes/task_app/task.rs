@@ -41,3 +41,16 @@ pub fn delete_task(id_app: String, id: String, token: Result<TokenValidation, Ge
         Err(err) => Err(Json(err))
     }
 }
+
+#[get("/tasks/<project_id>")]
+pub fn total_project_tasks(project_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<TotalProjectTasks>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::task_app::task::total_project_tasks(&project_id, &token_data.token_iduser) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => Err(Json(err))
+    }
+}
