@@ -138,7 +138,7 @@ pub fn user_notifications(token: Result<TokenValidation, GenericError>) -> Resul
 }
 
 #[get("/friends")]
-pub fn user_friends(token: Result<TokenValidation, GenericError>) -> Result<Json<Vec<UserFriends>>, Json<GenericError>> {
+pub fn user_friends(token: Result<TokenValidation, GenericError>) -> Result<Json<Friends>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
             match get_user_friends(&token_data.token_iduser) {
@@ -153,10 +153,10 @@ pub fn user_friends(token: Result<TokenValidation, GenericError>) -> Result<Json
 }
 
 #[get("/users/<name>")]
-pub fn search_users(name: String, token: Result<TokenValidation, GenericError>) -> Result<Json<Vec<UserSearch>>, Json<GenericError>> {
+pub fn search_users(name: String, token: Result<TokenValidation, GenericError>) -> Result<Json<Users>, Json<GenericError>> {
     match token {
-        Ok(_token_data) => {
-            match services::user::search_users(&name) {
+        Ok(token_data) => {
+            match services::user::search_users(&name, &token_data.token_iduser) {
                 Ok(result) => Ok(Json(result)),
                 Err(err) => Err(Json(err))
             }
@@ -181,3 +181,18 @@ pub fn account(token: Result<TokenValidation, GenericError>) -> Result<Json<User
         }
     }
 }
+
+// #[get("/most_valued/<project_id>")]
+// pub fn most_valued_in_project(project_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+//     match token {
+//         Ok(_token_data) => {
+//             match services::user::most_valued_in_project(&project_id) {
+//                 Ok(result) => Ok(Json(result)),
+//                 Err(err) => Err(Json(err))
+//             }
+//         },
+//         Err(err) => {
+//             Err(Json(err))
+//         }
+//     }
+// }

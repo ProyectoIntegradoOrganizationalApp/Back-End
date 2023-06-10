@@ -13,3 +13,8 @@ services:
     restart: always
     ports:
       - "6379:6379"
+
+  express:
+    build: ./express
+    ports: 
+      - "3001:3001"

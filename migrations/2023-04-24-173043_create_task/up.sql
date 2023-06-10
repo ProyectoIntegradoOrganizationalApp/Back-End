@@ -1,8 +1,9 @@
 -- Your SQL goes here
 CREATE TABLE task (
     id VARCHAR NOT NULL,
-    idUser VARCHAR NOT NULL,
     idColumn VARCHAR NOT NULL,
+    idUser VARCHAR NOT NULL,
+    idProject VARCHAR NOT NULL,
     title VARCHAR NOT NULL,
     description VARCHAR,
     state SMALLINT NOT NULL DEFAULT 0,
@@ -16,5 +17,9 @@ CREATE TABLE task (
     CONSTRAINT fk_user
         FOREIGN KEY(idUser)
             REFERENCES users(id)
+            ON DELETE CASCADE,
+    CONSTRAINT fk_project
+        FOREIGN KEY(idProject)
+            REFERENCES projects(idProject)
             ON DELETE CASCADE
 );

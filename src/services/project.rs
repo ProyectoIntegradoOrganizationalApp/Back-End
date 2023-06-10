@@ -2,6 +2,7 @@ extern crate redis;
 
 use crate::models::models::*;
 use crate::schema::*;
+use crate::utilities::app::create_default_apps;
 use diesel::sql_query;
 use diesel::prelude::*;
 use diesel::result::Error;
@@ -9,10 +10,11 @@ use rust_api_rest::establish_connection;
 use crate::utilities::achievements::*;
 use crate::utilities::project::*;
 use crate::utilities::*;
+use crate::utilities::app::*;
 
 use chrono::Utc;
 
-pub fn create_project(project_info: &ProjectInputCreate, token_iduser: String) -> Result<Project, GenericError> {
+pub fn create_project(project_info: &ProjectInputCreate, token_iduser: String) -> Result<GenericError, GenericError> {
     let connection = &mut establish_connection();
     let project_id = uuid::Uuid::new_v4().to_string();
     let now: String = (Utc::now()).to_string();
@@ -44,7 +46,17 @@ pub fn create_project(project_info: &ProjectInputCreate, token_iduser: String) -
                 Ok(_user_project) => {
                     let achievement_updated = check_update_user_achievement(&project.iduser, "2");
                     match achievement_updated {
-                        Ok(_) => Ok(project),
+                        Ok(_) => {
+                            match create_default_apps(&project_id, &token_iduser, &default_kanban(), connection) {
+                                Ok(_) => {
+                                    match create_default_apps(&project_id, &token_iduser, &default_timeline(), connection) {
+                                        Ok(_) => Ok(GenericError { error: false, message: "Project created successfully".to_string() }),
+                                        Err(err) => Err(err) 
+                                    }
+                                },
+                                Err(err) => Err(err)
+                            }
+                        },
                         Err(err) => Err(err)
                     }
                 },
@@ -428,12 +440,13 @@ pub fn get_user_projects(user_id: &String, request_id: &String) -> Result<UserPr
     }
 }
 
-pub fn search_projects(name: &String, user_id: &String) -> Result<Vec<Project>, GenericError> {
+pub fn search_projects(name_str: &String, user_id: &String) -> Result<Vec<Project>, GenericError> {
     let connection = &mut establish_connection();
+    let name = name_str.to_lowercase();
     let projects_found = sql_query(format!("
         SELECT * 
         FROM projects 
-        WHERE name LIKE '%{name}%'
+        WHERE LOWER(name) LIKE '%{name}%'
         LIMIT 10
     ")).load::<Project>(connection);
 

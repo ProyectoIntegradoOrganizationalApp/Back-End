@@ -2,6 +2,7 @@ extern crate redis;
 
 use crate::models::models::*;
 use crate::schema::*;
+use diesel::dsl::count;
 use diesel::prelude::*;
 use diesel::result::Error;
 use rust_api_rest::establish_connection;
@@ -21,6 +22,7 @@ pub fn create_task(task_info: &TaskInputCreate, id_app: &str, user_id: &str) -> 
                     id: task_id.clone(),
                     idcolumn: task_info.idcolumn.clone(),
                     iduser: user_id.to_owned().clone(),
+                    idproject: project_id.clone(),
                     title: task_info.title.clone(),
                     description: task_info.description.clone(),
                     state: task_info.state,
@@ -101,5 +103,21 @@ pub fn delete_task(task_id: &String, id_app: &str, user_id: &str) -> Result<Gene
             }
         },
         Err(err) => Err(err)
+    }
+}
+
+pub fn total_project_tasks(project_id: &String, user_id: &str) -> Result<TotalProjectTasks, GenericError> {
+    let connection = &mut establish_connection();
+    if user_utils::is_member(&*project_id, &user_id, connection) {
+        let number_tasks_found = task::table
+            .select(count(task::id))
+            .filter(task::idproject.eq(&project_id))
+            .get_result::<i64>(connection);
+        match number_tasks_found {
+            Ok(tasks) => Ok(TotalProjectTasks { tasks: tasks as i16}),
+            Err(_) => Err(GenericError { error: true, message: "Something went wrong".to_string() })
+        }
+    } else {
+        Err(GenericError { error: true, message: "You are not a member of the project".to_string() })
     }
 }

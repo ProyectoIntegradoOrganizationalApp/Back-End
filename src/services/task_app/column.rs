@@ -21,6 +21,7 @@ pub fn create_column(column_info: &ColumnInputCreate, id_app: &str, user_id: &st
                     id: column_id.clone(),
                     idboard: column_info.idboard.clone(),
                     iduser: user_id.to_owned().clone(),
+                    idproject: project_id.clone(),
                     title: column_info.title.clone(),
                     created_at: now.clone(),
                     updated_at: now.clone()

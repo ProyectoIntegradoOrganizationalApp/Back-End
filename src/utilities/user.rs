@@ -82,3 +82,17 @@ pub fn is_friend(user_id: &String, friend_id: &String, connection: &mut PgConnec
         Err(_) => false
     }
 }
+
+pub fn level_up(user_id: &String, connection: &mut PgConnection) -> Result<GenericError, GenericError> {
+    match get_user(user_id, connection) {
+        Ok(mut user) => {
+            user.level += 1;
+            let user_updated = user.save_changes::<User>(connection);
+            match user_updated {
+                Ok(_) => Ok(GenericError { error: false, message: "Level up!".to_string() }),
+                Err(_) => Err(GenericError { error: true, message: "Error while leveling up".to_string() })
+            }
+        },
+        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+    }
+}

@@ -41,3 +41,16 @@ pub fn delete_app(project_id: String, app_id: String, token: Result<TokenValidat
         Err(err) => Err(Json(err))
     }
 }
+
+#[get("/apps/<project_id>")]
+pub fn get_project_apps(project_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<Vec<AppResponse>>, Json<GenericError>> {
+    match token {
+        Ok(_token_data) => {
+            match services::app::get_project_apps(&project_id) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => Err(Json(err))
+    }
+}

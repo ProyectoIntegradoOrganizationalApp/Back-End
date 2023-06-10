@@ -31,7 +31,7 @@ pub fn get_user_notifications(user_id: &String) -> Result<Notification, String> 
     }
 }
 
-pub fn get_user_friends(user_id: &String) -> Result<Vec<UserFriends>, String> {
+pub fn get_user_friends(user_id: &String) -> Result<Friends, String> {
     let connection = &mut establish_connection();
     let friends_found = user_friend::table
         .inner_join(users::table.on(user_friend::iduser.eq(users::id)))
@@ -68,7 +68,10 @@ pub fn get_user_friends(user_id: &String) -> Result<Vec<UserFriends>, String> {
                             friends_info.push(friend_info);
                         }
                     }
-                    Ok(friends_info)
+                    let friends_response = Friends {
+                        friends: friends_info
+                    };
+                    Ok(friends_response)
                 },
                 Err(err) => Err(err.to_string())
             }

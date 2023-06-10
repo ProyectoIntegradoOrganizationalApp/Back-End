@@ -255,30 +255,36 @@ pub fn get_user_achievements(user_id: String) -> Result<UserAchievementsResponse
     }
 }
 
-pub fn search_users(name: &String) -> Result<Vec<UserSearch>, GenericError> {
+pub fn search_users(name_str: &String, user_id: &String) -> Result<Users, GenericError> {
     let connection = &mut establish_connection();
+    let name = name_str.to_lowercase();
     let users_found = sql_query(format!("
         SELECT * 
         FROM users 
-        WHERE name LIKE '%{name}%' 
-        OR lastname LIKE '%{name}%'
+        WHERE LOWER(name) LIKE '%{name}%' 
+        OR LOWER(lastname) LIKE '%{name}%'
         LIMIT 10
     ")).load::<User>(connection);
     match users_found {
         Ok(users) => {
             let mut users_search:Vec<UserSearch> = Vec::new();
             for user in &users {
-                let new_user_search = UserSearch {
-                    id: user.id.clone(),
-                    name: user.name.clone(),
-                    lastname: user.lastname.clone(),
-                    email: user.email.clone(),
-                    level: user.level,
-                    photo: user.photo.clone()
-                };
-                users_search.push(new_user_search);
+                if user.id != user_id.to_owned() && !is_friend(&user.id, &user_id, connection) {
+                    let new_user_search = UserSearch {
+                        id: user.id.clone(),
+                        name: user.name.clone(),
+                        lastname: user.lastname.clone(),
+                        email: user.email.clone(),
+                        level: user.level,
+                        photo: user.photo.clone()
+                    };
+                    users_search.push(new_user_search);
+                }
             }
-            Ok(users_search)
+            let users_response = Users {
+                users: users_search
+            };
+            Ok(users_response)
         },
         Err(err) => Err(GenericError { error: true, message: err.to_string() })
     }
@@ -293,10 +299,28 @@ pub fn account(user_id: &String) -> Result<UserAccount, GenericError> {
                 name: user.name.clone(),
                 lastname: user.lastname.clone(),
                 phone: user.phone.clone(),
-                email: user.email.clone()
+                email: user.email.clone(),
+                photo: user.photo.clone()
             };
             Ok(user_account)
         },
         Err(err) => Err(GenericError { error: true, message: err.to_string() })
     }
 }
+
+// pub fn most_valued_in_project(project_id: &String) -> Result<GenericError, GenericError> {
+//     let connection = &mut establish_connection();
+//     let most_valued_found = sql_query(format!("
+//         SELECT iduser, COUNT(id) AS total
+//         FROM task
+//         GROUP BY iduser
+//         HAVING idproject = '{project_id}' AND state = 1
+//         ORDER BY iduser DESC
+//     ")).load::<String>(connection);
+//     match most_valued_found {
+//         Ok(task) => {
+//             Ok(GenericError { error: true, message: "idk".to_string() })
+//         },
+//         Err(err) => Err(GenericError { error: true, message: err.to_string() })
+//     }
+// }

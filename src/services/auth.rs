@@ -173,16 +173,6 @@ pub fn update_user(user_info: &UserUpdate, token_iduser: &String) -> Result<Gene
             if user_to_update.email != user_info.email {
                 user_to_update.email = user_info.email.clone();
             }
-
-            match verify(&user_info.password, &user_to_update.password) {
-                Ok(same_password) => {
-                    if !same_password {
-                        let hashed_password = hash(&user_info.password, DEFAULT_COST).unwrap();
-                        user_to_update.password = hashed_password;
-                    }
-                },
-                Err(_err) => ()
-            };
             
             if user_to_update.name != user_info.name {
                 user_to_update.name = user_info.name.clone();

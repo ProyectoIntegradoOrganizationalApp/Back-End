@@ -1,6 +1,7 @@
 extern crate redis;
 
 use crate::models::models::*;
+use crate::utilities::app::get_task_app;
 use crate::utilities::user as user_utils;
 use crate::utilities::app as app_utils;
 use crate::utilities::project as project_utils;
@@ -90,5 +91,35 @@ pub fn delete_app(app_id: &String, project_id: &String, user_id: &String) -> Res
             }
         },
         Err(err) => Err(GenericError{ error: true, message: err })
+    }
+}
+
+pub fn get_project_apps(project_id: &String) -> Result<Vec<AppResponse>, GenericError> {
+    let connection = &mut establish_connection();
+    let apps_found = app::table
+        .filter(app::idproject.eq(&project_id))
+        .load::<App>(connection);
+    match apps_found {
+        Ok(apps) => {
+            let mut apps_response:Vec<AppResponse> = Vec::new();
+            for app in &apps {
+                match get_task_app(&app.id, connection) {
+                    Ok(task_app) => {
+                        let app_info = AppResponse {
+                            idapp: app.id.clone(),
+                            idproject: app.idproject.clone(),
+                            name: app.name.clone(),
+                            description: app.description.clone(),
+                            tasktype: Some(task_app.app_type.clone()),
+                            docstype: None
+                        };
+                        apps_response.push(app_info);
+                    },
+                    Err(_) => ()
+                }
+            }
+            Ok(apps_response)
+        },
+        Err(_) => Err(GenericError { error: true, message: "Any app found".to_string() })
     }
 }

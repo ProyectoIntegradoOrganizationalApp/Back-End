@@ -38,6 +38,7 @@ diesel::table! {
         id -> Varchar,
         idapp -> Varchar,
         iduser -> Varchar,
+        idproject -> Varchar,
         title -> Varchar,
         photo -> Varchar,
         created_at -> Varchar,
@@ -50,6 +51,7 @@ diesel::table! {
         id -> Varchar,
         idboard -> Varchar,
         iduser -> Varchar,
+        idproject -> Varchar,
         title -> Varchar,
         created_at -> Varchar,
         updated_at -> Varchar,
@@ -163,8 +165,9 @@ diesel::table! {
 diesel::table! {
     task (id) {
         id -> Varchar,
-        iduser -> Varchar,
         idcolumn -> Varchar,
+        iduser -> Varchar,
+        idproject -> Varchar,
         title -> Varchar,
         description -> Nullable<Varchar>,
         state -> Int2,
