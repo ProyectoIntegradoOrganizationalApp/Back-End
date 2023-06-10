@@ -618,6 +618,18 @@ pub struct UserMostValued {
 }
 // MOST VALUED USER IN PROJECT ········· END
 
+// APP RESPONSE ········· START
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AppResponse {
+    pub idapp: String,
+    pub idproject: String,
+    pub name: String,
+    pub description: String,
+    pub tasktype: Option<String>,
+    pub docstype: Option<String>
+}
+// APP RESPONSE ········· END
+
 // WEBSOCKET STRUCTS ········· START
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WSMessage {

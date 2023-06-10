@@ -216,3 +216,13 @@ pub fn default_timeline() -> AppInputCreate {
         docs_app: None
     }
 }
+
+pub fn get_task_app(app_id: &String, connection: &mut PgConnection) -> Result<TaskApp, GenericError> {
+    let task_app_found = task_app::table
+        .filter(task_app::idapp.eq(&app_id))
+        .first::<TaskApp>(connection);
+    match task_app_found {
+        Ok(task_app) => Ok(task_app),
+        Err(_) => Err(GenericError { error: true, message: "Task app not found".to_string() })
+    }
+}
