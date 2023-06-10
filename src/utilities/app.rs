@@ -4,7 +4,9 @@ use crate::models::models::*;
 use crate::schema::*;
 use diesel::prelude::*;
 use chrono::Utc;
-use crate::utilities::achievements as achievement_utils;
+use crate::utilities::user as user_utils;
+use crate::utilities::app as app_utils;
+use crate::utilities::achievements;
 
 fn create_app(project_id: &str, user_id: &str, app_info: &AppInputCreate, connection: &mut PgConnection) -> Result<App, GenericError> {
     let app_id = uuid::Uuid::new_v4().to_string();
@@ -65,7 +67,7 @@ pub fn create_app_by_type(project_id: &str, user_id: &str, app_info: &AppInputCr
                         .get_result::<TaskApp>(connection);
                     match created_app_type {
                         Ok(_) => { 
-                            let achievement_updated = achievement_utils::check_update_user_achievement(user_id, "3");
+                            let achievement_updated = achievements::check_update_user_achievement(user_id, "3");
                             match achievement_updated {
                                 Ok(_) => Ok(app),
                                 Err(err) => return Err(err)
@@ -167,5 +169,50 @@ pub fn check_app_by_type(app_id: &str, app_type: &str, connection: &mut PgConnec
             }
         },
         Err(_) => Err(GenericError { error: true, message: "Couldn't find an app with that id".to_owned() })
+    }
+}
+
+pub fn create_default_apps(project_id: &str, user_id: &str, app_type: &AppInputCreate, connection: &mut PgConnection) -> Result<App, GenericError> {
+    match user_utils::is_admin(project_id, &user_id, connection) {
+        true => {
+            match app_utils::create_app_by_type(project_id, user_id, &app_type, connection) {
+                Ok(app) => {
+                    let achievement_updated = achievements::check_update_user_achievement(user_id, "7");
+                    match achievement_updated {
+                        Ok(_) => {},
+                        Err(err) => return Err(err)
+                    }
+                    return Ok(app)
+                },
+                Err(err) => return Err(err)
+            }
+        },
+        false => Err(GenericError { error: true, message: "You have to be a member of this project and have the admin role".to_string() })
+    }
+}
+
+pub fn default_kanban() -> AppInputCreate {
+    AppInputCreate {
+        name: "kanban default".to_string(),
+        description: "kanban description default".to_string(),
+        photo: "https://www.tooltyp.com/wp-content/uploads/2014/10/1900x920-8-beneficios-de-usar-imagenes-en-nuestros-sitios-web.jpg".to_string(),
+        apptype: "task_app".to_string(),
+        task_app: Some(TaskAppInputCreate {
+            app_type: "kanban".to_string()
+        }),
+        docs_app: None
+    }
+}
+
+pub fn default_timeline() -> AppInputCreate {
+    AppInputCreate {
+        name: "timeline default".to_string(),
+        description: "timeline description default".to_string(),
+        photo: "https://www.tooltyp.com/wp-content/uploads/2014/10/1900x920-8-beneficios-de-usar-imagenes-en-nuestros-sitios-web.jpg".to_string(),
+        apptype: "task_app".to_string(),
+        task_app: Some(TaskAppInputCreate {
+            app_type: "timeline".to_string()
+        }),
+        docs_app: None
     }
 }
