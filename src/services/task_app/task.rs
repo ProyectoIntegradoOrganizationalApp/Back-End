@@ -21,6 +21,7 @@ pub fn create_task(task_info: &TaskInputCreate, id_app: &str, user_id: &str) -> 
                     id: task_id.clone(),
                     idcolumn: task_info.idcolumn.clone(),
                     iduser: user_id.to_owned().clone(),
+                    idproject: project_id.clone(),
                     title: task_info.title.clone(),
                     description: task_info.description.clone(),
                     state: task_info.state,

@@ -123,6 +123,7 @@ pub struct Board {
     pub id: String,
     pub idapp: String,
     pub iduser: String,
+    pub idproject: String,
     pub title: String,
     pub photo: String,
     pub created_at: String,
@@ -138,6 +139,7 @@ pub struct Columna {
     pub id: String,
     pub idboard: String,
     pub iduser: String,
+    pub idproject: String,
     pub title: String,
     pub created_at: String,
     pub updated_at: String
@@ -150,7 +152,7 @@ pub struct ColumnTasks {
     pub tasks: Vec<Task>
 }
 
-#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset)]
+#[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq, AsChangeset, QueryableByName)]
 #[diesel(belongs_to(App, foreign_key = idcolumn))]
 #[diesel(primary_key(id))]
 #[diesel(table_name = task)]
@@ -158,6 +160,7 @@ pub struct Task {
     pub id: String,
     pub idcolumn: String,
     pub iduser: String,
+    pub idproject: String,
     pub title: String,
     pub description: Option<String>,
     pub state: i16,
@@ -287,8 +290,6 @@ pub struct UserLoginResponse {
 pub struct UserUpdate {
     #[validate(email(message = "Must be a valid email"))]
     pub email: String,
-    #[validate(length(min = 8, max = 24, message = "Password length must be between 8 and 24 characters"))]
-    pub password: String,
     #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
     pub name: String,
     #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
@@ -605,6 +606,17 @@ pub struct Users {
     pub users: Vec<UserSearch>
 }
 // USERS ········· END
+
+// MOST VALUED USER IN PROJECT ········· START
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserMostValued {
+    pub id: String,
+    pub name: String,
+    pub lastname: String,
+    pub level: i16,
+    pub total_tasks: i16
+}
+// MOST VALUED USER IN PROJECT ········· END
 
 // WEBSOCKET STRUCTS ········· START
 #[derive(Serialize, Deserialize, Debug)]

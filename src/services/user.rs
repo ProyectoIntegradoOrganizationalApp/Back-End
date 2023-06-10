@@ -307,3 +307,20 @@ pub fn account(user_id: &String) -> Result<UserAccount, GenericError> {
         Err(err) => Err(GenericError { error: true, message: err.to_string() })
     }
 }
+
+// pub fn most_valued_in_project(project_id: &String) -> Result<GenericError, GenericError> {
+//     let connection = &mut establish_connection();
+//     let most_valued_found = sql_query(format!("
+//         SELECT iduser, COUNT(id) AS total
+//         FROM task
+//         GROUP BY iduser
+//         HAVING idproject = '{project_id}' AND state = 1
+//         ORDER BY iduser DESC
+//     ")).load::<String>(connection);
+//     match most_valued_found {
+//         Ok(task) => {
+//             Ok(GenericError { error: true, message: "idk".to_string() })
+//         },
+//         Err(err) => Err(GenericError { error: true, message: err.to_string() })
+//     }
+// }

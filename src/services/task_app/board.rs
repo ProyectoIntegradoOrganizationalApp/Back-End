@@ -20,6 +20,7 @@ pub fn create_board(id_app: &str, board_info: &BoardInputCreate, user_id: &str) 
                     id: board_id.clone(),
                     idapp: id_app.to_owned(),
                     iduser: user_id.to_owned().clone(),
+                    idproject: project_id.clone(),
                     title: board_info.title.clone(),
                     photo: board_info.photo.clone(),
                     created_at: now.clone(),

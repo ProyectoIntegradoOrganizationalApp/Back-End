@@ -181,3 +181,18 @@ pub fn account(token: Result<TokenValidation, GenericError>) -> Result<Json<User
         }
     }
 }
+
+// #[get("/most_valued/<project_id>")]
+// pub fn most_valued_in_project(project_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+//     match token {
+//         Ok(_token_data) => {
+//             match services::user::most_valued_in_project(&project_id) {
+//                 Ok(result) => Ok(Json(result)),
+//                 Err(err) => Err(Json(err))
+//             }
+//         },
+//         Err(err) => {
+//             Err(Json(err))
+//         }
+//     }
+// }
