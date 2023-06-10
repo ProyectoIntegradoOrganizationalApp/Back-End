@@ -226,7 +226,8 @@ pub struct Message {
 #[diesel(table_name = groups)]
 pub struct Group {
     pub id: String,
-    pub title: String,
+    pub iduser: String,
+    pub title: String
 }
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Identifiable, PartialEq)]
 #[diesel(belongs_to(User, foreign_key = iduser))]
@@ -596,9 +597,15 @@ pub struct UserAccount {
 pub struct WSMessage {
     pub iduser: String,
     pub idmessage: Option<String>,
-    pub action_type: String,
     pub action: String,
     pub data_create: Option<MessageInput>,
     pub data_update: Option<MessageUpdate>
 }
 // WEBSOCKET STRUCTS ········· END
+
+// GROUP CRUD ········· START
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GroupInputCreate {
+    pub title: String
+}
+// GROUP CRUD ········· END

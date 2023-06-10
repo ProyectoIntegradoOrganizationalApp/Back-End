@@ -67,6 +67,14 @@ pub fn delete_message(message_id: &String, user_id: &String, connection: &mut Pg
     }
 }
 
+pub fn get_group(group_id: &String, connection: &mut PgConnection) -> Result<Group, GenericError> {
+    let group_found = groups::table.filter(groups::id.eq(group_id)).first::<Group>(connection);
+    match group_found {
+        Ok(group) => Ok(group),
+        Err(_) => Err(GenericError { error: true, message: "Couldn't find a group with that id".to_owned() })
+    }
+}
+
 pub fn group_exists(group_id: &String, connection: &mut PgConnection) -> bool {
     let group_found = groups::table.filter(groups::id.eq(group_id)).first::<Group>(connection);
     match group_found {

@@ -88,6 +88,7 @@ diesel::table! {
 diesel::table! {
     groups (id) {
         id -> Varchar,
+        iduser -> Varchar,
         title -> Varchar,
     }
 }

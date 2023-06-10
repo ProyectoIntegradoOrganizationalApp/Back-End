@@ -1,8 +1,9 @@
 
 
-use tokio::net::TcpListener;
+use async_std::net::TcpListener;
+use async_std::task;
 #[allow(unused)]
-use rocket::{serde::{json::{json, Value}}, tokio::{signal::ctrl_c, self}};
+use rocket::{serde::{json::{json, Value}}};
 use routes::auth::{register, login, send_mail, change_password, logout, test_token, update_user, delete_user};
 use routes::user::{achievements, user_achievements, profile, send_friend_request, accept_friend_request, deny_friend_request, delete_user_friend,
                     user_notifications, user_friends, search_users, account};
@@ -12,6 +13,7 @@ use routes::task_app::board::{create_board, update_board, delete_board, get_boar
 use routes::task_app::column::{create_column, update_column, delete_column, get_columns_tasks};
 use routes::task_app::task::{create_task, update_task, delete_task};
 use routes::app::{create_app, update_app, delete_app};
+use routes::chat::{create_group, update_group, delete_group};
 use rocket_sync_db_pools::database;
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Header;
@@ -81,7 +83,7 @@ fn server_error() -> Value {
 async fn main() {
     dotenv().ok();
     // Iniciamos servidor ws
-    let listener = TcpListener::bind("127.0.0.1:9001").await.expect("Failed to bind");
+    let listener = TcpListener::bind("127.0.0.1:3000").await.expect("Failed to bind");
 
     let rocket = rocket::build()
         .attach(Cors)
@@ -132,16 +134,19 @@ async fn main() {
             deny_friend_request,
             delete_user_friend,
             search_users,
-            search_projects
+            search_projects,
+            create_group,
+            update_group,
+            delete_group,
         ])
         .register("/", catchers![not_found, server_error, rocket_validation::validation_catcher]);
 
 
         // Thread listener de servidor ws
-        tokio::spawn(async move {
+        task::spawn(async move {
             loop {
                 let socket = listener.accept().await.unwrap();
-                tokio::spawn(websocket_handler(socket.0));
+                task::spawn(websocket_handler(socket.0));
             }
         });
     
