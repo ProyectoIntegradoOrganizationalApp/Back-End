@@ -220,6 +220,7 @@ diesel::table! {
         created_at -> Varchar,
         updated_at -> Varchar,
         level -> Int2,
+        exp -> Int2,
         photo -> Varchar,
     }
 }
