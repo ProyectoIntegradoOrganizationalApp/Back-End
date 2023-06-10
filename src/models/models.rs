@@ -587,7 +587,8 @@ pub struct UserAccount {
     pub name: String,
     pub lastname: String,
     pub phone: String,
-    pub email: String
+    pub email: String,
+    pub photo: String
 }
 // USER ACCOUNT ········· END
 

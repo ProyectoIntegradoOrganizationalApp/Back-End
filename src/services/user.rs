@@ -299,7 +299,8 @@ pub fn account(user_id: &String) -> Result<UserAccount, GenericError> {
                 name: user.name.clone(),
                 lastname: user.lastname.clone(),
                 phone: user.phone.clone(),
-                email: user.email.clone()
+                email: user.email.clone(),
+                photo: user.photo.clone()
             };
             Ok(user_account)
         },
