@@ -34,7 +34,6 @@ pub fn register(user_info: &UserInput) -> Result<User, String> {
         created_at: now.clone(),
         updated_at: now.clone(),
         level: 1,
-        exp: 0,
         photo: String::from(&user_info.photo)
     };
 

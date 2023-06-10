@@ -91,7 +91,7 @@ pub fn check_update_user_achievement(user_id: &str, achievement_id: &str) -> Res
     
     match achievement_found {
         Ok(result) => {
-            let mut increment_experience = false;
+            let mut check_level_up = false;
             let (achiv, mut user_achiv) = result;
             user_achiv.progress += 1;
 
@@ -108,7 +108,7 @@ pub fn check_update_user_achievement(user_id: &str, achievement_id: &str) -> Res
                 let current_state_value = achiv.states[user_achiv.current_state as usize].unwrap();
                 // Si el progreso en el state actual es mayor que el valor max del state actual
                 if user_achiv.progress >= current_state_value {
-                    increment_experience = true;
+                    check_level_up = true;
                     // Si el state es el último
                     if user_achiv.current_state == achiv.states.len() as i32 - 1 {
                         // Se completa el achievement
@@ -122,10 +122,10 @@ pub fn check_update_user_achievement(user_id: &str, achievement_id: &str) -> Res
             let user_achivement_updated = user_achiv.save_changes::<UserAchievement>(connection);
             match user_achivement_updated {
                 Ok(_) => {
-                    if increment_experience {
-                        let increment_updated = increment_exp(&user_id.to_owned(), user_achiv.current_state, connection);
+                    if check_level_up {
+                        let increment_updated = level_up(&user_id.to_owned(), connection);
                         match increment_updated {
-                            Ok(_) => Ok(GenericError { error: false, message: "The achievement was updated successfully".to_owned() }),
+                            Ok(result) => Ok(result),
                             Err(err) => Err(err)
                         }
                     } else {

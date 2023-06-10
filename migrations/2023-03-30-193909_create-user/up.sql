@@ -10,6 +10,5 @@ CREATE TABLE users (
     created_at VARCHAR NOT NULL,
     updated_at VARCHAR NOT NULL,
     level SMALLINT NOT NULL DEFAULT 1,
-    exp SMALLINT NOT NULL DEFAULT 0, -- Every 5 points on exp level up de user
     photo VARCHAR NOT NULL
 );

@@ -83,38 +83,14 @@ pub fn is_friend(user_id: &String, friend_id: &String, connection: &mut PgConnec
     }
 }
 
-pub fn increment_exp(user_id: &String, mut state: i32, connection: &mut PgConnection) -> Result<GenericError, GenericError> {
+pub fn level_up(user_id: &String, connection: &mut PgConnection) -> Result<GenericError, GenericError> {
     match get_user(user_id, connection) {
         Ok(mut user) => {
-            state = state * 5;
-            user.exp += state as i16;
+            user.level += 1;
             let user_updated = user.save_changes::<User>(connection);
             match user_updated {
-                Ok(_) => {
-                    match check_level(&user_id, connection) {
-                        Ok(result) => Ok(result),
-                        Err(err) => Err(err)
-                    }
-                },
-                Err(_) => Err(GenericError { error: true, message: "Something went wrong".to_string() })
-            }
-        },
-        Err(err) => Err(GenericError { error: true, message: err.to_string() })
-    }
-}
-
-pub fn check_level(user_id: &String, connection: &mut PgConnection) -> Result<GenericError, GenericError> {
-    match get_user(user_id, connection) {
-        Ok(mut user) => {
-            if user.exp % 5 == 0 {
-                user.level += 1;
-                let user_updated = user.save_changes::<User>(connection);
-                match user_updated {
-                    Ok(_) => Ok(GenericError { error: false, message: "User updated successfully".to_string() }),
-                    Err(_) => Err(GenericError { error: true, message: "Error while leveling up".to_string() })
-                }
-            } else {
-                Ok(GenericError { error: false, message: "".to_string() })
+                Ok(_) => Ok(GenericError { error: false, message: "Level up!".to_string() }),
+                Err(_) => Err(GenericError { error: true, message: "Error while leveling up".to_string() })
             }
         },
         Err(err) => Err(GenericError { error: true, message: err.to_string() })

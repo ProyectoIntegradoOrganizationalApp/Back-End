@@ -21,7 +21,6 @@ pub struct User {
     pub created_at: String,
     pub updated_at: String,
     pub level: i16,
-    pub exp: i16,
     pub photo: String
 }
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Identifiable, PartialEq, AsChangeset)]
