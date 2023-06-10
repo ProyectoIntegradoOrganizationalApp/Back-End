@@ -164,6 +164,7 @@ pub struct Task {
     pub title: String,
     pub description: Option<String>,
     pub state: i16,
+    pub completed_at: Option<NaiveDateTime>,
     pub created_at: String,
     pub updated_at: String
 }
@@ -377,6 +378,7 @@ pub struct UserProfile {
     pub user: UserInfoResponse,
     pub achievements: Vec<UserAchievementsInfo>,
     pub projects: Vec<UserProjectsDetail>,
+    pub completed_task: i64,
     pub owner : bool
 }
 #[derive(Serialize, Deserialize, Debug)]

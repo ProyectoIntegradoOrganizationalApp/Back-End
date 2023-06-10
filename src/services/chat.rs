@@ -9,14 +9,8 @@ use rocket::{serde::json::{to_string as json_to_string}};
 use async_std::{net::TcpStream};
 use serde_json::{Value};
 use async_tungstenite::{tungstenite::protocol::{Message as WSMessage}, accept_hdr_async};
-// use rocket::{futures::{StreamExt, SinkExt, TryStreamExt}};
 
-use futures::prelude::*;
-use futures::{
-    channel::mpsc::{unbounded, UnboundedSender},
-    future, pin_mut,
-};
-use crate::rocket::futures::{StreamExt, TryStreamExt, SinkExt};
+use crate::rocket::futures::{StreamExt, SinkExt};
 
 pub async fn websocket_handler(stream: TcpStream) {
     let ws_validation = accept_hdr_async(stream, ws_request_validation).await;
@@ -25,84 +19,45 @@ pub async fn websocket_handler(stream: TcpStream) {
         Ok(ws) => {
             
             let (mut write, mut read) = ws.split();
-
-            write.send(WSMessage::Text("HOLA WENAS".to_owned()));
-
-            // let broadcast_incoming = read.next().await;
-                
-            // match broadcast_incoming {
-            //     Some(message_result) => {
-            //         match message_result {
-            //             Ok(message) => {
-            //                 println!("message");
-            //             },
-            //             Err(err) => println!("{}", err)
-            //         }
-            //     },
-            //     None => println!("NADADADA")
-            // }
-
-            while let Some( msg ) = read.next().await
-            {
-               let msg = match msg
-               {
-                  Err(e) => // <----------------- Aquí
-                  {
-                     error!( "Error on server stream: {:?}", e.to_string() ); 
-         
-                     // Errors returned directly through the AsyncRead/Write API are fatal, generally an error on the underlying
-                     // transport.
-                     //
-                     continue;
-                  }
-         
-                  Ok(m) => m,
-               };
-         
-         
-               println!("Recibido: {}", msg.to_string());
-         
-               // ... do something useful
-            }
             
-            // while let Some(Ok(msg)) = read.next().await {
-            //     // Procesar los mensajes recibidos
-            //     match msg {
-            //         WSMessage::Text(text) => {
-            //             let is_json: Result<Value, serde_json::Error> = serde_json::from_str(text.as_str());
-            //             match is_json {
-            //                 Ok(value) => {
-            //                     match chat_utils::handle_websocket_message(value) {
-            //                         Ok(response) => {
-            //                             match write.send(WSMessage::Text(json_to_string(&response).unwrap())).await {
-            //                                 Ok(_) => {},
-            //                                 Err(err) => println!("{}", err.to_string())
-            //                             }
-            //                         },
-            //                         Err(err) => {
-            //                             match write.send(WSMessage::Text(json_to_string(&err).unwrap())).await {
-            //                                 Ok(_) => {},
-            //                                 Err(error) => println!("{}", error.to_string())
-            //                             }
-            //                         }
-            //                     }
-            //                 },
-            //                 Err(_) => {
-            //                     let response = GenericError { error: true, message: "Message format error".to_owned() };
-            //                     match write.send(WSMessage::Text(json_to_string(&response).unwrap())).await {
-            //                         Ok(_) => {},
-            //                         Err(err) => println!("{}", err.to_string())
-            //                     }
-            //                 }
-            //             }
-            //         }
-            //         WSMessage::Close(_) => {
-            //             // Manejar cierre de conexión
-            //             break;
-            //         }
-            //         _ => {}
-            //     }
-            // }
+            while let Some(Ok(msg)) = read.next().await {
+                // Procesar los mensajes recibidos
+                match msg {
+                    WSMessage::Text(text) => {
+                        let is_json: Result<Value, serde_json::Error> = serde_json::from_str(text.as_str());
+                        match is_json {
+                            Ok(value) => {
+                                match chat_utils::handle_websocket_message(value) {
+                                    Ok(response) => {
+                                        match write.send(WSMessage::Text(json_to_string(&response).unwrap())).await {
+                                            Ok(_) => {},
+                                            Err(err) => println!("{}", err.to_string())
+                                        }
+                                    },
+                                    Err(err) => {
+                                        match write.send(WSMessage::Text(json_to_string(&err).unwrap())).await {
+                                            Ok(_) => {},
+                                            Err(error) => println!("{}", error.to_string())
+                                        }
+                                    }
+                                }
+                            },
+                            Err(_) => {
+                                let response = GenericError { error: true, message: "Message format error".to_owned() };
+                                match write.send(WSMessage::Text(json_to_string(&response).unwrap())).await {
+                                    Ok(_) => {},
+                                    Err(err) => println!("{}", err.to_string())
+                                }
+                            }
+                        }
+                    }
+                    WSMessage::Close(_) => {
+                        // Manejar cierre de conexión
+                        break;
+                    }
+                    _ => {}
+                }
+            }
         },
         Err(err) => {println!("{}", err.to_string())}
     }

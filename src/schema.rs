@@ -171,6 +171,7 @@ diesel::table! {
         title -> Varchar,
         description -> Nullable<Varchar>,
         state -> Int2,
+        completed_at -> Nullable<Timestamp>,
         created_at -> Varchar,
         updated_at -> Varchar,
     }

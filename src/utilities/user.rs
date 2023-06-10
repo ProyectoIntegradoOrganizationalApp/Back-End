@@ -2,6 +2,7 @@ use crate::models::models::*;
 use diesel::prelude::*;
 use crate::schema::*;
 use diesel::result::Error;
+use diesel::dsl::count;
 
 pub fn get_user(user_id: &String, connection: &mut PgConnection) -> Result<User, String> {
     let user_found = users::table
@@ -93,6 +94,18 @@ pub fn level_up(user_id: &String, connection: &mut PgConnection) -> Result<Gener
                 Err(_) => Err(GenericError { error: true, message: "Error while leveling up".to_string() })
             }
         },
-        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        Err(_) => Err(GenericError { error: true, message: "The user you are searching for doesn't exist".to_owned() })
+    }
+}
+
+pub fn get_task_completed(user_id: &str, connection: &mut PgConnection) -> Result<i64, GenericError> {
+    let number_tasks_found = task::table
+        .select(count(task::id))
+        .filter(task::iduser.eq(user_id))
+        .filter(task::state.eq(1))
+        .get_result::<i64>(connection);
+    match number_tasks_found {
+        Ok(number) => Ok(number),
+        Err(_) => Err(GenericError { error: true, message: "Error trying to get the tasks".to_owned() })
     }
 }

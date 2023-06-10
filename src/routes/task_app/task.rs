@@ -54,3 +54,29 @@ pub fn total_project_tasks(project_id: String, token: Result<TokenValidation, Ge
         Err(err) => Err(Json(err))
     }
 }
+
+#[get("/tasks/completed/<project_id>/<month>")]
+pub fn month_completed_task(month: String, project_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<TotalProjectTasks>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::task_app::task::month_completed_task(month.parse().unwrap(), &project_id, &token_data.token_iduser) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => Err(Json(err))
+    }
+}
+
+#[get("/tasks/user/<project_id>/<user_id>")]
+pub fn total_user_project_tasks(project_id: String, user_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<TotalProjectTasks>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::task_app::task::total_user_project_tasks(&project_id, &user_id, &token_data.token_iduser) {
+                Ok(result) => Ok(Json(result)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => Err(Json(err))
+    }
+}

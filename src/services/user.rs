@@ -26,13 +26,19 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String> {
                 Ok(achievements_info) => {
                     match get_own_projects(&user, connection) {
                         Ok(projects_info) => {
-                            let user_profile = UserProfile {
-                                user: user_info_response,
-                                achievements: achievements_info,
-                                projects: projects_info,
-                                owner: false
-                            };
-                            Ok(user_profile)
+                            match get_task_completed(&user.id, connection) {
+                                Ok(task_completed) => {
+                                    let user_profile = UserProfile {
+                                        user: user_info_response,
+                                        achievements: achievements_info,
+                                        projects: projects_info,
+                                        completed_task: task_completed,
+                                        owner: false
+                                    };
+                                    Ok(user_profile)
+                                },
+                                Err(err) => Err(err.message)
+                            }
                         },
                         Err(err) => Err(err.to_string())
                     }

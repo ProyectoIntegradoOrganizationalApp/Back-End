@@ -41,19 +41,6 @@ impl<'r> FromRequest<'r> for TokenValidation {
 pub fn ws_request_validation(req: &WSRequest<()>, res: Response<()>) -> Result<Response<()>, Response<Option<String>>> {
     let headers = req.headers();
 
-    println!("-------------------------------------------------------");
-
-    let keys = headers.keys();
-
-    for key in keys {
-        println!("{}", key);
-    }
-    
-
-    // let adas = headers.get("Sec-WebSocket-Protocol").unwrap();
-
-    // println!("{}", adas.to_str().unwrap());
-
     // Obtener el token
     if let Some(token_header) = headers.get("Sec-WebSocket-Protocol") {
         let token = "Bearer ".to_owned() + token_header.to_str().unwrap();
