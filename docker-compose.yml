@@ -15,9 +15,6 @@ services:
       - "6379:6379"
 
   express:
-    image: node:latest
-    volumes:
-      - "./express:/app"
-    command: "node /app/index.js"
+    build: ./express
     ports: 
       - "3001:3001"
