@@ -2,8 +2,8 @@ extern crate redis;
 
 use crate::models::models::*;
 use crate::schema::*;
-use diesel::prelude::*;
 use chrono::Utc;
+use diesel::prelude::*;
 use crate::utilities::user as user_utils;
 use crate::utilities::app as app_utils;
 use crate::utilities::achievements;
@@ -172,7 +172,7 @@ pub fn check_app_by_type(app_id: &str, app_type: &str, connection: &mut PgConnec
     }
 }
 
-pub fn create_default_apps(project_id: &str, user_id: &str, app_type: &AppInputCreate, connection: &mut PgConnection) -> Result<App, GenericError> {
+fn create_default_app(project_id: &str, user_id: &str, app_type: &AppInputCreate, connection: &mut PgConnection) -> Result<App, GenericError> {
     match user_utils::is_admin(project_id, &user_id, connection) {
         true => {
             match app_utils::create_app_by_type(project_id, user_id, &app_type, connection) {
@@ -188,6 +188,18 @@ pub fn create_default_apps(project_id: &str, user_id: &str, app_type: &AppInputC
             }
         },
         false => Err(GenericError { error: true, message: "You have to be a member of this project and have the admin role".to_string() })
+    }
+}
+
+pub fn create_default_apps(project_id: &String, id_user: &String, connection: &mut PgConnection) -> Result<(), GenericError> {
+    match app_utils::create_default_app(project_id, id_user, &app_utils::default_kanban(), connection) {
+        Ok(_) => {
+            match app_utils::create_default_app(project_id, id_user, &app_utils::default_timeline(), connection) {
+                Ok(_) => Ok(()),
+                Err(err) => Err(err) 
+            }
+        },
+        Err(err) => Err(err)
     }
 }
 

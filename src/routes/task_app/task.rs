@@ -1,3 +1,4 @@
+use indexmap::IndexMap;
 use rocket::serde::json::{Json};
 use rocket_validation::Validated;
 use crate::models::models::*;
@@ -55,11 +56,11 @@ pub fn total_project_tasks(project_id: String, token: Result<TokenValidation, Ge
     }
 }
 
-#[get("/tasks/completed/<project_id>/<month>")]
-pub fn month_completed_task(month: String, project_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<TotalProjectTasks>, Json<GenericError>> {
+#[get("/tasks/completed/<project_id>")]
+pub fn month_completed_task(project_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<IndexMap<String, i64>>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
-            match services::task_app::task::month_completed_task(month.parse().unwrap(), &project_id, &token_data.token_iduser) {
+            match services::task_app::task::month_completed_task(&project_id, &token_data.token_iduser) {
                 Ok(result) => Ok(Json(result)),
                 Err(err) => Err(Json(err))
             }

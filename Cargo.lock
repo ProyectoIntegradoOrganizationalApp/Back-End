@@ -1890,6 +1890,7 @@ dependencies = [
  "diesel",
  "dotenvy",
  "futures",
+ "indexmap",
  "jsonwebtoken",
  "lettre",
  "redis",

@@ -1,5 +1,7 @@
 extern crate redis;
 
+use indexmap::IndexMap;
+
 use crate::models::models::*;
 use crate::schema::*;
 use diesel::dsl::count;
@@ -9,7 +11,8 @@ use rust_api_rest::establish_connection;
 use crate::utilities::achievements::*;
 use crate::utilities::user as user_utils;
 use crate::utilities::app as app_utils;
-use chrono::{Utc, NaiveDateTime, NaiveDate, NaiveTime, Datelike};
+use crate::utilities::task_app as task_app_utils;
+use chrono::{Utc};
 
 pub fn create_task(task_info: &TaskInputCreate, id_app: &str, user_id: &str) -> Result<Task, GenericError> {
     let connection = &mut establish_connection();
@@ -128,39 +131,20 @@ pub fn total_project_tasks(project_id: &String, user_id: &str) -> Result<TotalPr
     }
 }
 
-pub fn month_completed_task(month: u32, project_id: &str, user_id: &str) -> Result<TotalProjectTasks, GenericError> {
-    // Chrisitan cambiar esto la validación clean tuya
-    if month < 1 || month > 12 {
-        return Err(GenericError { error: true, message: "The month must be between 1 and 12".to_string() })
-    }
+pub fn month_completed_task(project_id: &str, user_id: &str) -> Result<IndexMap<String, i64>, GenericError> {
     let connection = &mut establish_connection();
     if user_utils::is_member(project_id, user_id, connection) {
-        let current_year = Utc::now().year();
-        let mut date = NaiveDate::from_ymd_opt(current_year, month, 1);
-        let mut time = NaiveTime::from_hms_opt(0, 0, 0);
-        // Desde qué fecha
-        let from_datetime = NaiveDateTime::new(date.clone().unwrap(), time.clone().unwrap());
-
-        let last_day_of_month = NaiveDate::from_ymd_opt(Utc::now().year(), month + 1, 1)
-            .unwrap_or(NaiveDate::from_ymd_opt(Utc::now().year() + 1, 1, 1).unwrap())
-            .pred_opt();
-        date = NaiveDate::from_ymd_opt(current_year, month, last_day_of_month.unwrap().day());
-        println!("{}", date.unwrap().to_string());
-        time = NaiveTime::from_hms_opt(23, 59, 59);
-        // Hasta qué fecha
-        let to_datetime = NaiveDateTime::new(date.clone().unwrap(), time.clone().unwrap());
-        
-        let number_task_month = task::table
-        .select(count(task::id))
-        .filter(task::idproject.eq(project_id))
-        .filter(task::completed_at.ge(from_datetime))
-        .filter(task::completed_at.le(to_datetime))
-        .filter(task::state.eq(1))
-        .get_result::<i64>(connection);
-    match number_task_month {
-        Ok(tasks) => Ok(TotalProjectTasks { tasks: tasks as i16}),
-        Err(_) => Err(GenericError { error: true, message: "Something went wrong".to_string() })
-    }
+        let task_found = task::table
+            .filter(task::idproject.eq(project_id))
+            .filter(task::state.eq(1))
+            .load::<Task>(connection);
+        match task_found {
+            Ok(tasks) => {
+                let months_tasks = task_app_utils::task::get_tasks_per_month(tasks);
+                Ok(months_tasks)
+            },
+            Err(_) => Err(GenericError { error: true, message: "Something went wrong".to_string() })
+        }
     } else {
         Err(GenericError { error: true, message: "You are not a member of the project".to_string() })
     }

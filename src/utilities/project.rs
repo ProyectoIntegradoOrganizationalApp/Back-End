@@ -2,9 +2,44 @@ use crate::models::models::*;
 use diesel::prelude::*;
 use crate::schema::*;
 
+fn get_user_projects_details(projects: Vec<Project>, connection: &mut PgConnection) -> Vec<UserProjectsDetail> {
+    let mut projects_info: Vec<UserProjectsDetail> = Vec::new();
+    for project in &projects {
+        match get_project_members(&project, connection) {
+            Ok(project_members) => {
+                let user_projects_info = UserProjectsDetail {
+                    idproject: project.idproject.clone(),
+                    name: project.name.clone(),
+                    description: project.description.clone(),
+                    icon: project.icon.clone(),
+                    updated_at: project.updated_at.clone(),
+                    members: project_members
+                };
+                projects_info.push(user_projects_info);
+            },
+            Err(_) => ()
+        };
+    }
+    projects_info
+}
+
+pub fn create_project_user(project_id: &String, user_id: &String, role: &str, connection: &mut PgConnection) -> Result<UserProject, GenericError> {
+    let new_project_user = UserProject {
+        idproject: project_id.clone(),
+        iduser: user_id.clone(),
+        idrole: role.to_string()
+    };
+    let created_project_user = diesel::insert_into(project_user::table)
+        .values(&new_project_user)
+        .get_result::<UserProject>(connection);
+    match created_project_user {
+        Ok(user_project) => Ok(user_project),
+        Err(err) => Err(GenericError { error: false, message: err.to_string() })
+    }
+}
+
 pub fn get_user_projects(user: &User, request_id: &String, connection: &mut PgConnection) -> Result<Vec<UserProjectsDetail>, String> {
-    let projects_found:Result<_, _>;
-    projects_found = UserProject::belonging_to(&user)
+    let projects_found = UserProject::belonging_to(&user)
         .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
         .filter(projects::state.eq(1))
         .select(Project::as_select())
@@ -15,23 +50,7 @@ pub fn get_user_projects(user: &User, request_id: &String, connection: &mut PgCo
             if common_projects.len() != 0 {
                 projects.append(&mut common_projects);
             }
-            let mut projects_info:Vec<UserProjectsDetail> = Vec::new();
-            for project in &projects {
-                match get_project_members(&project, connection) {
-                    Ok(project_members) => {
-                        let user_projects_info = UserProjectsDetail {
-                            idproject: project.idproject.clone(),
-                            name: project.name.clone(),
-                            description: project.description.clone(),
-                            icon: project.icon.clone(),
-                            updated_at: project.updated_at.clone(),
-                            members: project_members
-                        };
-                        projects_info.push(user_projects_info);
-                    },
-                    Err(_) => ()
-                };
-            }
+            let projects_info: Vec<UserProjectsDetail> = get_user_projects_details(projects, connection);
             Ok(projects_info)
         },
         Err(err) => Err(err.to_string())
@@ -45,26 +64,22 @@ pub fn get_own_projects(user: &User, connection: &mut PgConnection) -> Result<Ve
         .load::<Project>(connection);
     match projects_found {
         Ok(projects) => {
-            let mut projects_info:Vec<UserProjectsDetail> = Vec::new();
-            for project in &projects {
-                match get_project_members(&project, connection) {
-                    Ok(project_members) => {
-                        let user_projects_info = UserProjectsDetail {
-                            idproject: project.idproject.clone(),
-                            name: project.name.clone(),
-                            description: project.description.clone(),
-                            icon: project.icon.clone(),
-                            updated_at: project.updated_at.clone(),
-                            members: project_members
-                        };
-                        projects_info.push(user_projects_info);
-                    },
-                    Err(_) => ()
-                };
-            }
+            let projects_info: Vec<UserProjectsDetail> = get_user_projects_details(projects, connection);
             Ok(projects_info)
         },
         Err(err) => Err(err.to_string())
+    }
+}
+
+pub fn get_project_user(project: &Project, user_id: &String, connection: &mut PgConnection) -> Result<UserProject, GenericError> {
+    let guest_in_project_found = UserProject::belonging_to(project)
+        .inner_join(users::table.on(project_user::iduser.eq(users::id)))
+        .select(UserProject::as_select())
+        .filter(project_user::iduser.eq(user_id))
+        .get_result::<UserProject>(connection);
+    match guest_in_project_found {
+        Ok(guest) => Ok(guest),
+        Err(_err) => Err(GenericError { error: true, message: "The user is not a member of the project".to_string()})
     }
 }
 
@@ -73,7 +88,7 @@ pub fn get_project_members(project: &Project, connection: &mut PgConnection) -> 
         .inner_join(users::table.on(project_user::iduser.eq(users::id)))
         .select((User::as_select(), UserProject::as_select()))
         .load::<(User, UserProject)>(connection);
-    let mut project_members:Vec<ProjectMembers> = Vec::new();
+    let mut project_members: Vec<ProjectMembers> = Vec::new();
     match members_found {
         Ok(members) => {
             for member in &members {
@@ -110,32 +125,7 @@ pub fn get_project(project_id: &String, connection: &mut PgConnection) -> Result
     }
 }
 
-pub fn is_admin_project(project: &Project, user_id: &String, connection: &mut PgConnection) -> Result<User, String> {
-    let user_in_project_found = UserProject::belonging_to(&project)
-        .inner_join(users::table.on(project_user::iduser.eq(users::id)))
-        .select(User::as_select())
-        .filter(project_user::iduser.eq(&user_id))
-        .filter(project_user::idrole.eq("1"))
-        .get_result::<User>(connection);
-    match user_in_project_found {
-        Ok(user) => Ok(user),
-        Err(err) => Err(err.to_string())
-    }
-}
-
-pub fn is_member_project(project: &Project, user_id: &String, connection: &mut PgConnection) -> bool {
-    let project_member_found = UserProject::belonging_to(&project)
-        .inner_join(users::table.on(project_user::iduser.eq(users::id)))
-        .select(User::as_select())
-        .filter(project_user::iduser.eq(&user_id))
-        .get_result::<User>(connection);
-    match project_member_found {
-        Ok(_member) => true,
-        Err(_) => false
-    }
-}
-
-pub fn create_project_invitation(project_id: &String, guest_id: &String, user_id: &String, invitation: &InvitationMessage,  connection: &mut PgConnection) -> Result<UserInvitation, String> {
+pub fn create_project_invitation(project_id: &String, guest_id: &String, user_id: &String, invitation: &InvitationMessage, connection: &mut PgConnection) -> Result<UserInvitation, String> {
     let new_invitation = UserInvitation {
         idproject: project_id.clone(),
         idguest: guest_id.clone(),
@@ -148,7 +138,39 @@ pub fn create_project_invitation(project_id: &String, guest_id: &String, user_id
         .get_result::<UserInvitation>(connection);
     match created_invitation {
         Ok(user_invitation) => Ok(user_invitation),
-        Err(err) => Err(err.to_string())
+        Err(_) => Err("An error ocurred creating the user invitation".to_owned())
+    }
+}
+
+pub fn get_project_invitation(project_id: &String, guest_id: &String, user_id: &String, connection: &mut PgConnection) -> Result<UserInvitation, GenericError>{
+    let invitation_found = user_invitation::table
+        .select(UserInvitation::as_select())
+        .filter(user_invitation::idproject.eq(&project_id))
+        .filter(user_invitation::iduser.eq(&user_id))
+        .filter(user_invitation::idguest.eq(&guest_id))
+        .get_result::<UserInvitation>(connection);
+    match invitation_found {
+        Ok(invitation) => Ok(invitation),
+        Err(_) => Err(GenericError { error: true, message: "An error ocurred trying to find the invitation".to_owned() })
+    }
+}
+
+pub fn check_and_update_role(user: &mut UserProject, id_role: &String, connection: &mut PgConnection) -> Result<(), GenericError> {
+    let idrole_number = id_role.clone().parse::<i32>();
+    match idrole_number {
+        Ok(number) => {
+            if number > 0 && number <= 3 {
+                user.idrole = id_role.clone();
+                let updated_user_role = user.save_changes::<UserProject>(connection);
+                match updated_user_role {
+                    Ok(_) => Ok(()), 
+                    Err(_) => Err(GenericError {error: true, message: "An error ocurred updating user role".to_owned()})
+                }
+            } else {
+                Err(GenericError { error: true, message: "Invalid role".to_string() })
+            }
+        },
+        Err(_) => Err(GenericError {error: true, message: "Invalid Role, not a number".to_owned()})
     }
 }
 

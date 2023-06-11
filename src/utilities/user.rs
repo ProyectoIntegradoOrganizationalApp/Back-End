@@ -21,11 +21,10 @@ pub fn is_member(idproject: &str, iduser: &str, connection: &mut PgConnection) -
     match user_found {
         Ok(user) => {
             let user_project_found: Result<UserProject, Error> = UserProject::belonging_to(&user)
-                                    .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
-                                    .filter(projects::idproject.eq(idproject))
-                                    .filter(project_user::idrole.eq("1".to_string()))
-                                    .select(UserProject::as_select())
-                                    .get_result::<UserProject>(connection);
+                .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
+                .filter(projects::idproject.eq(idproject))
+                .select(UserProject::as_select())
+                .get_result::<UserProject>(connection);
             match user_project_found {
                 Ok(_) => true,
                 Err(_) => false
@@ -40,11 +39,11 @@ pub fn is_admin(idproject: &str, iduser: &str, connection: &mut PgConnection) ->
     match user_found {
         Ok(user) => {
             let user_project_found: Result<UserProject, Error> = UserProject::belonging_to(&user)
-                                    .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
-                                    .filter(projects::idproject.eq(idproject))
-                                    .filter(project_user::idrole.eq("1".to_string()))
-                                    .select(UserProject::as_select())
-                                    .get_result::<UserProject>(connection);
+                .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
+                .filter(projects::idproject.eq(idproject))
+                .filter(project_user::idrole.eq("1".to_string()))
+                .select(UserProject::as_select())
+                .get_result::<UserProject>(connection);
             match user_project_found {
                 Ok(_) => true,
                 Err(_) => false
@@ -59,11 +58,11 @@ pub fn is_editor(idproject: &str, iduser: &str, connection: &mut PgConnection) -
     match user_found {
         Ok(user) => {
             let user_project_found: Result<UserProject, Error> = UserProject::belonging_to(&user)
-                                    .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
-                                    .filter(projects::idproject.eq(idproject))
-                                    .filter(project_user::idrole.eq("2".to_string()))
-                                    .select(UserProject::as_select())
-                                    .get_result::<UserProject>(connection);
+                .inner_join(projects::table.on(project_user::idproject.eq(projects::idproject)))
+                .filter(projects::idproject.eq(idproject))
+                .filter(project_user::idrole.eq("2".to_string()))
+                .select(UserProject::as_select())
+                .get_result::<UserProject>(connection);
             match user_project_found {
                 Ok(_) => true,
                 Err(_) => false

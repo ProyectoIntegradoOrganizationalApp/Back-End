@@ -8,6 +8,7 @@ use rust_api_rest::establish_connection;
 use crate::utilities::achievements::*;
 use crate::utilities::user as user_utils;
 use crate::utilities::app as app_utils;
+use crate::utilities::task_app as tas_app_utils;
 use chrono::Utc;
 
 pub fn create_column(column_info: &ColumnInputCreate, id_app: &str, user_id: &str) -> Result<Columna, GenericError> { 
@@ -108,22 +109,7 @@ pub fn get_columns_tasks(id_app: &str, id_board: &str, user_id: &str) -> Result<
                 let found_columns = columna::table.filter(columna::idboard.eq(id_board)).load::<Columna>(connection);
                 match found_columns {
                     Ok(columns) => {
-                        let mut column_tasks: Vec<ColumnTasks> = Vec::new();
-                        for column in &columns  {
-                            let found_tasks = task::table.filter(task::idcolumn.eq(&column.id)).load::<Task>(connection);
-                            match found_tasks {
-                                Ok(tasks) => {
-                                    let column_task = ColumnTasks {
-                                        id: column.id.clone(),
-                                        title: column.title.clone(),
-                                        tasks
-                                    };
-                                    column_tasks.push(column_task);
-    
-                                },
-                                Err(_) => {}
-                            }
-                        }
+                        let column_tasks = tas_app_utils::column::get_column_tasks(columns, connection);
                         Ok(column_tasks)
                     },
                     Err(_) => Err(GenericError { error: true, message: "No columns found for the board".to_owned() })
