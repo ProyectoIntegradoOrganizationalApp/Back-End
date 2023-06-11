@@ -6,6 +6,8 @@ use chrono::Utc;
 use diesel::prelude::*;
 use crate::utilities::user as user_utils;
 use crate::utilities::app as app_utils;
+use crate::utilities::task_app::board as board_utils;
+use crate::utilities::task_app::column as column_utils;
 use crate::utilities::achievements;
 
 fn create_app(project_id: &str, user_id: &str, app_info: &AppInputCreate, connection: &mut PgConnection) -> Result<App, GenericError> {
@@ -177,12 +179,22 @@ fn create_default_app(project_id: &str, user_id: &str, app_type: &AppInputCreate
         true => {
             match app_utils::create_app_by_type(project_id, user_id, &app_type, connection) {
                 Ok(app) => {
-                    let achievement_updated = achievements::check_update_user_achievement(user_id, "7");
-                    match achievement_updated {
-                        Ok(_) => {},
-                        Err(err) => return Err(err)
+                    match board_utils::create_default_board(&app.id, &project_id.to_owned(), &user_id.to_owned(), connection) {
+                        Ok(board) => {
+                            match column_utils::create_default_columns(&board.id, &user_id.to_owned(), &project_id.to_owned(), connection) {
+                                Ok(_) => {
+                                    let achievement_updated = achievements::check_update_user_achievement(user_id, "7");
+                                    match achievement_updated {
+                                        Ok(_) => {},
+                                        Err(err) => return Err(err)
+                                    }
+                                    return Ok(app)
+                                },
+                                Err(err) => Err(err)
+                            }
+                        },
+                        Err(err) => Err(err)
                     }
-                    return Ok(app)
                 },
                 Err(err) => return Err(err)
             }

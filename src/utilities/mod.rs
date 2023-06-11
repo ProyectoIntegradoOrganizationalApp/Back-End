@@ -6,6 +6,7 @@ pub mod app;
 pub mod task_app {
     pub mod task;
     pub mod column;
+    pub mod board;
 }
 pub mod notifications;
 pub mod user;
