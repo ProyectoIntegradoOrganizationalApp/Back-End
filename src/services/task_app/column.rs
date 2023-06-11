@@ -8,48 +8,55 @@ use rust_api_rest::establish_connection;
 use crate::utilities::achievements::*;
 use crate::utilities::user as user_utils;
 use crate::utilities::app as app_utils;
-use crate::utilities::task_app as tas_app_utils;
+use crate::utilities::task_app as task_app_utils;
 use chrono::Utc;
 
 pub fn create_column(column_info: &ColumnInputCreate, id_app: &str, user_id: &str) -> Result<Columna, GenericError> { 
     let connection = &mut establish_connection();
     match app_utils::check_app_by_type(id_app, "task_app", connection) {
         Ok(project_id) => {
-            if user_utils::is_admin(&project_id, user_id, connection) || user_utils::is_editor(&project_id, user_id, connection) {
-                let column_id = uuid::Uuid::new_v4().to_string();
-                let now: String = (Utc::now()).to_string();
-                let new_column = Columna {
-                    id: column_id.clone(),
-                    idboard: column_info.idboard.clone(),
-                    iduser: user_id.to_owned().clone(),
-                    idproject: project_id.clone(),
-                    title: column_info.title.clone(),
-                    created_at: now.clone(),
-                    updated_at: now.clone()
-                };
-                let created_column = diesel::insert_into(columna::table)
-                    .values(&new_column)
-                    .get_result::<Columna>(connection);
-            
-                match created_column {
-                    Ok(column) => {
-                        let achievement_updated = check_update_user_achievement(user_id, "6");
-                        match achievement_updated {
-                            Ok(_) => Ok(column),
-                            Err(err) => Err(err)
+            match task_app_utils::board::check_board_in_app(&column_info.idboard, &id_app.to_owned(), connection) {
+                Ok(_) => {
+                    if user_utils::is_admin(&project_id, user_id, connection) || user_utils::is_editor(&project_id, user_id, connection) {
+                        let order = task_app_utils::column::get_last_column_order(&column_info.idboard, connection);
+                        let column_id = uuid::Uuid::new_v4().to_string();
+                        let now: String = (Utc::now()).to_string();
+                        let new_column = Columna {
+                            id: column_id.clone(),
+                            idboard: column_info.idboard.clone(),
+                            iduser: user_id.to_owned().clone(),
+                            idproject: project_id.clone(),
+                            title: column_info.title.clone(),
+                            ordering: order,
+                            created_at: now.clone(),
+                            updated_at: now.clone()
+                        };
+                        let created_column = diesel::insert_into(columna::table)
+                            .values(&new_column)
+                            .get_result::<Columna>(connection);
+                    
+                        match created_column {
+                            Ok(column) => {
+                                let achievement_updated = check_update_user_achievement(user_id, "6");
+                                match achievement_updated {
+                                    Ok(_) => Ok(column),
+                                    Err(err) => Err(err)
+                                }
+                            },
+                            Err(_) => Err(GenericError { error: false, message: "Error creating the column".to_string() })
                         }
-                    },
-                    Err(_) => Err(GenericError { error: false, message: "Error creating the column".to_string() })
-                }
-            } else {
-                Err(GenericError { error: true, message: "You have to be a member of this project and have the admin or editor role".to_string() })
+                    } else {
+                        Err(GenericError { error: true, message: "You have to be a member of this project and have the admin or editor role".to_string() })
+                    }
+                },
+                Err(err) => Err(err)
             }
         },
         Err(err) => Err(err)
     }
 }
 
-pub fn update_column(column_info: &ColumnInputCreate, column_id: &String, id_app: &str, user_id: &str) -> Result<GenericError, GenericError> {
+pub fn update_column(column_info: &ColumnInputUpdate, column_id: &String, id_app: &str, user_id: &str) -> Result<GenericError, GenericError> {
     let connection = &mut establish_connection();
     match app_utils::check_app_by_type(id_app, "task_app", connection) {
         Ok(project_id) => {
@@ -59,6 +66,7 @@ pub fn update_column(column_info: &ColumnInputCreate, column_id: &String, id_app
                     Ok(mut column) => {
                         let now: String = (Utc::now()).to_string();
                         column.title = column_info.title.clone();
+                        column.ordering = column_info.order;
                         column.updated_at = now.clone();
             
                         let updated_project = column.save_changes::<Columna>(connection);
@@ -109,7 +117,7 @@ pub fn get_columns_tasks(id_app: &str, id_board: &str, user_id: &str) -> Result<
                 let found_columns = columna::table.filter(columna::idboard.eq(id_board)).load::<Columna>(connection);
                 match found_columns {
                     Ok(columns) => {
-                        let column_tasks = tas_app_utils::column::get_column_tasks(columns, connection);
+                        let column_tasks = task_app_utils::column::get_column_tasks(columns, connection);
                         Ok(column_tasks)
                     },
                     Err(_) => Err(GenericError { error: true, message: "No columns found for the board".to_owned() })

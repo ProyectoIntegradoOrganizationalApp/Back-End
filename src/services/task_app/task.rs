@@ -18,45 +18,52 @@ pub fn create_task(task_info: &TaskInputCreate, id_app: &str, user_id: &str) -> 
     let connection = &mut establish_connection();
     match app_utils::check_app_by_type(id_app, "task_app", connection) {
         Ok(project_id) => {
-            if user_utils::is_admin(&project_id, user_id, connection) || user_utils::is_editor(&project_id, user_id, connection) {
-                let task_id = uuid::Uuid::new_v4().to_string();
-                let now: String = (Utc::now()).to_string();
-                let new_task = Task {
-                    id: task_id.clone(),
-                    idcolumn: task_info.idcolumn.clone(),
-                    iduser: user_id.to_owned().clone(),
-                    idproject: project_id.clone(),
-                    title: task_info.title.clone(),
-                    description: task_info.description.clone(),
-                    state: task_info.state,
-                    completed_at: None,
-                    created_at: now.clone(),
-                    updated_at: now.clone()
-                };
-                let created_task = diesel::insert_into(task::table)
-                    .values(&new_task)
-                    .get_result::<Task>(connection);
-                
-            
-                match created_task {
-                    Ok(task) => {
-                        let achievement_updated = check_update_user_achievement(user_id, "8");
-                        match achievement_updated {
-                            Ok(_) => Ok(task),
-                            Err(err) => Err(err)
+            match task_app_utils::column::check_column_in_app(&task_info.idcolumn, &id_app.to_owned(), connection) {
+                Ok(_) => {
+                    if user_utils::is_admin(&project_id, user_id, connection) || user_utils::is_editor(&project_id, user_id, connection) {
+                        let order = task_app_utils::task::get_last_task_order(&task_info.idcolumn, connection);
+                        let task_id = uuid::Uuid::new_v4().to_string();
+                        let now: String = (Utc::now()).to_string();
+                        let new_task = Task {
+                            id: task_id.clone(),
+                            idcolumn: task_info.idcolumn.clone(),
+                            iduser: user_id.to_owned().clone(),
+                            idproject: project_id.clone(),
+                            title: task_info.title.clone(),
+                            description: task_info.description.clone(),
+                            state: task_info.state,
+                            ordering: order,
+                            completed_at: None,
+                            created_at: now.clone(),
+                            updated_at: now.clone()
+                        };
+                        let created_task = diesel::insert_into(task::table)
+                            .values(&new_task)
+                            .get_result::<Task>(connection);
+                        
+                    
+                        match created_task {
+                            Ok(task) => {
+                                let achievement_updated = check_update_user_achievement(user_id, "8");
+                                match achievement_updated {
+                                    Ok(_) => Ok(task),
+                                    Err(err) => Err(err)
+                                }
+                            },
+                            Err(_) => Err(GenericError { error: false, message: "Error creating the task".to_string() })
                         }
-                    },
-                    Err(_) => Err(GenericError { error: false, message: "Error creating the task".to_string() })
-                }
-            } else {
-                Err(GenericError { error: true, message: "You have to be a member of this project and have the admin or editor role".to_string() })
+                    } else {
+                        Err(GenericError { error: true, message: "You have to be a member of this project and have the admin or editor role".to_string() })
+                    }
+                },
+                Err(err) => Err(err)
             }
         },
         Err(err) => Err(err)
     }
 }
 
-pub fn update_task(task_info: &TaskInputCreate, task_id: &String, id_app: &str, user_id: &str) -> Result<GenericError, GenericError> {
+pub fn update_task(task_info: &TaskInputUpdate, task_id: &String, id_app: &str, user_id: &str) -> Result<GenericError, GenericError> {
     let connection = &mut establish_connection();
     match app_utils::check_app_by_type(id_app, "task_app", connection) {
         Ok(project_id) => {
@@ -65,8 +72,10 @@ pub fn update_task(task_info: &TaskInputCreate, task_id: &String, id_app: &str, 
                 match task_found {
                     Ok(mut task) => {
                         let now: String = (Utc::now()).to_string();
+                        task.idcolumn = task_info.idcolumn.clone();
                         task.title = task_info.title.clone();
                         task.description = task_info.description.clone();
+                        task.ordering = task_info.order;
                         task.state = task_info.state;
                         if task.state == 1 {
                             task.completed_at = Some(Utc::now().naive_utc());

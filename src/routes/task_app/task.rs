@@ -18,7 +18,7 @@ pub fn create_task(id_app: String, task_info: Validated<Json<TaskInputCreate>>, 
 }
 
 #[put("/<id_app>/task_app/task/<id>", data="<task_info>", format="json")]
-pub fn update_task(id_app: String, id: String, task_info: Validated<Json<TaskInputCreate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+pub fn update_task(id_app: String, id: String, task_info: Validated<Json<TaskInputUpdate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
             match services::task_app::task::update_task(&task_info.0, &id, &id_app, &token_data.token_iduser) {

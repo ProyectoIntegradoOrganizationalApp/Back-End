@@ -141,6 +141,7 @@ pub struct Columna {
     pub iduser: String,
     pub idproject: String,
     pub title: String,
+    pub ordering: i32,
     pub created_at: String,
     pub updated_at: String
 }
@@ -164,6 +165,7 @@ pub struct Task {
     pub title: String,
     pub description: Option<String>,
     pub state: i16,
+    pub ordering: i32,
     pub completed_at: Option<NaiveDateTime>,
     pub created_at: String,
     pub updated_at: String
@@ -474,12 +476,32 @@ pub struct ColumnInputCreate {
 }
 
 #[derive(Serialize, Deserialize, Debug, Validate)]
+pub struct ColumnInputUpdate {
+    pub idboard: String,
+    pub order: i32,
+    #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
+    pub title: String
+}
+
+#[derive(Serialize, Deserialize, Debug, Validate)]
 pub struct TaskInputCreate {
     pub idcolumn: String,
     #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
     pub title: String,
     #[validate(length(min = 10, max = 150, message = "Lenght must be between 10 and 150 characters"))]
     pub description: Option<String>,
+    #[validate(range(min = 0, max = 1, message = "Number range must be between 0 and 1"))]
+    pub state: i16
+}
+
+#[derive(Serialize, Deserialize, Debug, Validate)]
+pub struct TaskInputUpdate {
+    pub idcolumn: String,
+    #[validate(length(min = 3, max = 50, message = "Lenght must be between 3 and 50 characters"))]
+    pub title: String,
+    #[validate(length(min = 10, max = 150, message = "Lenght must be between 10 and 150 characters"))]
+    pub description: Option<String>,
+    pub order: i32,
     #[validate(range(min = 0, max = 1, message = "Number range must be between 0 and 1"))]
     pub state: i16
 }

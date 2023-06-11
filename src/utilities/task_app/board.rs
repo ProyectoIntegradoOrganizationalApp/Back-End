@@ -5,6 +5,20 @@ use crate::schema::*;
 use chrono::Utc;
 use diesel::prelude::*;
 
+pub fn check_board_in_app(id_board: &String, id_app: &String, connection: &mut PgConnection) -> Result<(), GenericError> {
+    let board_found = board::table.filter(board::id.eq(id_board)).first::<Board>(connection);
+    match board_found {
+        Ok(board) => {
+            if board.idapp.eq(id_app) {
+                Ok(())
+            } else {
+                Err(GenericError { error: true, message: "The board provided is not in that app".to_owned() })
+            }
+        },
+        Err(_) => Err(GenericError { error: true, message: "Board not found".to_owned() })
+    }
+}
+
 pub fn create_default_board(app_id: &String, project_id: &String, user_id: &String, connection: &mut PgConnection) -> Result<Board, GenericError> {
     let board_id = uuid::Uuid::new_v4().to_string();
     let now: String = (Utc::now()).to_string();

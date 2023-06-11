@@ -5,6 +5,7 @@ CREATE TABLE columna (
     idUser VARCHAR NOT NULL,
     idProject VARCHAR NOT NULL,
     title VARCHAR NOT NULL,
+    ordering SERIAL NOT NULL,
     created_at VARCHAR NOT NULL,
     updated_at VARCHAR NOT NULL,
     PRIMARY KEY(id),

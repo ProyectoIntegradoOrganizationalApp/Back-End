@@ -17,7 +17,7 @@ pub fn create_column(id_app: String, column_info: Validated<Json<ColumnInputCrea
 }
 
 #[put("/<id_app>/task_app/column/<id>", data="<column_info>", format="json")]
-pub fn update_column(id_app: String, id: String, column_info: Validated<Json<ColumnInputCreate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
+pub fn update_column(id_app: String, id: String, column_info: Validated<Json<ColumnInputUpdate>>, token: Result<TokenValidation, GenericError>) -> Result<Json<GenericError>, Json<GenericError>> {
     match token {
         Ok(token_data) => {
             match services::task_app::column::update_column(&column_info.0, &id, &id_app, &token_data.token_iduser) {

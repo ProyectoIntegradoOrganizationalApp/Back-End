@@ -1,7 +1,22 @@
+use crate::schema::*;
+use diesel::prelude::*;
 use indexmap::IndexMap;
 use bigdecimal::FromPrimitive;
 use chrono::{Datelike, Month};
 use crate::models::models::Task;
+
+pub fn get_last_task_order(column_id: &String, connection: &mut PgConnection) -> i32{
+    let last_order = task::table
+        .select(task::ordering)
+        .filter(task::idcolumn.eq(column_id))
+        .order(task::ordering.desc())
+        .first::<i32>(connection);
+
+    match last_order {
+        Ok(order) => order + 1,
+        Err(_) => 1
+    }
+}
 
 fn get_months_map() -> IndexMap<String, i64> {
     IndexMap::from([

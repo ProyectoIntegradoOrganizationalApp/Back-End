@@ -7,6 +7,7 @@ CREATE TABLE task (
     title VARCHAR NOT NULL,
     description VARCHAR,
     state SMALLINT NOT NULL DEFAULT 0,
+    ordering SERIAL NOT NULL,
     completed_at TIMESTAMP NULL,
     created_at VARCHAR NOT NULL,
     updated_at VARCHAR NOT NULL,
