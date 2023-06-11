@@ -54,3 +54,16 @@ pub fn get_boards(id_app: String, token: Result<TokenValidation, GenericError>) 
         Err(err) => Err(Json(err))
     }
 }
+
+#[get("/board/<board_id>")]
+pub fn get_board(board_id: String, token: Result<TokenValidation, GenericError>) -> Result<Json<Board>, Json<GenericError>> {
+    match token {
+        Ok(token_data) => {
+            match services::task_app::board::get_board(&board_id, &token_data.token_iduser) {
+                Ok(boards) => Ok(Json(boards)),
+                Err(err) => Err(Json(err))
+            }
+        },
+        Err(err) => Err(Json(err))
+    }
+}

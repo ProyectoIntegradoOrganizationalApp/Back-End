@@ -112,3 +112,20 @@ pub fn get_boards(id_app: &str, user_id: &str) -> Result<Vec<Board>, GenericErro
         Err(err) => Err(err)
     }
 }
+
+pub fn get_board(board_id: &String, user_id: &String) -> Result<Board, GenericError> {
+    let connection = &mut establish_connection();
+    let board_found = board::table
+        .filter(board::id.eq(&board_id))
+        .get_result::<Board>(connection);
+    match board_found {
+        Ok(board) => {
+            if user_utils::is_member(&board.idproject, &user_id, connection) {
+                Ok(board)
+            } else {
+                Err(GenericError { error: true, message: "You are not a member of that project, you can't access to board".to_string() })
+            }
+        },
+        Err(_) => Err(GenericError { error: true, message: "Board not found".to_string() })
+    }
+}

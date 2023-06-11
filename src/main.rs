@@ -9,7 +9,7 @@ use routes::user::{achievements, user_achievements, profile, send_friend_request
                     user_notifications, user_friends, search_users, account};
 use routes::project::{create_project, update_project, delete_project, invite_user_to_project, change_role_user_project, delete_user_project, 
     accept_user_project_invitation, deny_user_project_invitation, get_project, get_user_projects, leave_project, search_projects};
-use routes::task_app::board::{create_board, update_board, delete_board, get_boards};
+use routes::task_app::board::{create_board, update_board, delete_board, get_boards, get_board};
 use routes::task_app::column::{create_column, update_column, delete_column, get_columns_tasks};
 use routes::task_app::task::{create_task, update_task, delete_task, total_project_tasks, month_completed_task, total_user_project_tasks};
 use routes::app::{create_app, update_app, delete_app, get_project_apps};
@@ -118,6 +118,7 @@ async fn main() {
             update_board,
             delete_board,
             get_boards,
+            get_board,
             get_columns_tasks,
             create_column,
             update_column,
