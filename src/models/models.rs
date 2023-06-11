@@ -179,7 +179,8 @@ pub struct Task {
 pub struct UserProject {
     pub idproject: String,
     pub iduser: String,
-    pub idrole: String
+    pub idrole: String,
+    pub joined_at: NaiveDateTime
 }
 #[derive(Serialize, Deserialize, Queryable, Debug, Insertable, Selectable, Associations, Identifiable, PartialEq)]
 #[diesel(belongs_to(User, foreign_key = iduser))]

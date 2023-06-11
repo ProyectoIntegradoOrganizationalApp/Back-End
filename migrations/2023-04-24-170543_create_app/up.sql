@@ -9,7 +9,8 @@ CREATE TABLE app (
     PRIMARY KEY(id),
     CONSTRAINT fk_project
         FOREIGN KEY(idproject)
-            REFERENCES projects(idProject),
+            REFERENCES projects(idProject)
+                ON DELETE CASCADE,
     CONSTRAINT fk_user
         FOREIGN KEY(idUser)
             REFERENCES users(id)

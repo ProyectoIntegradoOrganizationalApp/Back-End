@@ -187,6 +187,9 @@ pub fn change_role_user_project(guest_id: &String, project_id: &String, user_id:
 }
 
 pub fn delete_user_project(guest_id: &String, project_id: &String, user_id: &String) -> Result<GenericError, GenericError> {
+    if guest_id.eq(user_id)  {
+        return Err(GenericError { error: true, message: "You can't remove yourself from the project".to_string() })
+    }
     let connection = &mut establish_connection();
     match project_utils::get_project(project_id, connection) {
         Ok(project) => {
@@ -220,7 +223,12 @@ pub fn leave_project(project_id: &String, user_id: &String) -> Result<GenericErr
                     .filter(project_user::idproject.eq(&project_id))
                     .execute(connection);
                 match deleted {
-                    Ok(_) => Ok(GenericError { error: false, message: "You left the project successfully".to_string() }),
+                    Ok(_) => {
+                        match project_utils::check_update_admin_user_left(&project.idproject, connection) {
+                            Ok(_) => Ok(GenericError { error: false, message: "You left the project successfully".to_string() }),
+                            Err(err) => Err(err)
+                        }
+                    }
                     Err(_) => Err(GenericError { error: true, message: "Error while leaving the project".to_string() })
                 }
             } else {

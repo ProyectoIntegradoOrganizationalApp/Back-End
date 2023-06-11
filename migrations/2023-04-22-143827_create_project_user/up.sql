@@ -3,6 +3,7 @@ CREATE TABLE project_user (
     idProject VARCHAR NOT NULL,
     idUser VARCHAR NOT NULL,
     idRole VARCHAR NOT NULL,
+    joined_at TIMESTAMP NOT NULL,
     PRIMARY KEY (idProject, idUser),
     CONSTRAINT fk_user
         FOREIGN KEY(idUser)

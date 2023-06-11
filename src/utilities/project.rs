@@ -1,6 +1,50 @@
 use crate::models::models::*;
-use diesel::prelude::*;
+use chrono::Utc;
+use diesel::{prelude::*};
 use crate::schema::*;
+
+fn pass_admin(project_id: &String, connection: &mut PgConnection) -> Result<(), GenericError> {
+    let user: Result<UserProject, _> = project_user::table
+        .filter(project_user::idproject.eq(project_id))
+        .order(project_user::joined_at.desc())
+        .first::<UserProject>(connection);
+
+    match user {
+        Ok(mut user) => {
+            user.idrole = "1".to_owned();
+            let saved = user.save_changes::<UserProject>(connection);
+            match saved {
+                Ok(_) => Ok(()),
+                Err(_) => Err(GenericError { error: true, message: "Error passing admin".to_owned() })
+            }
+        },
+        Err(_) => {
+            let deleted_project = diesel::delete(projects::table.filter(projects::idproject.eq(project_id))).execute(connection);
+            match deleted_project {
+                Ok(_) => Ok(()),
+                Err(_) => Err(GenericError { error: true, message: "An error ocurred deleting the project".to_owned() })
+            }
+        }
+    }
+}
+
+pub fn check_update_admin_user_left(project_id: &String, connection: &mut PgConnection) -> Result<(), GenericError> {
+
+    let found_admin = project_user::table
+        .filter(project_user::idproject.eq(project_id))
+        .filter(project_user::idrole.eq("1"))
+        .first::<UserProject>(connection);
+
+    match found_admin {
+        Ok(_) => Ok(()),
+        Err(_) => {
+            match pass_admin(project_id, connection) {
+                Ok(_) => Ok(()),
+                Err(err) => Err(err)
+            }
+        }
+    }
+}
 
 fn get_user_projects_details(projects: Vec<Project>, connection: &mut PgConnection) -> Vec<UserProjectsDetail> {
     let mut projects_info: Vec<UserProjectsDetail> = Vec::new();
@@ -27,7 +71,8 @@ pub fn create_project_user(project_id: &String, user_id: &String, role: &str, co
     let new_project_user = UserProject {
         idproject: project_id.clone(),
         iduser: user_id.clone(),
-        idrole: role.to_string()
+        idrole: role.to_string(),
+        joined_at: Utc::now().naive_utc()
     };
     let created_project_user = diesel::insert_into(project_user::table)
         .values(&new_project_user)

@@ -122,6 +122,7 @@ diesel::table! {
         idproject -> Varchar,
         iduser -> Varchar,
         idrole -> Varchar,
+        joined_at -> Timestamp,
     }
 }
 
