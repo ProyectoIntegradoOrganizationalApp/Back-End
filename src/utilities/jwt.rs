@@ -49,7 +49,7 @@ pub fn create_token(uid: &str) -> Result<String, String> {
         &EncodingKey::from_secret(secret_key.as_bytes()),
     ) {
         Ok(token) => Ok(token),
-        Err(err) => Err(err.to_string()),
+        Err(_) => Err("Error encoding code".to_string()),
     }
 }
 
@@ -94,7 +94,7 @@ pub fn validate_token(mut token: &str, request_id: Option<&str>, table: Option<&
             // Check if the user doing the request is the database
             match user_found {
                 Ok(user) => (),
-                Err(err) => return (false, err.to_string(), "".to_string(), false, token_iduser),
+                Err(_) => return (false, "User not found".to_string(), "".to_string(), false, token_iduser),
             }
             let table_str = table.as_deref().unwrap_or("default string");
             

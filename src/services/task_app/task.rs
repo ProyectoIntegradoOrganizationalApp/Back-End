@@ -46,7 +46,7 @@ pub fn create_task(task_info: &TaskInputCreate, id_app: &str, user_id: &str) -> 
                             Err(err) => Err(err)
                         }
                     },
-                    Err(err) => Err(GenericError { error: false, message: err.to_string() })
+                    Err(_) => Err(GenericError { error: false, message: "Error creating the task".to_string() })
                 }
             } else {
                 Err(GenericError { error: true, message: "You have to be a member of this project and have the admin or editor role".to_string() })
@@ -78,7 +78,7 @@ pub fn update_task(task_info: &TaskInputCreate, task_id: &String, id_app: &str, 
                         let updated_project = task.save_changes::<Task>(connection);
                         match updated_project {
                             Ok(_user) => Ok(GenericError {error: false, message: "Updated task successfully".to_string()}), 
-                            Err(err) => Err(GenericError {error: true, message: err.to_string()})
+                            Err(_) => Err(GenericError {error: true, message: "Error updating the task".to_string()})
                         }
                     },
                     Err(_err) => Err(GenericError {error: true, message: "You are not a member or you don't have privileges to make it".to_string()})
@@ -102,7 +102,7 @@ pub fn delete_task(task_id: &String, id_app: &str, user_id: &str) -> Result<Gene
                         let deleted = diesel::delete(task::table.filter(task::id.eq(task.id))).execute(connection);
                         match deleted {
                             Ok(_) => Ok(GenericError { error: false, message: "Task deleted successfully".to_string() }),
-                            Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                            Err(_) => Err(GenericError { error: true, message: "Error deleting the task".to_string() })
                         }
                     },
                     Err(_err) => Err(GenericError {error: true, message: "You are not a member or you don't have privileges to make it".to_string()})

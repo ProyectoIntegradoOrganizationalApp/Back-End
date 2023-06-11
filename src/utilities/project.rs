@@ -34,7 +34,7 @@ pub fn create_project_user(project_id: &String, user_id: &String, role: &str, co
         .get_result::<UserProject>(connection);
     match created_project_user {
         Ok(user_project) => Ok(user_project),
-        Err(err) => Err(GenericError { error: false, message: err.to_string() })
+        Err(_) => Err(GenericError { error: false, message: "Error joining to project".to_string() })
     }
 }
 
@@ -53,7 +53,7 @@ pub fn get_user_projects(user: &User, request_id: &String, connection: &mut PgCo
             let projects_info: Vec<UserProjectsDetail> = get_user_projects_details(projects, connection);
             Ok(projects_info)
         },
-        Err(err) => Err(err.to_string())
+        Err(_) => Err("Projects not found".to_string())
     }
 }
 
@@ -67,7 +67,7 @@ pub fn get_own_projects(user: &User, connection: &mut PgConnection) -> Result<Ve
             let projects_info: Vec<UserProjectsDetail> = get_user_projects_details(projects, connection);
             Ok(projects_info)
         },
-        Err(err) => Err(err.to_string())
+        Err(_) => Err("Error getting your own projects".to_string())
     }
 }
 
@@ -110,7 +110,7 @@ pub fn get_project_members(project: &Project, connection: &mut PgConnection) -> 
             }
             Ok(project_members)
         },
-        Err(err) => Err(err.to_string())
+        Err(_) => Err("Members not found".to_string())
     }
 }
 

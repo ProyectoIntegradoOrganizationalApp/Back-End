@@ -40,13 +40,13 @@ pub fn profile(id_string: &String) -> Result<UserProfile, String> {
                                 Err(err) => Err(err.message)
                             }
                         },
-                        Err(err) => Err(err.to_string())
+                        Err(_) => Err("Error getting your own projects".to_string())
                     }
                 },
                 Err(err) => Err(err)
             }
         },
-        Err(err) => Err(err.to_string())
+        Err(_) => Err("User not found".to_string())
     }
 }
 
@@ -83,12 +83,12 @@ pub fn send_friend_request(guest_id: &String, invitation: &InvitationMessage, us
         
                         match created {
                             Ok(_) => Ok(GenericError { error: false, message: "Friend request sent successfully".to_string() }),
-                            Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                            Err(_) => Err(GenericError { error: true, message: "Error while sending friend request".to_string() })
                         }
                     }
                 }
             },
-            Err(err) => Err(GenericError { error: true, message: err.to_string() })
+            Err(_) => Err(GenericError { error: true, message: "Guest not found".to_string() })
         }
     } else {
         Err(GenericError { error: true, message: "You cannot be a friend of yourself".to_string() })
@@ -157,7 +157,7 @@ pub fn accept_friend_request(user_id: &String, guest_id: &String) -> Result<Gene
                                                     }
                                                     Ok(GenericError { error: false, message: "You have made a new friend!".to_string() })
                                                 },
-                                                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                                                Err(_) => Err(GenericError { error: true, message: "Error accepting friend request".to_string() })
                                             }
                                         },
                                         Err(_err) => {
@@ -177,16 +177,16 @@ pub fn accept_friend_request(user_id: &String, guest_id: &String) -> Result<Gene
                                         }
                                     }
                                 },
-                                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                                Err(_) => Err(GenericError { error: true, message: "Error while deleting friend request".to_string() })
                             }
                         },
-                        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                        Err(_) => Err(GenericError { error: true, message: "Error while accepting friend request".to_string() })
                     }
                 },
-                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                Err(_) => Err(GenericError { error: true, message: "Error while making a new friend".to_string() })
             }
         }, 
-        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        Err(_) => Err(GenericError { error: true, message: "Invitation not found".to_string() })
     }
 }
 
@@ -204,10 +204,10 @@ pub fn deny_friend_request(user_id: &String, guest_id: &String) -> Result<Generi
             .execute(connection);
             match deleted {
                 Ok(_) => Ok(GenericError { error: false, message: "Friend request denied successfully".to_string() }),
-                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                Err(_) => Err(GenericError { error: true, message: "Error at deny friend request".to_string() })
             }
         }, 
-        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        Err(_) => Err(GenericError { error: true, message: "Invitation not found".to_string() })
     }
 }
 
@@ -232,13 +232,13 @@ pub fn delete_user_friend(friend_id: &String, user_id: &String) -> Result<Generi
                     
                     match deleted {
                         Ok(_) => Ok(GenericError { error: false, message: "You are no longer friends with this user".to_string() }),
-                        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                        Err(_) => Err(GenericError { error: true, message: "Error while deleting friend".to_string() })
                     }
                 },
-                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                Err(_) => Err(GenericError { error: true, message: "Error while deleting friend".to_string() })
             }
         },
-        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        Err(_) => Err(GenericError { error: true, message: "Friend not found".to_string() })
     }
 }
 
@@ -292,7 +292,7 @@ pub fn search_users(name_str: &String, user_id: &String) -> Result<Users, Generi
             };
             Ok(users_response)
         },
-        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        Err(_) => Err(GenericError { error: true, message: "Users not found".to_string() })
     }
 }
 
@@ -310,7 +310,7 @@ pub fn account(user_id: &String) -> Result<UserAccount, GenericError> {
             };
             Ok(user_account)
         },
-        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        Err(_) => Err(GenericError { error: true, message: "User not found".to_string() })
     }
 }
 

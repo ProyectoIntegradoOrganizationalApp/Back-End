@@ -12,7 +12,7 @@ pub fn get_user(user_id: &String, connection: &mut PgConnection) -> Result<User,
 
     match user_found {
         Ok(user) => Ok(user),
-        Err(err) => Err(err.to_string())
+        Err(_) => Err("User not found".to_string())
     }
 }
 

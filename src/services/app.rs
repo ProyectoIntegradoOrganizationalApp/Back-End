@@ -81,7 +81,7 @@ pub fn delete_app(app_id: &String, project_id: &String, user_id: &String) -> Res
                                         .execute(connection);
                             match deleted {
                                 Ok(_) => Err(GenericError { error: true, message: "The app was successfully deleted".to_owned() }),
-                                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                                Err(_) => Err(GenericError { error: true, message: "Error deleting the app".to_string() })
                             }
                         }, 
                         Err(_) => Err(GenericError { error: true, message: "The app was not found".to_owned() })

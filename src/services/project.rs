@@ -48,7 +48,7 @@ pub fn create_project(project_info: &ProjectInputCreate, token_iduser: String) -
                 Err(err) => Err(err)
             }
         },
-        Err(err) => Err(GenericError { error: false, message: err.to_string() })
+        Err(_) => Err(GenericError { error: false, message: "Error creating the project".to_string() })
     }
 }
 
@@ -75,13 +75,13 @@ pub fn update_project(project_info: &ProjectInputCreate, user_id: &String, proje
                     let updated_project = project.save_changes::<Project>(connection);
                     match updated_project {
                         Ok(_user) => Ok(GenericError {error: false, message: "Updated project successfully".to_string()}), 
-                        Err(err) => Err(GenericError {error: true, message: err.to_string()})
+                        Err(_) => Err(GenericError {error: true, message: "Error updating the project".to_string()})
                     }
                 },
                 Err(_err) => Err(GenericError {error: true, message: "You are not a member or you don't have privileges to make it".to_string()})
             }
         }, 
-        Err(err) => Err(GenericError {error: true, message: err.to_string()})
+        Err(_) => Err(GenericError {error: true, message: "User not found".to_string()})
     }
 }
 
@@ -111,7 +111,7 @@ pub fn invite_user_to_project(guest_id: &String, project_id: &String, user_id: &
                 Err(GenericError { error: true, message: "You are not member of the project or you don't have enough privileges to invite anyone".to_string() })
             }
         },
-        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        Err(_) => Err(GenericError { error: true, message: "Project not found".to_string() })
     }
 }
 
@@ -153,7 +153,7 @@ pub fn deny_user_project_invitation(project_id: &String, user_id: &String, guest
             .execute(connection);
             match deleted {
                 Ok(_) => Ok(GenericError { error: false, message: "Invitation to project denied successfully".to_string() }),
-                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                Err(_) => Err(GenericError { error: true, message: "Error at deny project invitation".to_string() })
             }
         },
         Err(err) => Err(err)
@@ -179,7 +179,7 @@ pub fn change_role_user_project(guest_id: &String, project_id: &String, user_id:
                     Err(GenericError { error: true, message: "You are not member of the project or you don't have enough privileges to do that".to_string() })
                 }
             },
-            Err(err) => Err(GenericError { error: true, message: err.to_string() })
+            Err(_) => Err(GenericError { error: true, message: "Project not found".to_string() })
         }
     } else {
         Err(GenericError { error: true, message: "You cannot change your own role".to_string() })
@@ -198,7 +198,7 @@ pub fn delete_user_project(guest_id: &String, project_id: &String, user_id: &Str
                         .execute(connection);
                         match deleted {
                             Ok(_) => Ok(GenericError { error: false, message: "User removed from project successfully".to_string() }),
-                            Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                            Err(_) => Err(GenericError { error: true, message: "Error removing user from project".to_string() })
                         }
                     },
                     Err(_err) => Err(GenericError { error: true, message: "The user to delete is not in the project".to_string()})
@@ -207,7 +207,7 @@ pub fn delete_user_project(guest_id: &String, project_id: &String, user_id: &Str
                 Err(GenericError { error: true, message: "You are not member of the project or you don't have enough privileges to do it".to_string() })
             }
         },
-        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        Err(_) => Err(GenericError { error: true, message: "Project not found".to_string() })
     }
 }
 
@@ -221,13 +221,13 @@ pub fn leave_project(project_id: &String, user_id: &String) -> Result<GenericErr
                     .execute(connection);
                 match deleted {
                     Ok(_) => Ok(GenericError { error: false, message: "You left the project successfully".to_string() }),
-                    Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                    Err(_) => Err(GenericError { error: true, message: "Error while leaving the project".to_string() })
                 }
             } else {
                 Err(GenericError { error: true, message: "You are not a member of the project".to_string() })
             }
         },
-        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        Err(_) => Err(GenericError { error: true, message: "Project not found".to_string() })
     }
 }
 
@@ -248,13 +248,13 @@ pub fn delete_project(user_id: &String, project_id: &String) -> Result<GenericEr
                     let deleted = diesel::delete(projects::table.filter(projects::idproject.eq(project.idproject))).execute(connection);
                     match deleted {
                         Ok(_) => Ok(GenericError { error: false, message: "Project deleted successfully".to_string() }),
-                        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                        Err(_) => Err(GenericError { error: true, message: "Error deleting project".to_string() })
                     }
                 },
                 Err(_err) => Err(GenericError {error: true, message: "You are not a member or you don't have privileges to make it".to_string()})
             }
         }, 
-        Err(err) => Err(GenericError {error: true, message: err.to_string()})
+        Err(_) => Err(GenericError {error: true, message: "User not found".to_string()})
     }
 }
 
@@ -322,10 +322,10 @@ pub fn get_project(project_id: &String, token_data: &TokenValidation) -> Result<
 
                     Ok(project_detailed)
                 },
-                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                Err(_) => Err(GenericError { error: true, message: "Error founding project's members".to_string() })
             }
         },
-        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        Err(_) => Err(GenericError { error: true, message: "Project not found".to_string() })
     }
 }
 
@@ -342,7 +342,7 @@ pub fn get_user_projects(user_id: &String, request_id: &String) -> Result<UserPr
                         };
                         Ok(user_projects)
                     },
-                    Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                    Err(_) => Err(GenericError { error: true, message: "Error getting your own projects".to_string() })
                 }
             } else {
                 match project_utils::get_user_projects(&user, request_id, connection) {
@@ -352,11 +352,11 @@ pub fn get_user_projects(user_id: &String, request_id: &String) -> Result<UserPr
                         };
                         Ok(user_projects)
                     },
-                    Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                    Err(_) => Err(GenericError { error: true, message: "Errot getting user's projects".to_string() })
                 }
             }
         }, 
-        Err(err) => Err(GenericError {error: true, message: err.to_string()})
+        Err(_) => Err(GenericError {error: true, message: "User not found".to_string()})
     }
 }
 
@@ -380,6 +380,6 @@ pub fn search_projects(name_str: &String, user_id: &String) -> Result<Vec<Projec
             }
             Ok(project_response)
         },
-        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        Err(_) => Err(GenericError { error: true, message: "Projects not found".to_string() })
     }
 }

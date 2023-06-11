@@ -73,7 +73,7 @@ pub fn create_app_by_type(project_id: &str, user_id: &str, app_info: &AppInputCr
                                 Err(err) => return Err(err)
                             }
                         },
-                        Err(err) => Err(GenericError { error:true, message: err.to_string()})
+                        Err(_) => Err(GenericError { error:true, message: "Error creating app".to_string()})
                     }
                 }
                 "docs_app" => {
@@ -91,7 +91,7 @@ pub fn create_app_by_type(project_id: &str, user_id: &str, app_info: &AppInputCr
                         .get_result::<DocsApp>(connection);
                     match created_app_type {
                         Ok(_) => Ok(app),
-                        Err(err) => Err(GenericError { error:true, message: err.to_string()})
+                        Err(_) => Err(GenericError { error:true, message: "Error creating app".to_string()})
                     }
                 },
                 _ => Err(GenericError { error: true, message: "You need to provide a valid app type".to_owned() })

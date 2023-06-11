@@ -132,10 +132,10 @@ pub fn check_update_user_achievement(user_id: &str, achievement_id: &str) -> Res
                         Ok(GenericError { error: false, message: "The achievement was updated successfully".to_owned() })
                     }
                 },
-                Err(err) => Err(GenericError { error: true, message: err.to_string() })
+                Err(_) => Err(GenericError { error: true, message: "Error updating achievement".to_string() })
             }
         },
-        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        Err(_) => Err(GenericError { error: true, message: "Achievement not found".to_string() })
     }
 }
 
@@ -166,6 +166,6 @@ pub fn get_user_achievements_profile(user: &User, connection: &mut PgConnection)
             }
             Ok(achievements_info)
         },
-        Err(err) => Err(err.to_string())
+        Err(_) => Err("Achievements not found".to_string())
     }
 }

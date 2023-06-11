@@ -24,10 +24,10 @@ pub fn get_user_notifications(user_id: &String) -> Result<Notification, String> 
                     };
                     Ok(notifications)
                 },
-                Err(err) => Err(err.to_string())
+                Err(_) => Err("Friend requests not found".to_string())
             }
         },
-        Err(err) => Err(err.to_string())
+        Err(_) => Err("Project invitations not found".to_string())
     }
 }
 
@@ -73,9 +73,9 @@ pub fn get_user_friends(user_id: &String) -> Result<Friends, String> {
                     };
                     Ok(friends_response)
                 },
-                Err(err) => Err(err.to_string())
+                Err(_) => Err("Friends not found".to_string())
             }
         },
-        Err(err) => Err(err.to_string())
+        Err(_) => Err("Friends not found".to_string())
     }
 }

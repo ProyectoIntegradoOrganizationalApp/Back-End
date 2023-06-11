@@ -83,18 +83,18 @@ pub fn login(user_info: &UserLogin) -> Result<UserLoginResponse, String> {
                                     };
                                     Ok(response)
                                 },
-                                Err(err) => Err(err.to_string()),
+                                Err(_) => Err("Error whitlisting the token".to_string()),
                             },
-                            Err(err) => Err(err.to_string()),
+                            Err(_) => Err("Error creating the token".to_string()),
                         }
                     } else {
                         Err("Invalid credentials".to_string())
                     }
                 }
-                Err(err) => Err(err.to_string()),
+                Err(_) => Err("Error validating password".to_string()),
             }
         }
-        Err(err) => Err(err.to_string()),
+        Err(_) => Err("User not found".to_string()),
     }
 }
 
@@ -196,10 +196,10 @@ pub fn update_user(user_info: &UserUpdate, token_iduser: &String) -> Result<Gene
             let updated_user = user_to_update.save_changes::<User>(connection);
             match updated_user {
                 Ok(_user) => Ok(GenericError {error: false, message: "Updated user successfully".to_string()}), 
-                Err(err) => Err(GenericError {error: true, message: err.to_string()})
+                Err(_) => Err(GenericError {error: true, message: "Error updating user".to_string()})
             }
         },
-        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        Err(_) => Err(GenericError { error: true, message: "User not found".to_string() })
     }
 }
 
@@ -208,6 +208,6 @@ pub fn delete_user(user_id: &String) -> Result<GenericError, GenericError> {
     let deleted = diesel::delete(users.filter(id.eq(user_id))).execute(connection);
     match deleted {
         Ok(_) => Ok(GenericError { error: false, message: "User deleted successfully".to_string() }),
-        Err(err) => Err(GenericError { error: true, message: err.to_string() })
+        Err(_) => Err(GenericError { error: true, message: "Error deleting user".to_string() })
     }
 }
