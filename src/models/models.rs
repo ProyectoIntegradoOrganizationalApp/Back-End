@@ -150,6 +150,7 @@ pub struct Columna {
 pub struct ColumnTasks {
     pub id: String,
     pub title: String,
+    pub ordering: i32,
     pub tasks: Vec<Task>
 }
 

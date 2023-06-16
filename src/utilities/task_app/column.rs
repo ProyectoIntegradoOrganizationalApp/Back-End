@@ -47,6 +47,7 @@ pub fn get_column_tasks(columns: Vec<Columna>, connection: &mut PgConnection) ->
                 let column_task = ColumnTasks {
                     id: column.id.clone(),
                     title: column.title.clone(),
+                    ordering: column.ordering.clone(),
                     tasks
                 };
                 column_tasks.push(column_task);
